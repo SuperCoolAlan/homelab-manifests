@@ -100,7 +100,7 @@ podSecurityContext: {}
 ##
 connector:
 #   logLevel: "error"
-  # network: ""
+  network: asandov
   # accessToken: ""
   # refreshToken: ""
   existingSecret: "twingate-op-connector"
