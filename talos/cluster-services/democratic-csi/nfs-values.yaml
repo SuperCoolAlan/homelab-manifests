@@ -1,0 +1,53 @@
+csiDriver:
+  name: "nfs"
+storageClasses:
+- name: nfs
+  defaultClass: false
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
+  allowVolumeExpansion: true
+  parameters:
+    fsType: nfs
+    detachedVolumesFromSnapshots: "false"
+  mountOptions:
+  - noatime
+  - nfsvers=4
+  secrets:
+    provisioner-secret:
+    controller-publish-secret:
+    node-stage-secret:
+    node-publish-secret:
+    controller-expand-secret:
+volumeSnapshotClasses:
+- name: nfs
+  parameters:
+    detachedSnapshots: "true"
+driver:
+  existingConfigSecret: nfs-csi-democratic-csi-driver-config
+  config:
+    driver: freenas-api-nfs
+    instance_id:
+    httpConnection:
+      protocol: http
+      host: truenas.asandov.local
+      port: 80
+      apiVersion: 2
+      #apiKey: get your own key
+      allowInsecure: true
+    zfs:
+      datasetParentName: dual_hdd/talos/nfs/v
+      detachedSnapshotsDatasetParentName: dual_hdd/talos/nfs/s
+      datasetEnableQuotas: true
+      datasetEnableReservation: false
+      datasetPermissionsMode: "0777"
+      datasetPermissionsUser: 0
+      datasetPermissionsGroup: 0
+    nfs:
+      shareHost: truenas.asandov.local
+      shareAlldirs: false
+      shareAllowedHosts: []
+      shareAllowedNetworks: []
+      shareMaprootUser: truenas_admin
+      shareMaprootGroup: truenas_admin
+      shareMapallUser: ""
+      shareMapallGroup: ""
