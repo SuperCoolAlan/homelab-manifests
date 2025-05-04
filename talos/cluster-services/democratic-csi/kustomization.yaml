@@ -3,11 +3,11 @@ kind: Kustomization
 
 helmGlobals:
   chartHome: helm
-
 helmCharts:
-  - name: argo-cd
-    releaseName: kingdel-argo
-    namespace: argo-cd
+  - name: democratic-csi
+    valuesFile: nfs-values.yaml
+    releaseName: nfs-csi
+    namespace: nfs-csi
 
 generators:
   - secrets-generator.yaml
