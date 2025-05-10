@@ -1,0 +1,68 @@
+# NOTE: this does not work w/ talos due to non-writable dirs
+csiDriver:
+  name: "iscsi"
+storageClasses:
+- name: iscsi
+  defaultClass: false
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
+  allowVolumeExpansion: true
+  parameters:
+    fsType: ext4
+    detachedVolumesFromSnapshots: "false"
+  mountOptions: []
+  secrets:
+    provisioner-secret:
+    controller-publish-secret:
+    node-stage-secret:
+    node-publish-secret:
+    controller-expand-secret:
+volumeSnapshotClasses:
+- name: iscsi
+  parameters:
+    detachedSnapshots: "true"
+driver:
+  config:
+    driver: freenas-api-iscsi
+    instance_id:
+    httpConnection:
+      protocol: http
+      host: truenas.asandov.local
+      port: 80
+      apiKey:
+      allowInsecure: true
+    zfs:
+      datasetParentName: dual_hdd/talos/iscsi/v
+      detachedSnapshotsDatasetParentName: dual_hdd/talos/iscsi/s
+      zvolCompression:
+      zvolDedup:
+      zvolEnableReservation: false
+      zvolBlocksize:
+    iscsi:
+      targetPortal: "truenas.asandov.local:3260"
+      targetPortals: [] 
+      interface:
+      namePrefix: csi-
+      nameSuffix: "-clustera"
+      targetGroups:
+        - targetGroupPortalGroup: 1
+          targetGroupInitiatorGroup: 14
+          targetGroupAuthType: None
+          targetGroupAuthGroup:
+      extentInsecureTpc: true
+      extentXenCompat: false
+      extentDisablePhysicalBlocksize: true
+      extentBlocksize: 512
+      extentRpm: "HDD"
+      extentAvailThreshold: 0
+
+node:
+  hostPID: true
+  driver:
+    extraEnv:
+      - name: ISCSIADM_HOST_STRATEGY
+        value: nsenter
+      - name: ISCSIADM_HOST_PATH
+        value: /usr/local/sbin/iscsiadm
+    iscsiDirHostPath: /usr/local/etc/iscsi
+    iscsiDirHostPathType: ""

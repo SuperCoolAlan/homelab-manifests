@@ -5,9 +5,14 @@ helmGlobals:
   chartHome: helm
 helmCharts:
   - name: democratic-csi
-    valuesFile: nfs-values.yaml
+    valuesFile: values-nfs.yaml
     releaseName: nfs-csi
     namespace: nfs-csi
+  # not working w/ Talos
+  # - name: democratic-csi
+  #   valuesFile: values-iscsi.yaml
+  #   releaseName: iscsi-csi
+  #   namespace: iscsi-csi
 
 generators:
   - secrets-generator.yaml
