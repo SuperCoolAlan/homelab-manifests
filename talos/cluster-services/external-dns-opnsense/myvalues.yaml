@@ -1,0 +1,43 @@
+fullnameOverride: external-dns-opnsense
+logLevel: debug
+provider:
+  name: webhook
+  webhook:
+    image:
+      repository: ghcr.io/crutonjohn/external-dns-opnsense-webhook
+      tag: main # replace with a versioned release tag
+    env:
+      - name: OPNSENSE_API_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: external-dns-opnsense-secret
+            key: api_secret
+      - name: OPNSENSE_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: external-dns-opnsense-secret
+            key: api_key
+      - name: OPNSENSE_HOST
+        value: https://10.0.1.1 # replace with the address to your OPNsense router
+      - name: OPNSENSE_SKIP_TLS_VERIFY
+        value: "true" # optional depending on your environment
+      - name: LOG_LEVEL
+        value: debug
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: http-webhook
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+    readinessProbe:
+      httpGet:
+        path: /readyz
+        port: http-webhook
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+extraArgs:
+  - --ignore-ingress-tls-spec
+policy: sync
+sources: ["ingress", "service", "crd"]
+registry: noop
+domainFilters: ["asandov.local"] # replace with your domain

@@ -1,0 +1,3 @@
+[submodule "talos/media/helm/k8s-mediaserver-operator"]
+	path = talos/media/helm/k8s-mediaserver-operator
+	url = https://github.com/kubealex/k8s-mediaserver-operator
