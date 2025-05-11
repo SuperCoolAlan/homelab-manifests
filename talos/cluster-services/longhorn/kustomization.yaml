@@ -7,3 +7,12 @@ helmCharts:
   - name: longhorn
     releaseName: longhorn
     namespace: longhorn-system
+
+patches:
+- patch: |-
+    - op: add
+      path: /metadata/annotations/external-dns.alpha.kubernetes.io~1hostname
+      value: longhorn.talos.asandov.local
+  target:
+    kind: Service
+    name: longhorn-frontend

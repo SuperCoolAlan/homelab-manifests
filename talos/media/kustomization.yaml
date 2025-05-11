@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmGlobals:
+  chartHome: helm/k8s-mediaserver-operator/helm-charts
+
+helmCharts:
+  - name: k8s-mediaserver
+    namespace: media
+    releaseName: k8s-medias
+    valuesFile: myvalues.yaml

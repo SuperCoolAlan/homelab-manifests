@@ -1,0 +1,5 @@
+general:
+  storage:
+    pvcStorageClass: nfs
+plex:
+  enabled: false
