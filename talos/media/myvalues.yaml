@@ -1,5 +1,14 @@
 general:
+  ingress_host: mediaserver.talos.asandov.local
+  plex_ingress_host: plex.talos.asandov.local
+  jellyfin_ingress_host: jellyfin.talos.asandov.local
   storage:
     pvcStorageClass: nfs
+  ingress:
+    ingressClassName: nginx
+
 plex:
+  enabled: false
+
+jellyfin:
   enabled: false
