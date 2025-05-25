@@ -17,3 +17,12 @@ patches:
       value: ImplementationSpecific
   target:
     kind: Ingress
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/securityContext
+#       value:
+#         runAsUser: 0
+#         runAsGroup: 0
+#   target:
+#     kind: Deployment
+#     name: jellyfin

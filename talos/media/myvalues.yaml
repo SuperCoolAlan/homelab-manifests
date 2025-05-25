@@ -37,10 +37,17 @@ transmission:
     addresses: "100.66.83.118/32"
 
 jackett:
-  enabled: false
+  enabled: true
+  ingress:
+    annotations:
+      external-dns.alpha.kubernetes.io/target: 10.0.1.13
 
 prowlarr:
-  enabled: false
+  enabled: true
+  ingress:
+    annotations:
+      external-dns.alpha.kubernetes.io/target: 10.0.1.13
+
 
 plex:
   enabled: false
@@ -53,6 +60,16 @@ jellyfin:
 
 jellyseerr:
   enabled: false
+  ingress:
+    annotations:
+      external-dns.alpha.kubernetes.io/target: 10.0.1.13
+
 
 flaresolverr:
-  enabled: false
+  enabled: true
+  container:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+  ingress:
+    annotations:
+      external-dns.alpha.kubernetes.io/target: 10.0.1.13
+
