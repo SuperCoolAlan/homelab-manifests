@@ -9,3 +9,11 @@ helmCharts:
     namespace: media
     releaseName: k8s-medias
     valuesFile: myvalues.yaml
+
+patches:
+- patch: |-
+    - op: add
+      path: /spec/rules/0/http/paths/0/pathType
+      value: ImplementationSpecific
+  target:
+    kind: Ingress
