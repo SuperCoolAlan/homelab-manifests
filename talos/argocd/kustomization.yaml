@@ -9,5 +9,5 @@ helmCharts:
     releaseName: kingdel-argo
     namespace: argo-cd
 
-# generators:
-#   - secrets-generator.yaml
+generators:
+  - secrets-generator.yaml
