@@ -9,5 +9,6 @@ helmCharts:
     releaseName: kingdel-argo
     namespace: argo-cd
 
-generators:
-  - secrets-generator.yaml
+# TODO: fix argo ksops
+# generators:
+#   - secrets-generator.yaml
