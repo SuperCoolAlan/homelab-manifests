@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 helmGlobals:
-  chartHome: helm/k8s-mediaserver-operator/helm-charts
+  chartHome: helm/k8s-mediaserver-charts/helm-charts
 
 helmCharts:
   - name: k8s-mediaserver
@@ -17,12 +17,23 @@ patches:
       value: ImplementationSpecific
   target:
     kind: Ingress
-# - patch: |-
-#     - op: add
-#       path: /spec/template/spec/securityContext
-#       value:
-#         runAsUser: 0
-#         runAsGroup: 0
-#   target:
-#     kind: Deployment
-#     name: jellyfin
+- patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/volumeMounts/3
+      value: 
+        mountPath: /sabnzbd-downloads
+        name: mediaserver-volume
+        subPath: media/sabnzbd-downloads
+  target:
+    kind: Deployment
+    name: jellyfin
+- patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/volumeMounts/2
+      value: 
+        mountPath: /sabnzbd-downloads
+        name: mediaserver-volume
+        subPath: media/sabnzbd-downloads
+  target:
+    kind: Deployment
+    name: sabnzbd
