@@ -167,14 +167,15 @@ configs:
   # General Argo CD configuration. Any values you put under `.configs.cm` are passed to argocd-cm ConfigMap.
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
   cm:
-
     helm.valuesFileSchemes: >-
       secrets+gpg-import, secrets+gpg-import-kubernetes,
       secrets+age-import, secrets+age-import-kubernetes,
       secrets, secrets+literal,
       https
-    kustomize.buildOptions: "--enable-helm"
-
+    kustomize.buildOptions: --enable-alpha-plugins --enable-exec --enable-helm
+    
+    # # -- Argo CD's externally facing base URL (optional). Required when configuring SSO
+    url: http://argo.talos.asandov.local
 
     # -- Create the argocd-cm configmap for [declarative setup]
     create: true
@@ -968,7 +969,7 @@ controller:
 ## Dex
 dex:
   # -- Enable dex
-  enabled: true
+  enabled: false
   # -- Dex name
   name: dex-server
 
@@ -1299,9 +1300,9 @@ redis:
   ## Redis image
   image:
     # -- Redis repository
-    repository: public.ecr.aws/docker/library/redis
+    repository: docker.io/redis
     # -- Redis tag
-    tag: 7.4.2-alpine
+    tag: 7.4.2-alpine3.21
     # -- Redis image pull policy
     # @default -- `""` (defaults to global.image.imagePullPolicy)
     imagePullPolicy: ""
@@ -1769,6 +1770,8 @@ redisSecretInit:
 server:
   # -- Argo CD server name
   name: server
+  config: 
+    kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
 
   # -- The number of server pods to run
   replicas: 1
@@ -2251,7 +2254,7 @@ server:
 
     # -- Argo CD server hostname
     # @default -- `""` (defaults to global.domain)
-    hostname: argo.talos.asandov.local
+    hostname: "argo.talos.asandov.local"
 
     # -- The path to Argo CD server
     path: /
@@ -2514,9 +2517,40 @@ repoServer:
   extraArgs: []
 
   # -- Environment variables to pass to repo server
-  env:
+  env: 
     - name: ARGOCD_EXEC_TIMEOUT
       value: 600s
+    - name: HELM_PLUGINS
+      value: /custom-tools/helm-plugins/
+    - name: HELM_SECRETS_CURL_PATH
+      value: /custom-tools/curl
+    - name: HELM_SECRETS_SOPS_PATH
+      value: /custom-tools/sops
+    - name: HELM_SECRETS_VALS_PATH
+      value: /custom-tools/vals
+    - name: HELM_SECRETS_KUBECTL_PATH
+      value: /custom-tools/kubectl
+    - name: HELM_SECRETS_BACKEND
+      value: sops
+    # https://github.com/jkroepke/helm-secrets/wiki/Security-in-shared-environments
+    - name: HELM_SECRETS_VALUES_ALLOW_SYMLINKS
+      value: "false"
+    - name: HELM_SECRETS_VALUES_ALLOW_ABSOLUTE_PATH
+      value: "true"
+    - name: HELM_SECRETS_VALUES_ALLOW_PATH_TRAVERSAL
+      value: "true"
+    - name: HELM_SECRETS_WRAPPER_ENABLED
+      value: "true"
+    - name: HELM_SECRETS_DECRYPT_SECRETS_IN_TMP_DIR
+      value: "true"
+    - name: HELM_SECRETS_HELM_PATH
+      value: /custom-tools/helm
+    - name: HELM_BIN
+      value: /custom-tools/helm
+    - name: HELM_SECRETS_LOAD_GPG_KEYS
+      # Multiple keys can be separated by space
+      value: /sops-gpg/sops.asc
+
 
   # -- envFrom to pass to repo server
   # @default -- `[]` (See [values.yaml])
