@@ -4,6 +4,7 @@ general:
   jellyfin_ingress_host: jellyfin.talos.asandov.local
   storage:
     pvcStorageClass: nfs
+    size: 250Gi
   ingress:
     ingressClassName: nginx
 
