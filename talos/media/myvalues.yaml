@@ -13,6 +13,14 @@ sonarr:
     annotations:
       external-dns.alpha.kubernetes.io/target: 10.0.1.13
 
+sabnzbd:
+  vpn:
+    enabled: true
+    provider: windscribe
+    type: openvpn
+    user: 
+    password: 
+    region: US Central
 
 radarr:
   enabled: true
@@ -21,20 +29,10 @@ radarr:
       external-dns.alpha.kubernetes.io/target: 10.0.1.13
 
 transmission:
-  enabled: true
+  enabled: false
   ingress:
     annotations:
       external-dns.alpha.kubernetes.io/target: 10.0.1.13
-  vpn:
-    enabled: true
-    provider: windscribe
-    type: wireguard
-    region: America
-    host: "dfw-86-wg.whiskergalaxy.com"
-    port: "65142"
-    privKey: ""
-    presharedKey: ""
-    addresses: "100.66.83.118/32"
 
 jackett:
   enabled: true
