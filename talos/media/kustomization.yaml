@@ -17,12 +17,13 @@ patches:
       value: ImplementationSpecific
   target:
     kind: Ingress
-# - patch: |-
-#     - op: add
-#       path: /spec/template/spec/securityContext
-#       value:
-#         runAsUser: 0
-#         runAsGroup: 0
-#   target:
-#     kind: Deployment
-#     name: jellyfin
+- patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/volumeMounts/3
+      value: 
+        mountPath: /sabnzbd-downloads
+        name: mediaserver-volume
+        subPath: media/sabnzbd-downloads
+  target:
+    kind: Deployment
+    name: jellyfin
