@@ -27,3 +27,13 @@ patches:
   target:
     kind: Deployment
     name: jellyfin
+- patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/volumeMounts/2
+      value: 
+        mountPath: /sabnzbd-downloads
+        name: mediaserver-volume
+        subPath: media/sabnzbd-downloads
+  target:
+    kind: Deployment
+    name: sabnzbd
