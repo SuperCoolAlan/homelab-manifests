@@ -7,6 +7,13 @@ general:
     size: 250Gi
   ingress:
     ingressClassName: nginx
+  vpn:
+    provider: windscribe
+    type: openvpn
+    user: user
+    password: password
+    region: US Central
+    # secret: todo
 
 sonarr:
   enabled: true
@@ -17,11 +24,6 @@ sonarr:
 sabnzbd:
   vpn:
     enabled: true
-    provider: windscribe
-    type: openvpn
-    user: 
-    password: 
-    region: US Central
 
 radarr:
   enabled: true
