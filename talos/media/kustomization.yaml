@@ -24,6 +24,12 @@ patches:
         mountPath: /sabnzbd-downloads
         name: mediaserver-volume
         subPath: media/sabnzbd-downloads
+    - op: add
+      path: /spec/template/spec/containers/0/volumeMounts/4
+      value: 
+        mountPath: /downloads
+        name: mediaserver-volume
+        subPath: media/downloads
   target:
     kind: Deployment
     name: jellyfin
@@ -37,3 +43,14 @@ patches:
   target:
     kind: Deployment
     name: sabnzbd
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/containers/0/volumeMounts/3
+#       value: 
+#         mountPath: /transmission-downloads
+#         name: mediaserver-volume
+#         subPath: media/transmission-downloads
+#   target:
+#     kind: Deployment
+#     name: transmission
+
