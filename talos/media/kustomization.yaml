@@ -29,7 +29,7 @@ patches:
       value: 
         mountPath: /downloads
         name: mediaserver-volume
-        subPath: media/downloads
+        subPath: downloads
   target:
     kind: Deployment
     name: jellyfin
