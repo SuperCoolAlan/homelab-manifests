@@ -2516,42 +2516,6 @@ repoServer:
   # -- Additional command line arguments to pass to repo server
   extraArgs: []
 
-  # -- Environment variables to pass to repo server
-  env: 
-    - name: ARGOCD_EXEC_TIMEOUT
-      value: 600s
-    - name: HELM_PLUGINS
-      value: /custom-tools/helm-plugins/
-    - name: HELM_SECRETS_CURL_PATH
-      value: /custom-tools/curl
-    - name: HELM_SECRETS_SOPS_PATH
-      value: /custom-tools/sops
-    - name: HELM_SECRETS_VALS_PATH
-      value: /custom-tools/vals
-    - name: HELM_SECRETS_KUBECTL_PATH
-      value: /custom-tools/kubectl
-    - name: HELM_SECRETS_BACKEND
-      value: sops
-    # https://github.com/jkroepke/helm-secrets/wiki/Security-in-shared-environments
-    - name: HELM_SECRETS_VALUES_ALLOW_SYMLINKS
-      value: "false"
-    - name: HELM_SECRETS_VALUES_ALLOW_ABSOLUTE_PATH
-      value: "true"
-    - name: HELM_SECRETS_VALUES_ALLOW_PATH_TRAVERSAL
-      value: "true"
-    - name: HELM_SECRETS_WRAPPER_ENABLED
-      value: "true"
-    - name: HELM_SECRETS_DECRYPT_SECRETS_IN_TMP_DIR
-      value: "true"
-    - name: HELM_SECRETS_HELM_PATH
-      value: /custom-tools/helm
-    - name: HELM_BIN
-      value: /custom-tools/helm
-    - name: HELM_SECRETS_LOAD_GPG_KEYS
-      # Multiple keys can be separated by space
-      value: /sops-gpg/sops.asc
-
-
   # -- envFrom to pass to repo server
   # @default -- `[]` (See [values.yaml])
   envFrom: []
@@ -2608,31 +2572,42 @@ repoServer:
     #     - mountPath: /tmp
     #       name: cmp-tmp
 
-  # -- Init containers to add to the repo server pods
+  env:
+    - name: ARGOCD_EXEC_TIMEOUT
+      value: '2m'
+    - name: HELM_PLUGINS
+      value: /custom-tools/helm-plugins/
+    - name: HELM_SECRETS_CURL_PATH
+      value: /custom-tools/curl
+    - name: HELM_SECRETS_SOPS_PATH
+      value: /custom-tools/sops
+    - name: HELM_SECRETS_VALS_PATH
+      value: /custom-tools/vals
+    - name: HELM_SECRETS_KUBECTL_PATH
+      value: /custom-tools/kubectl
+    - name: HELM_SECRETS_BACKEND
+      value: sops
+    # https://github.com/jkroepke/helm-secrets/wiki/Security-in-shared-environments
+    - name: HELM_SECRETS_VALUES_ALLOW_SYMLINKS
+      value: "false"
+    - name: HELM_SECRETS_VALUES_ALLOW_ABSOLUTE_PATH
+      value: "true"
+    - name: HELM_SECRETS_VALUES_ALLOW_PATH_TRAVERSAL
+      value: "true"
+    - name: HELM_SECRETS_WRAPPER_ENABLED
+      value: "true"
+    - name: HELM_SECRETS_DECRYPT_SECRETS_IN_TMP_DIR
+      value: "true"
+    - name: HELM_SECRETS_HELM_PATH
+      value: /custom-tools/helm
+    - name: HELM_BIN
+      value: /custom-tools/helm
+
+    - name: HELM_SECRETS_LOAD_GPG_KEYS
+      # Multiple keys can be separated by space
+      value: /sops-gpg/sops.asc
+
   initContainers:
-    # - name: copyutil
-    #   image: quay.io/argoproj/argocd:v2.8.5
-    #   command:
-    #     - /bin/cp
-    #     - '-n'
-    #     - /usr/local/bin/argocd
-    #     - /var/run/argocd/argocd-cmp-server
-    #   resources: {}
-    #   volumeMounts:
-    #     - name: var-files
-    #       mountPath: /var/run/argocd
-    #   terminationMessagePath: /dev/termination-log
-    #   terminationMessagePolicy: File
-    #   imagePullPolicy: IfNotPresent
-    #   securityContext:
-    #     capabilities:
-    #       drop:
-    #         - ALL
-    #     runAsNonRoot: true
-    #     readOnlyRootFilesystem: true
-    #     allowPrivilegeEscalation: false
-    #     seccompProfile:
-    #       type: RuntimeDefault
     - command:
         - /bin/cp
         - '-n'
@@ -2679,7 +2654,6 @@ repoServer:
       command:
         - gpg
         - '--import'
-        - '--batch'
         - /sops-gpg/sops.asc
       env:
         - name: GNUPGHOME
@@ -2745,9 +2719,7 @@ repoServer:
       volumeMounts:
         - mountPath: /custom-tools
           name: custom-tools
-
-
-  # -- Additional volumeMounts to the repo server main container
+  
   volumeMounts:
     - name: sops-gpg
       mountPath: /sops-gpg
@@ -2766,7 +2738,6 @@ repoServer:
       mountPath: /home/argocd/.gnupg
       subPath: .gnupg
 
-  # -- Additional volumes to the repo server pod
   volumes:
     - name: custom-tools
       emptyDir: {}
@@ -2776,11 +2747,6 @@ repoServer:
         defaultMode: 420
     - name: gnupg-home
       emptyDir: {}    
-  #  - name: argocd-cmp-cm
-  #    configMap:
-  #      name: argocd-cmp-cm
-  #  - name: cmp-tmp
-  #    emptyDir: {}
 
   # -- Volumes to be used in replacement of emptydir on default volumes
   existingVolumes: {}
