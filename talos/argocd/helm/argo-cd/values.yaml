@@ -2653,6 +2653,7 @@ repoServer:
       image: quay.io/argoproj/argocd:v2.8.5
       command:
         - gpg
+        - '--batch'
         - '--import'
         - /sops-gpg/sops.asc
       env:
