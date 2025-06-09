@@ -10,10 +10,10 @@ general:
   vpn:
     provider: windscribe
     type: openvpn
-    user: user
-    password: password
+    user: ~
+    password: ~
     region: US Central
-    # secret: todo
+    existingSecret: windscribe-openvpn-creds
 
 sonarr:
   enabled: true
