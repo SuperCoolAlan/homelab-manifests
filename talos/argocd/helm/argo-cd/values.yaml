@@ -2652,9 +2652,6 @@ repoServer:
     - name: import-gpg-key
       image: quay.io/argoproj/argocd:v2.8.5
       command:
-        - export
-        - GPG_TTY=$(tty)
-        - '&&'
         - gpg
         - '--import'
         - /sops-gpg/sops.asc
