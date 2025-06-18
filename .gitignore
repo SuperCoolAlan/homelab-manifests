@@ -1,3 +1,4 @@
 talos/config
 .decrypted*
 **/.env
+config.yaml
