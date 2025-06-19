@@ -9,6 +9,7 @@ helmCharts:
     namespace: media
     releaseName: k8s-medias
     valuesFile: myvalues.yaml
+    debug: true
 
 patches:
 - patch: |-
@@ -54,5 +55,5 @@ patches:
 #     kind: Deployment
 #     name: transmission
 
-# generators:
-#   - secrets-generator.yaml
+generators:
+  - secrets-generator.yaml
