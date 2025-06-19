@@ -2,13 +2,17 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 helmGlobals:
-  chartHome: helm/k8s-mediaserver-charts/helm-charts
+  chartHome: helm
 
 helmCharts:
   - name: k8s-mediaserver
     namespace: media
     releaseName: k8s-medias
     valuesFile: myvalues.yaml
+  - name: jellyseerr
+    namespace: media
+    releaseName: jellyseerr
+    valuesFile: myvalues.jellyseer.yaml
 
 patches:
 - patch: |-
@@ -43,6 +47,16 @@ patches:
   target:
     kind: Deployment
     name: sabnzbd
+- patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/volumeMounts/2
+      value: 
+        mountPath: /sabnzbd-downloads
+        name: mediaserver-volume
+        subPath: media/sabnzbd-downloads
+  target:
+    kind: Deployment
+    name: sonarr
 # - patch: |-
 #     - op: add
 #       path: /spec/template/spec/containers/0/volumeMounts/3
