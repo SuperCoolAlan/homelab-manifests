@@ -56,7 +56,7 @@ patches:
         subPath: media/sabnzbd-downloads
   target:
     kind: Deployment
-    name: sonarr
+    name: debugger
 # - patch: |-
 #     - op: add
 #       path: /spec/template/spec/containers/0/volumeMounts/3
