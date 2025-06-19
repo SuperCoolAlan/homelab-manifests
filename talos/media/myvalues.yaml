@@ -1,6 +1,5 @@
 general:
   ingress_host: mediaserver.talos.asandov.local
-  plex_ingress_host: plex.talos.asandov.local
   jellyfin_ingress_host: jellyfin.talos.asandov.local
   storage:
     pvcStorageClass: nfs
@@ -41,7 +40,7 @@ transmission:
     enabled: true
 
 jackett:
-  enabled: true
+  enabled: false 
   ingress:
     annotations:
       external-dns.alpha.kubernetes.io/target: 10.0.1.13
@@ -62,13 +61,6 @@ jellyfin:
     annotations:
       external-dns.alpha.kubernetes.io/target: 10.0.1.13
 
-jellyseerr:
-  enabled: true 
-  ingress:
-    annotations:
-      external-dns.alpha.kubernetes.io/target: 10.0.1.13
-
-
 flaresolverr:
   enabled: false
   container:
@@ -76,4 +68,3 @@ flaresolverr:
   ingress:
     annotations:
       external-dns.alpha.kubernetes.io/target: 10.0.1.13
-

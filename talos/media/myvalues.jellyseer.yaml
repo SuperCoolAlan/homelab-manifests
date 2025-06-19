@@ -1,0 +1,12 @@
+enabled: true 
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    external-dns.alpha.kubernetes.io/target: 10.0.1.13
+  hosts:
+  - host: jellyseer.talos.asandov.local
+    paths:
+      - path: /
+        pathType: ImplementationSpecific
+ 
