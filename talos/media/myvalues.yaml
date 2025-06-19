@@ -22,6 +22,7 @@ sonarr:
       external-dns.alpha.kubernetes.io/target: 10.0.1.13
 
 sabnzbd:
+  enabled: true
   vpn:
     enabled: true
 
