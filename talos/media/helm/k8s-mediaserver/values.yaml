@@ -315,3 +315,6 @@ jellyfin:
   #  accessModes: ReadWriteOnce
   #  storage: 5Gi
   #  selector: {}
+
+debugger:
+  enabled: false
