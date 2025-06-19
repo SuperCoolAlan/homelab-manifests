@@ -9,7 +9,6 @@ helmCharts:
     namespace: media
     releaseName: k8s-medias
     valuesFile: myvalues.yaml
-    debug: true
 
 patches:
 - patch: |-
