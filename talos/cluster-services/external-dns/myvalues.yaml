@@ -1,0 +1,13 @@
+provider:
+  name: cloudflare
+policy: sync
+
+sources:
+  - ingress
+
+env:
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api-key
+        key: apiKey
