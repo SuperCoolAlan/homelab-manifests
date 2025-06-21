@@ -1,0 +1,22 @@
+cloudflare:
+  tunnelName: "kingdel-talos"
+  tunnelId: "e800665c-e425-4486-9e8e-25953a5ccad4"
+  secretName: "tunnel-credentials"
+  ingress:
+    - hostname: "*.asandov.com"
+      service: "https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443"
+      originRequest:
+        noTLSVerify: true
+
+image:
+  tag: 2025.6.1
+resources:
+  limits:
+    cpu: "200m"
+    memory: "512Mi"
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+
+replicaCount: 1
+
