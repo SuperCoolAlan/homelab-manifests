@@ -7,3 +7,5 @@ helmCharts:
   - name: ingress-nginx
     releaseName: ingress-nginx
     namespace: ingress-nginx
+    valuesFile: myvalues.yaml
+
