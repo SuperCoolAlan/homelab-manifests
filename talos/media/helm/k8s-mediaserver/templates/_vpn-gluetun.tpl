@@ -27,17 +27,28 @@ terminationMessagePolicy: File
 {{- end }}
 
 {{ define "vpn-gluetun.dnsConfig" }}
-#dnsConfig:
-#  nameservers:
-#    - 10.255.255.1
-#  options:
-#    - name: ndots
-#      value: '5'
-#  searches:
-#    - media.svc.cluster.local
-#    - svc.cluster.local
-#    - cluster.local
+# NOTE: while this is applied to Talos, it is not honored. Instead, it is patched with an initContainer
+dnsConfig:
+  nameservers:
+    - 10.255.255.1
+  options:
+    - name: ndots
+      value: '5'
+  searches:
+    - media.svc.cluster.local
+    - svc.cluster.local
+    - cluster.local
 dnsPolicy: None
+{{- end }}
+
+{{ define "vpn-gluetun.dnsConfig.initContainer" }}
+- name: dns-config
+  image: busybox
+  command: ["sh", "-c"]
+  args: 
+  - |
+    rc=$(sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf) && echo "$rc" > /etc/resolv.conf
+
 {{- end }}
 
 {{ define "vpn-gluetun.openvpnSecret.env" }}
