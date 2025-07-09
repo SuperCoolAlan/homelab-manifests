@@ -370,8 +370,8 @@ spec:
             runAsUser: {{ .Values.general.puid }}
             runAsGroup: {{ .Values.general.pgid }}
         {{ include "vpn-gluetun.resolv-conf.initContainer" . | nindent 8 }}
-        {{ include "vpn-gluetun.dnsConfig.initContainer" . | nindent 8 }}
       containers:
+        {{ include "vpn-gluetun.dnsConfig.container" . | nindent 8 }}
         - name: {{ .Chart.Name }}
           envFrom:
             - configMapRef:
