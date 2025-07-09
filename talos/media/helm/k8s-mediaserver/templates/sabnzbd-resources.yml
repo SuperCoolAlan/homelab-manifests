@@ -371,7 +371,6 @@ spec:
             runAsGroup: {{ .Values.general.pgid }}
         {{ include "vpn-gluetun.resolv-conf.initContainer" . | nindent 8 }}
       containers:
-        {{ include "vpn-gluetun.dnsConfig.container" . | nindent 8 }}
         - name: {{ .Chart.Name }}
           envFrom:
             - configMapRef:
@@ -418,6 +417,7 @@ spec:
         - {{- include "vpn-gluetun.container" . | nindent 10 }}
         {{- include "vpn-gluetun.dnsConfig" . | nindent 6 }}
         {{- end }}
+        {{ include "vpn-gluetun.dnsConfig.container" . | nindent 8 }}
       volumes:
         {{- if not .Values.general.storage.customVolume }}
         - name: mediaserver-volume
