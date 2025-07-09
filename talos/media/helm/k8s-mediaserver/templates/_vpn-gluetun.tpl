@@ -27,16 +27,16 @@ terminationMessagePolicy: File
 {{- end }}
 
 {{ define "vpn-gluetun.dnsConfig" }}
-dnsConfig:
-  nameservers:
-    - 10.255.255.1
-  options:
-    - name: ndots
-      value: '5'
-  searches:
-    - media.svc.cluster.local
-    - svc.cluster.local
-    - cluster.local
+#dnsConfig:
+#  nameservers:
+#    - 10.255.255.1
+#  options:
+#    - name: ndots
+#      value: '5'
+#  searches:
+#    - media.svc.cluster.local
+#    - svc.cluster.local
+#    - cluster.local
 dnsPolicy: None
 {{- end }}
 
