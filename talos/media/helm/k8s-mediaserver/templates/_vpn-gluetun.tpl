@@ -49,8 +49,8 @@ dnsPolicy: None
   - |
     echo "hello dns-config initContainer!"
     while true; do
-      echo "LOOPING!"
-      sleep 3;
+    echo "LOOPING!"
+    sleep 3;
     done
     rc=$(sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf) && echo "$rc" > /etc/resolv.conf
     cat /etc/resolv.conf
