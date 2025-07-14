@@ -42,18 +42,16 @@ dnsPolicy: None
 {{- end }}
 
 {{ define "vpn-gluetun.dnsConfig.container" }}
-- name: dns-config
-  image: busybox
-  command: ["sh", "-c"]
-  args: 
-  - |
-    echo "hello dns-config initContainer!"
-    while true; do
-      echo "LOOPING!"
-      sleep 3;
-    done
-    rc=$(sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf) && echo "$rc" > /etc/resolv.conf
-    cat /etc/resolv.conf
+name: dns-config
+image: busybox
+command: ["sh", "-c"]
+args: 
+- |
+  echo "hello dns-config initContainer!"
+  #rc=$(sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf) && echo "$rc" > /etc/resolv.conf
+  sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf > /tmp/myresolv.conf
+  cp /tmp/myresolv.conf /etc/resolv.conf
+  cat /etc/resolv.conf
 
 {{- end }}
 
@@ -70,3 +68,17 @@ envFrom:
   #command: [sed, -i, -e, 's/nameservers .*/nameservers 10.255.255.1/', /etc/resolv.conf]
   #restartPolicy: Always
 {{- end }}
+
+{{- define "vpn-gluetun.resolv-conf.resolvConf" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vpn-gluetun-resolv-dot-conf
+data:
+  myresolv.conf: |
+    nameserver 10.255.255.1
+    search media.svc.cluster.local svc.cluster.local cluster.local
+    options ndots:5
+{{- end }}
+
