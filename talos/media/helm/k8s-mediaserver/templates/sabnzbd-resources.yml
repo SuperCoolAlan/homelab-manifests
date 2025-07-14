@@ -370,7 +370,6 @@ spec:
           securityContext:
             runAsUser: {{ .Values.general.puid }}
             runAsGroup: {{ .Values.general.pgid }}
-        {{ include "vpn-gluetun.resolv-conf.initContainer" . | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           envFrom:
@@ -415,9 +414,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
         {{- if .Values.sabnzbd.vpn.enabled }}
-        - {{- include "vpn-gluetun.container" . | nindent 10 }}
-        {{- include "vpn-gluetun.dnsConfig.container" . | nindent 10 }}
-        {{- include "vpn-gluetun.dnsConfig" . | nindent 6 }}
+        {{- include "vpn-gluetun.container" . | nindent 8 }}
         {{- end }}
 
       volumes:
