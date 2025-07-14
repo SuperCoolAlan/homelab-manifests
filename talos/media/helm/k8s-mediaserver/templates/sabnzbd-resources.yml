@@ -370,7 +370,6 @@ spec:
           securityContext:
             runAsUser: {{ .Values.general.puid }}
             runAsGroup: {{ .Values.general.pgid }}
-        {{ include "vpn-gluetun.dnsConfig.container" . | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           envFrom:
@@ -416,8 +415,9 @@ spec:
           {{- end }}
         {{- if .Values.sabnzbd.vpn.enabled }}
         {{- include "vpn-gluetun.container" . | nindent 8 }}
+        {{- include "vpn-gluetun.dnsConfig.container" . | nindent 8 }}
         {{- end }}
-      {{- include "vpn-gluetun.dnsConfig" . | nindent 6 }}
+        {{- include "vpn-gluetun.dnsConfig" . | nindent 6 }}
       volumes:
         {{- if not .Values.general.storage.customVolume }}
         - name: mediaserver-volume
