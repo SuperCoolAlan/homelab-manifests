@@ -34,7 +34,7 @@ radarr:
       external-dns.alpha.kubernetes.io/target: e800665c-e425-4486-9e8e-25953a5ccad4.cfargotunnel.com
 
 transmission:
-  enabled: true
+  enabled: false 
   ingress:
     annotations:
       external-dns.alpha.kubernetes.io/target: 10.0.1.13
