@@ -1,4 +1,7 @@
 {{- if .Values.sabnzbd.enabled -}}
+
+{{ include "vpn-gluetun.resolv-conf.resolvConf" . }}
+
 ---
 ### CONFIGMAP
 ## INIT-CONTAINER
@@ -417,7 +420,8 @@ spec:
         - {{- include "vpn-gluetun.container" . | nindent 10 }}
         {{- include "vpn-gluetun.dnsConfig" . | nindent 6 }}
         {{- end }}
-        {{ include "vpn-gluetun.dnsConfig.container" . | nindent 8 }}
+        - {{- include "vpn-gluetun.dnsConfig.container" . }}
+
       volumes:
         {{- if not .Values.general.storage.customVolume }}
         - name: mediaserver-volume
