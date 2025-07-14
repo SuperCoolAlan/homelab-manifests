@@ -46,16 +46,8 @@ dnsPolicy: None
   image: busybox
   command: ["sh", "-c"]
   args:
-    - echo "hello dns-config initContainer!" && while true; do echo 'this loop'; done
-    - echo "oh yeah"
-    - while true; do echo "loop"; done
-    - echo "oh yeahh"
-    #rc=$(sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf) && echo "$rc" > /etc/resolv.conf
+    - echo "hello dns-config initContainer!" && while true; do echo 'updating /etc/resolv.conf with looping configuration container' && sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf > /tmp/myresolv.conf && cp /tmp/myresolv.conf /etc/resolv.conf && sleep 1; done
     - sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf > /tmp/myresolv.conf
-    - echo "wrote to /tmp/myresolv.conf"
-    - cp /tmp/myresolv.conf /etc/resolv.conf
-    - cat /etc/resolv.conf
-    - exit 0
 
 {{- end }}
 
