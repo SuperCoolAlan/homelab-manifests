@@ -3,6 +3,8 @@
   image: qmcgaw/gluetun:latest
   imagePullPolicy: Always
   env:
+    - name: DNS_ADDRESS
+      value: 10.255.255.1
     - name: TZ
       value: America/Chicago
     - name: VPN_SERVICE_PROVIDER
