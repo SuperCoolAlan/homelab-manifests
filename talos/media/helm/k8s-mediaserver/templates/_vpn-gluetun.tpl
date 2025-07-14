@@ -51,7 +51,7 @@ dnsPolicy: None
 {{- end }}
 
 {{- define "vpn-gluetun.dnsConfig.initContainer" }}
-- name: dns-config
+- name: init-dns-config
   image: busybox
   command: ["sh", "-c"]
   args:
