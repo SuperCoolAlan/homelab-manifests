@@ -42,15 +42,15 @@ dnsPolicy: None
 {{- end }}
 
 {{- define "vpn-gluetun.dnsConfig.container" }}
-name: dns-config
-image: busybox
-command: ["sh", "-c"]
-args:
-  - echo "hello dns-config initContainer!"
-  #rc=$(sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf) && echo "$rc" > /etc/resolv.conf
-  - sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf > /tmp/myresolv.conf
-  - cp /tmp/myresolv.conf /etc/resolv.conf
-  - cat /etc/resolv.conf
+- name: dns-config
+  image: busybox
+  command: ["sh", "-c"]
+  args:
+    - echo "hello dns-config initContainer!"
+    #rc=$(sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf) && echo "$rc" > /etc/resolv.conf
+    - sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf > /tmp/myresolv.conf
+    - cp /tmp/myresolv.conf /etc/resolv.conf
+    - cat /etc/resolv.conf
 
 {{- end }}
 
