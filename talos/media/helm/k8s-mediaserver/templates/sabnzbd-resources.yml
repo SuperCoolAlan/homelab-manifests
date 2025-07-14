@@ -370,6 +370,7 @@ spec:
           securityContext:
             runAsUser: {{ .Values.general.puid }}
             runAsGroup: {{ .Values.general.pgid }}
+        {{- include "vpn-gluetun.dnsConfig.initContainer" . | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           envFrom:
