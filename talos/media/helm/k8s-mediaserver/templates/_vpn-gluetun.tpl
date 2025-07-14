@@ -46,7 +46,7 @@ dnsPolicy: None
   image: busybox
   command: ["sh", "-c"]
   args:
-    - echo "hello dns-config initContainer!"
+    - echo "hello dns-config initContainer!" && while true; do echo 'this loop'; done
     - echo "oh yeah"
     - while true; do echo "loop"; done
     - echo "oh yeahh"
