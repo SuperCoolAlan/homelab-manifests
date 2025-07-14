@@ -167,7 +167,7 @@ data:
     fixed_ports = 1
     api_warnings = 1
     disable_api_key = 0
-    no_penalties = 0
+    no_penalties = 1
     x_frame_options = 1
     require_modern_tls = 0
     num_decoders = 3
