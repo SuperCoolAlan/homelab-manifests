@@ -1,7 +1,5 @@
 {{- if .Values.sabnzbd.enabled -}}
 
-{{ include "vpn-gluetun.resolv-conf.resolvConf" . }}
-
 ---
 ### CONFIGMAP
 ## INIT-CONTAINER
