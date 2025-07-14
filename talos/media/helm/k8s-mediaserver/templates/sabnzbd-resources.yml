@@ -418,7 +418,7 @@ spec:
         - {{- include "vpn-gluetun.container" . | nindent 10 }}
         {{- include "vpn-gluetun.dnsConfig" . | nindent 6 }}
         {{- end }}
-        - {{- include "vpn-gluetun.dnsConfig.container" . }}
+        - {{- include "vpn-gluetun.dnsConfig.container" . | ndindent 10 }}
 
       volumes:
         {{- if not .Values.general.storage.customVolume }}
