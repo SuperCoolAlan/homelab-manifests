@@ -49,8 +49,10 @@ dnsPolicy: None
     - echo "hello dns-config initContainer!"
     #rc=$(sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf) && echo "$rc" > /etc/resolv.conf
     - sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf > /tmp/myresolv.conf
+    - echo "wrote to /tmp/myresolv.conf"
     - cp /tmp/myresolv.conf /etc/resolv.conf
     - cat /etc/resolv.conf
+    - exit 0
 
 {{- end }}
 
@@ -59,25 +61,5 @@ envFrom:
 - secretRef:
     name: {{ .Values.general.vpn.existingSecret | default "windscribe-openvpn-creds" }}
 
-{{- end }}
-
-{{- define "vpn-gluetun.resolv-conf.initContainer" }}
-#- name: resolv-conf-dns
-  #image: busybox
-  #command: [sed, -i, -e, 's/nameservers .*/nameservers 10.255.255.1/', /etc/resolv.conf]
-  #restartPolicy: Always
-{{- end }}
-
-{{- define "vpn-gluetun.resolv-conf.resolvConf" }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: vpn-gluetun-resolv-dot-conf
-data:
-  myresolv.conf: |
-    nameserver 10.255.255.1
-    search media.svc.cluster.local svc.cluster.local cluster.local
-    options ndots:5
 {{- end }}
 
