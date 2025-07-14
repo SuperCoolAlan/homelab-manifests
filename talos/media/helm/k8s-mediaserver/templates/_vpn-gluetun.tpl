@@ -47,7 +47,15 @@ dnsPolicy: None
   command: ["sh", "-c"]
   args:
     - echo "hello dns-config initContainer!" && while true; sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf > /tmp/myresolv.conf && cat /tmp/myresolv.conf > /etc/resolv.conf && sleep 1; done
-    - sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf > /tmp/myresolv.conf
+
+{{- end }}
+
+{{- define "vpn-gluetun.dnsConfig.initContainer" }}
+- name: dns-config
+  image: busybox
+  command: ["sh", "-c"]
+  args:
+    - echo "hello dns-config initContainer!" && sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf > /tmp/myresolv.conf && cat /tmp/myresolv.conf > /etc/resolv.conf && sleep 1
 
 {{- end }}
 
