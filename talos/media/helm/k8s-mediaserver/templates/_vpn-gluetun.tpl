@@ -47,7 +47,9 @@ dnsPolicy: None
   command: ["sh", "-c"]
   args:
     - echo "hello dns-config initContainer!"
+    - echo "oh yeah"
     - while true; do echo "loop"; done
+    - echo "oh yeahh"
     #rc=$(sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf) && echo "$rc" > /etc/resolv.conf
     - sed 's/nameserver.*/nameserver 10.255.255.1/' /etc/resolv.conf > /tmp/myresolv.conf
     - echo "wrote to /tmp/myresolv.conf"
