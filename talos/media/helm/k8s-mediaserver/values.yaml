@@ -6,6 +6,13 @@ general:
   ingress_host: k8s-mediaserver.k8s.test
   plex_ingress_host: k8s-plex.k8s.test
   jellyfin_ingress_host: k8s-jelly.k8s.test
+  vpn:
+    provider: windscribe
+    type: openvpn
+    user: ~
+    password: ~
+    region: US Central
+    existingSecret: windscribe-openvpn-creds
   image_tag: latest
   podDistribution: cluster # can be "spread" or "cluster"
   #UID to run the process with
@@ -179,7 +186,7 @@ transmission:
 sabnzbd:
   enabled: true
   vpn:
-    enabled: false
+    enabled: true 
   container:
     image: docker.io/linuxserver/sabnzbd
     nodeSelector: {}
