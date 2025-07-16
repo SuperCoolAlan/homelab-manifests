@@ -9,6 +9,3 @@ helmCharts:
     releaseName: monitoring
     namespace: monitoring
 
-resources:
-  - resources/opnsense-exporter-deployment.yaml
-
