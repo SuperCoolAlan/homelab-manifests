@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.34.0 (cbf2835db)
+  labels:
+    io.kompose.service: opnsense-exporter
+  name: opnsense-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: opnsense-exporter
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.34.0 (cbf2835db)
+      labels:
+        io.kompose.service: opnsense-exporter
+    spec:
+      containers:
+        - args:
+            - --opnsense.protocol=https
+            - --opnsense.address=opnsense.asandov.local
+            - --exporter.instance-label=talos-kingdel
+            - --web.listen-address=:8080
+          envFrom:
+          - secretRef:
+              name: opnsense-exporter 
+          image: ghcr.io/athennamind/opnsense-exporter:latest
+          name: opensense-exporter
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always

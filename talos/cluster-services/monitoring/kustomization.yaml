@@ -8,3 +8,7 @@ helmCharts:
   - name: kube-prometheus-stack
     releaseName: monitoring
     namespace: monitoring
+
+resources:
+  - opnsense-exporter-deployment.yaml
+
