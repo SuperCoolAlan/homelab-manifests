@@ -175,7 +175,6 @@ spec:
           {{- end }}
         {{- if .Values.transmission.vpn.enabled }}
         - {{- include "vpn-gluetun.container" . | nindent 10 }}
-        {{- include "vpn-gluetun.dnsConfig" . | nindent 6 }}
         {{- end }}
       volumes:
         {{ if not .Values.general.storage.customVolume }}
