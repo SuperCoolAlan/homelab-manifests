@@ -10,5 +10,5 @@ helmCharts:
     namespace: monitoring
 
 resources:
-  - opnsense-exporter-deployment.yaml
+  - resources/opnsense-exporter-deployment.yaml
 
