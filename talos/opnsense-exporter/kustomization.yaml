@@ -3,4 +3,5 @@ kind: Kustomization
 
 resources:
   - resources/opnsense-exporter-deployment.yaml
+  - resources/opnsense-exporter-service.yaml
 
