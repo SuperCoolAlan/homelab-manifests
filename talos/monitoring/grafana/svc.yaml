@@ -36,5 +36,5 @@ metadata:
   name: external-truenas
 spec:
   type: ExternalName
-  externalName: truenas.asandov.com
+  externalName: truenas.asandov.local
 
