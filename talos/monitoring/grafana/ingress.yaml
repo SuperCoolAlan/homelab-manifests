@@ -30,6 +30,7 @@ spec:
   rules:
   - host: truenas.asandov.local # eg external-service.yourdomain.com
     http:
+      paths:
       - path: /
         pathType: Prefix
         backend:
