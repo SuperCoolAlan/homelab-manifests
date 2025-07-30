@@ -1,6 +1,3 @@
 [submodule "talos/media/helm/k8s-mediaserver-charts"]
 	path = talos/media/helm/k8s-mediaserver-charts
 	url = https://github.com/SuperCoolAlan/k8s-mediaserver-charts.git
-[submodule "talos/monitoring/pwrstat-exporter"]
-	path = talos/monitoring/pwrstat-exporter
-	url = git@github.com:SuperCoolAlan/pwrstat-exporter.git
