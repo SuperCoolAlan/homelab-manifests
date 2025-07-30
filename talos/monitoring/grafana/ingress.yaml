@@ -6,7 +6,7 @@ metadata:
     external-dns.alpha.kubernetes.io/target: 10.0.1.13
   #   nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: nginx-example
+  ingressClassName: nginx
   rules:
   - host: grafana.asandov.local
     http:
