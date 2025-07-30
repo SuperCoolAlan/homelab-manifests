@@ -27,4 +27,6 @@ ports:
 endpoints:
   - addresses:
       - "10.0.1.14"
+    ports:
+      - "30037"
 
