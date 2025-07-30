@@ -11,3 +11,5 @@ spec:
           serviceName: truenas-grafana-external-ip
           servicePort: 80
         path: /
+        pathType: Prefix
+
