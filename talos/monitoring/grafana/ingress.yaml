@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: truenas-grafana-external 
+spec:
+  rules:
+  - host: grafana.asandov.local
+    http:
+      paths:
+      - backend:
+          serviceName: truenas-grafana-external-ip
+          servicePort: 80
+        path: /
