@@ -12,5 +12,5 @@ helmCharts:
 resources:
   - dns-overrides.yaml
 
-generators:
-  - secrets-generator.yaml
+# generators:
+#   - secrets-generator.yaml
