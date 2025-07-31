@@ -6,7 +6,7 @@ helmGlobals:
 helmCharts:
   - name: external-dns
     releaseName: opnsense-dns
-    namespace: external-dns
+    namespace: external-dns-opnsense
     valuesFile: myvalues.yaml
 
 resources:
