@@ -52,6 +52,7 @@ jackett:
 
 prowlarr:
   enabled: true
+  tag: latest
   ingress:
     annotations:
       external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
