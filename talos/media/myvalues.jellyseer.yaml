@@ -1,5 +1,5 @@
 image:
-  tag: 2.7.0
+  tag: latest
 enabled: true 
 ingress:
   enabled: true
