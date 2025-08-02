@@ -35,8 +35,8 @@ driver:
       #apiKey: get your own key
       allowInsecure: true
     zfs:
-      datasetParentName: dual_hdd/talos/nfs/v
-      detachedSnapshotsDatasetParentName: dual_hdd/talos/nfs/s
+      datasetParentName: ST6000NM0095-pool0/media/nfs/v
+      detachedSnapshotsDatasetParentName: ST6000NM0095-pool0/media/nfs/s
       datasetEnableQuotas: true
       datasetEnableReservation: false
       datasetPermissionsMode: "0777"
@@ -51,3 +51,4 @@ driver:
       shareMaprootGroup: truenas_admin
       shareMapallUser: ""
       shareMapallGroup: ""
+
