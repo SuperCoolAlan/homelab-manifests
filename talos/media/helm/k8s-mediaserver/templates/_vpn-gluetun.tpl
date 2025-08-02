@@ -13,6 +13,8 @@
       value: {{ .Values.general.vpn.type }}
     - name: SERVER_REGIONS
       value: {{ .Values.general.vpn.region }}
+    - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
+      value: 14s
   {{- if or (.Values.general.vpn.existingSecret) (.Values.general.vpn.password) }}
   {{- include "vpn-gluetun.openvpnSecret.env" . | nindent 2 }}
   {{- end }}
