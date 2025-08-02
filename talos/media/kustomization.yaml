@@ -25,53 +25,53 @@ patches:
       value: ImplementationSpecific
   target:
     kind: Ingress
-- patch: |-
-    - op: add
-      path: /spec/template/spec/containers/0/volumeMounts/3
-      value: 
-        mountPath: /sabnzbd-downloads
-        name: mediaserver-volume
-        subPath: media/sabnzbd-downloads
-    - op: add
-      path: /spec/template/spec/containers/0/volumeMounts/4
-      value: 
-        mountPath: /downloads
-        name: mediaserver-volume
-        subPath: downloads
-  target:
-    kind: Deployment
-    name: jellyfin
-- patch: |-
-    - op: add
-      path: /spec/template/spec/containers/0/volumeMounts/2
-      value: 
-        mountPath: /sabnzbd-downloads
-        name: mediaserver-volume
-        subPath: media/sabnzbd-downloads
-  target:
-    kind: Deployment
-    name: radarr
-- patch: |-
-    - op: add
-      path: /spec/template/spec/containers/0/volumeMounts/2
-      value: 
-        mountPath: /sabnzbd-downloads
-        name: mediaserver-volume
-        subPath: media/sabnzbd-downloads
-  target:
-    kind: Deployment
-    name: sabnzbd
-- patch: |-
-    - op: add
-      path: /spec/template/spec/containers/0/volumeMounts/2
-      value: 
-        mountPath: /sabnzbd-downloads
-        name: mediaserver-volume
-        subPath: media/sabnzbd-downloads
-  target:
-    kind: Deployment
-    name: debugger
 # - patch: |-
+#     - op: add
+#       path: /spec/template/spec/containers/0/volumeMounts/3
+#       value: 
+#         mountPath: /sabnzbd-downloads
+#         name: mediaserver-volume
+#         subPath: media/sabnzbd-downloads
+#     - op: add
+#       path: /spec/template/spec/containers/0/volumeMounts/4
+#       value: 
+#         mountPath: /downloads
+#         name: mediaserver-volume
+#         subPath: downloads
+#   target:
+#     kind: Deployment
+#     name: jellyfin
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/containers/0/volumeMounts/2
+#       value: 
+#         mountPath: /sabnzbd-downloads
+#         name: mediaserver-volume
+#         subPath: media/sabnzbd-downloads
+#   target:
+#     kind: Deployment
+#     name: radarr
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/containers/0/volumeMounts/2
+#       value: 
+#         mountPath: /sabnzbd-downloads
+#         name: mediaserver-volume
+#         subPath: media/sabnzbd-downloads
+#   target:
+#     kind: Deployment
+#     name: sabnzbd
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/containers/0/volumeMounts/2
+#       value: 
+#         mountPath: /sabnzbd-downloads
+#         name: mediaserver-volume
+#         subPath: media/sabnzbd-downloads
+#   target:
+#     kind: Deployment
+#     name: debugger
+# # - patch: |-
 #     - op: add
 #       path: /spec/template/spec/containers/0/volumeMounts/3
 #       value: 
