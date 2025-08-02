@@ -80,4 +80,4 @@ flaresolverr:
       external-dns.alpha.kubernetes.io/target: 10.0.1.13
 
 debugger:
-  enabled: true
+  enabled: false
