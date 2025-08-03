@@ -15,6 +15,12 @@
       value: {{ .Values.general.vpn.region }}
     - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
       value: 14s
+    - name: WIREGUARD_MTU
+      value: '1410'
+    - name: HEALTH_VPN_DURATION_INITIAL
+      value: 10s
+    - name: HEALTH_VPN_DURATION_ADDITION
+      value: 5s
   {{- if or (.Values.general.vpn.existingSecret) (.Values.general.vpn.password) }}
   {{- include "vpn-gluetun.openvpnSecret.env" . | nindent 2 }}
   {{- end }}
