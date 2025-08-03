@@ -9,17 +9,3 @@ I repurposed my old gaming PC from high school and am running TrueNAS Scale. `de
 
 ## Network
 OPNsense and a dumb switch
-
-## Software
-This repo is made up of:
-- ArgoCD
-- Twingate VPN
-- Jellyfin
-- Prowlarr
-- Transmission
-- SABnzbd
-- democratic-csi
-- Nginx Ingress
-- Longhorn
-- Prometheus & Grafana
-- 
