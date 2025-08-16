@@ -1,3 +1,16 @@
 ingress:
   appHost: "plane.asandov.com"
   ingress_annotations: {"external-dns.alpha.kubernetes.io/cloudflare-proxied": "true", "external-dns.alpha.kubernetes.io/target": "e800665c-e425-4486-9e8e-25953a5ccad4.cfargotunnel.com", "nginx.ingress.kubernetes.io/proxy-body-size": "5m"}
+
+redis:
+  storageClass: nfs
+
+postgres:
+  storageClass: nfs
+
+rabbitmq:
+  storageClass: nfs
+
+minio:
+  storageClass: nfs
+  
