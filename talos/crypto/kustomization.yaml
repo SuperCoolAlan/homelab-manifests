@@ -5,3 +5,18 @@ resources:
   - monero-operator/config/bases/deployment.yaml
   - monero-operator/config/release.yaml
 
+images:
+  - name: ghcr.io/supercoolalan/monerod
+    newTag: latest
+
+patches:
+  - target:
+      kind: Deployment
+      name: monero-controller
+      namespace: monero-system
+    patch: |-
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value:
+          - name: ghcr-pull-secret
+
