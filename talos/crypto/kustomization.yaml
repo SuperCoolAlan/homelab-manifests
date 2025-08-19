@@ -19,7 +19,4 @@ patches:
         path: /spec/template/spec/imagePullSecrets
         value:
           - name: ghcr-pull-secret
-      - op: replace
-        path: /spec/template/spec/containers/0/env/0/value
-        value: ghcr.io/supercoolalan/monerod:latest
 
