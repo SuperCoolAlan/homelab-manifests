@@ -1,6 +1,6 @@
 image:
   tag: latest
-  imagePullPolicy: Always
+  pullPolicy: Always
 enabled: true 
 ingress:
   enabled: true
