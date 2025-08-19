@@ -1,3 +1,3 @@
 [submodule "talos/crypto/monero-operator"]
 	path = talos/crypto/monero-operator
-	url = https://github.com:cirocosta/monero-operator.git
+	url = https://github.com/cirocosta/monero-operator.git
