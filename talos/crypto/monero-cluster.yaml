@@ -4,3 +4,5 @@ metadata:
   name: full-node
 spec:
   replicas: 1
+  storageClass: nfs
+  diskSize: 100Gi
