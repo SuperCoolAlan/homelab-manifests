@@ -4,10 +4,7 @@ kind: Kustomization
 resources:
   - monero-operator/config/bases/deployment.yaml
   - monero-operator/config/release.yaml
-
-# images:
-#   - name: ghcr.io/supercoolalan/monero-operator/monero-operator-0f25b68d038cd3967cd5a1bc4733cad6:latest
-#     newTag: latest
+  - monero-cluster.yaml
 
 patches:
   - target:
