@@ -32,5 +32,5 @@ patches:
         value: ghcr.io/supercoolalan/monero-operator/monero-operator-0f25b68d038cd3967cd5a1bc4733cad6:latest
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
-        value: ghcr.io/supercoolalan/homelab-manifests@sha256:34b811cf2b75016f2c646b9c353fdacb7d7e754d1eb22a999784fafcecf8f808
+        value: ghcr.io/supercoolalan/tornetes@sha256:7f36c606eda240df9a0508d64b93967c4e718ca225301114ce2a2ea592a53a74
 
