@@ -19,8 +19,9 @@ patches:
         path: /spec/template/spec/imagePullSecrets
         value:
           - name: ghcr-pull-secret
-      - op: remove
+      - op: replace
         path: /spec/template/spec/containers/0/command
+        value: ["monero-operator", "run"]
       - op: replace
         path: /spec/template/spec/containers/0/securityContext/readOnlyRootFilesystem
         value: false
