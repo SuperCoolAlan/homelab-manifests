@@ -5,9 +5,9 @@ resources:
   - monero-operator/config/bases/deployment.yaml
   - monero-operator/config/release.yaml
 
-images:
-  - name: ghcr.io/supercoolalan/monero-operator/monero-operator-0f25b68d038cd3967cd5a1bc4733cad6:latest
-    newTag: latest
+# images:
+#   - name: ghcr.io/supercoolalan/monero-operator/monero-operator-0f25b68d038cd3967cd5a1bc4733cad6:latest
+#     newTag: latest
 
 patches:
   - target:
@@ -26,4 +26,7 @@ patches:
         value: false
       - op: remove
         path: /spec/template/spec/containers/0/securityContext/runAsNonRoot
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: ghcr.io/supercoolalan/monero-operator/monero-operator-0f25b68d038cd3967cd5a1bc4733cad6:latest
 
