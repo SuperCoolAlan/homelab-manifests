@@ -6,7 +6,7 @@ resources:
   - monero-operator/config/release.yaml
 
 images:
-  - name: ghcr.io/supercoolalan/monerod
+  - name: ghcr.io/supercoolalan/monero-operator
     newTag: latest
 
 patches:
@@ -19,4 +19,11 @@ patches:
         path: /spec/template/spec/imagePullSecrets
         value:
           - name: ghcr-pull-secret
+      - op: remove
+        path: /spec/template/spec/containers/0/command
+      - op: replace
+        path: /spec/template/spec/containers/0/securityContext/readOnlyRootFilesystem
+        value: false
+      - op: remove
+        path: /spec/template/spec/containers/0/securityContext/runAsNonRoot
 
