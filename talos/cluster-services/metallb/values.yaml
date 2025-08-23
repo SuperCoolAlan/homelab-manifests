@@ -1,0 +1,21 @@
+# MetalLB Configuration for Talos Cluster
+controller:
+  enabled: true
+
+speaker:
+  enabled: true
+  # Enable speakerDaemonSet for L2 mode
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/control-plane
+    operator: Exists
+
+# Prometheus metrics
+prometheus:
+  serviceMonitor:
+    enabled: false
+
+# CRDs are managed separately
+crds:
+  enabled: true
+  validationFailurePolicy: Fail
