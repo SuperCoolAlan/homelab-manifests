@@ -65,5 +65,11 @@ flaresolverr:
   container:
     image: ghcr.io/flaresolverr/flaresolverr:latest
 
+bazarr:
+  enabled: true
+  ingress:
+    annotations:
+      external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+
 debugger:
   enabled: false
