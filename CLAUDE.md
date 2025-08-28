@@ -30,3 +30,8 @@
 - Always run `kubectl --dry-run=client` when possible
 - Verify YAML syntax before committing
 - Check that ArgoCD applications sync successfully after changes
+
+## Cluster Configuration
+- **Default deployment cluster**: Talos-Dell (Talos Linux)
+- Dell cluster kubeconfig location: `~/.kube/clusters/kubeconfig-talos-dell`
+- Always use `--kubeconfig ~/.kube/clusters/kubeconfig-talos-dell` for kubectl commands

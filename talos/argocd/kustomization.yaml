@@ -6,7 +6,7 @@ helmGlobals:
 
 helmCharts:
   - name: argo-cd
-    releaseName: kingdel-argo
+    releaseName: talos-argo
     namespace: argo-cd
 
 # TODO: fix argo ksops
