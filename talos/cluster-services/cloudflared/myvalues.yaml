@@ -1,6 +1,6 @@
 cloudflare:
   tunnelName: "kingdel-talos"
-  tunnelId: "e800665c-e425-4486-9e8e-25953a5ccad4"
+  tunnelId: "b403e1d7-55de-4334-890e-1c5d7951f6ea"
   secretName: "tunnel-credentials"
   ingress:
     - hostname: "*.asandov.com"
@@ -19,4 +19,9 @@ resources:
     memory: "128Mi"
 
 replicaCount: 1
+
+livenessProbe:
+  enabled: false
+readinessProbe:
+  enabled: false
 
