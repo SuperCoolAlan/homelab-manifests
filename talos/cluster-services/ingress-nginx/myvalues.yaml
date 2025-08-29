@@ -1,6 +1,7 @@
 controller:
   service:
-    type: ClusterIP
+    type: LoadBalancer
+    loadBalancerIP: 10.0.1.200
   ingressClassResource:
     default: true
 

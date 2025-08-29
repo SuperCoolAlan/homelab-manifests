@@ -10,3 +10,6 @@ helmCharts:
     releasename: cloudflared
     valuesFile: myvalues.yaml
 
+generators:
+  - secrets-generator.yaml
+
