@@ -1,7 +1,7 @@
 controller:
   service:
     type: LoadBalancer
-    loadBalancerIP: 10.0.1.200
+    # loadBalancerIP: dynamically assigned from MetalLB pool
   ingressClassResource:
     default: true
 
