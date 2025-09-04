@@ -22,6 +22,11 @@ volumeSnapshotClasses:
 - name: nfs
   parameters:
     detachedSnapshots: "true"
+
+controller:
+  externalResizer:
+    enabled: false
+
 driver:
   existingConfigSecret: nfs-csi-democratic-csi-driver-config
   config:
