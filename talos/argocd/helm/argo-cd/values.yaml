@@ -35,7 +35,7 @@ crds:
   keep: true
   # -- Annotations to be added to all CRDs
   annotations: {}
-  # -- Addtional labels to be added to all CRDs
+  # -- Additional labels to be added to all CRDs
   additionalLabels: {}
 
 ## Globally shared configuration
@@ -78,6 +78,9 @@ global:
 
   # -- Annotations for the all deployed Deployments
   deploymentAnnotations: {}
+
+  # -- Labels for the all deployed Deployments
+  deploymentLabels: {}
 
   # -- Annotations for the all deployed pods
   podAnnotations: {}
@@ -167,16 +170,6 @@ configs:
   # General Argo CD configuration. Any values you put under `.configs.cm` are passed to argocd-cm ConfigMap.
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
   cm:
-    helm.valuesFileSchemes: >-
-      secrets+gpg-import, secrets+gpg-import-kubernetes,
-      secrets+age-import, secrets+age-import-kubernetes,
-      secrets, secrets+literal,
-      https
-    kustomize.buildOptions: --enable-alpha-plugins --enable-exec --enable-helm
-    
-    # # -- Argo CD's externally facing base URL (optional). Required when configuring SSO
-    url: http://argo.talos.asandov.local
-
     # -- Create the argocd-cm configmap for [declarative setup]
     create: true
 
@@ -262,6 +255,131 @@ configs:
     #           name: some-cluster
     #           server: https://some-cluster
 
+    ## Default configuration for ignoreResourceUpdates.
+    ## The ignoreResourceUpdates list contains K8s resource's properties that are known to be frequently updated
+    ## by controllers and operators. These resources, when watched by argo, will cause many unnecessary updates.
+
+    # -- Ignoring status for all resources. An update will still be sent if the status update causes the health to change.
+    # @default -- See [values.yaml]
+    resource.customizations.ignoreResourceUpdates.all: |
+      jsonPointers:
+        - /status
+    # -- Some Application fields are generated and not related to the application updates itself
+    ## The Application itself is already watched by the controller lister, but this configuration is applied for apps of apps
+    # @default -- See [values.yaml]
+    resource.customizations.ignoreResourceUpdates.argoproj.io_Application: |
+      jqPathExpressions:
+        - '.metadata.annotations."notified.notifications.argoproj.io"'
+        - '.metadata.annotations."argocd.argoproj.io/refresh"'
+        - '.metadata.annotations."argocd.argoproj.io/hydrate"'
+        - '.operation'
+    # -- Ignore Argo Rollouts generated fields
+    # @default -- See [values.yaml]
+    resource.customizations.ignoreResourceUpdates.argoproj.io_Rollout: |
+      jqPathExpressions:
+        - '.metadata.annotations."notified.notifications.argoproj.io"'
+    # -- Legacy annotations used on HPA autoscaling/v1
+    # @default -- See [values.yaml]
+    resource.customizations.ignoreResourceUpdates.autoscaling_HorizontalPodAutoscaler: |
+      jqPathExpressions:
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/behavior"'
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/conditions"'
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/metrics"'
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/current-metrics"'
+    # -- Ignore the cluster-autoscaler status
+    # @default -- See [values.yaml]
+    resource.customizations.ignoreResourceUpdates.ConfigMap: |
+      jqPathExpressions:
+        # Ignore the cluster-autoscaler status
+        - '.metadata.annotations."cluster-autoscaler.kubernetes.io/last-updated"'
+        # Ignore the annotation of the legacy Leases election
+        - '.metadata.annotations."control-plane.alpha.kubernetes.io/leader"'
+    # -- Ignore the common scaling annotations
+    # @default -- See [values.yaml]
+    resource.customizations.ignoreResourceUpdates.apps_ReplicaSet: |
+      jqPathExpressions:
+        - '.metadata.annotations."deployment.kubernetes.io/desired-replicas"'
+        - '.metadata.annotations."deployment.kubernetes.io/max-replicas"'
+        - '.metadata.annotations."rollout.argoproj.io/desired-replicas"'
+    # -- Ignores update if EndpointSlice is not excluded globally
+    # @default -- See [values.yaml]
+    resource.customizations.ignoreResourceUpdates.discovery.k8s.io_EndpointSlice: |
+      jsonPointers:
+        - /metadata
+        - /endpoints
+        - /ports
+    # -- Ignores update if Endpoints is not excluded globally
+    # @default -- See [values.yaml]
+    resource.customizations.ignoreResourceUpdates.Endpoints: |
+      jsonPointers:
+        - /metadata
+        - /subsets
+
+    ## Default configuration for exclusions.
+    ## The exclusion list are K8s resources that we assume will never be declared in Git,
+    ## and are never child objects of managed resources that need to be presented in the resource tree.
+    ## This list contains high volume and  high churn metadata objects which we exclude for performance
+    ## reasons, reducing connections and load to the K8s API servers of managed clusters.
+
+    # -- Resource Exclusion/Inclusion
+    # @default -- See [values.yaml]
+    resource.exclusions: |
+      ### Network resources created by the Kubernetes control plane and excluded to reduce the number of watched events and UI clutter
+      - apiGroups:
+        - ''
+        - discovery.k8s.io
+        kinds:
+        - Endpoints
+        - EndpointSlice
+      ### Internal Kubernetes resources excluded reduce the number of watched events
+      - apiGroups:
+        - coordination.k8s.io
+        kinds:
+        - Lease
+      ### Internal Kubernetes Authz/Authn resources excluded reduce the number of watched events
+      - apiGroups:
+        - authentication.k8s.io
+        - authorization.k8s.io
+        kinds:
+        - SelfSubjectReview
+        - TokenReview
+        - LocalSubjectAccessReview
+        - SelfSubjectAccessReview
+        - SelfSubjectRulesReview
+        - SubjectAccessReview
+      ### Intermediate Certificate Request excluded reduce the number of watched events
+      - apiGroups:
+        - certificates.k8s.io
+        kinds:
+        - CertificateSigningRequest
+      - apiGroups:
+        - cert-manager.io
+        kinds:
+        - CertificateRequest
+      ### Cilium internal resources excluded reduce the number of watched events and UI Clutter
+      - apiGroups:
+        - cilium.io
+        kinds:
+        - CiliumIdentity
+        - CiliumEndpoint
+        - CiliumEndpointSlice
+      ### Kyverno intermediate and reporting resources excluded reduce the number of watched events and improve performance
+      - apiGroups:
+        - kyverno.io
+        - reports.kyverno.io
+        - wgpolicyk8s.io
+        kinds:
+        - PolicyReport
+        - ClusterPolicyReport
+        - EphemeralReport
+        - ClusterEphemeralReport
+        - AdmissionReport
+        - ClusterAdmissionReport
+        - BackgroundScanReport
+        - ClusterBackgroundScanReport
+        - UpdateRequest
+
+
   # Argo CD configuration parameters
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cmd-params-cm.yaml
   params:
@@ -284,14 +402,14 @@ configs:
     # -- Specifies timeout between application self heal attempts
     controller.self.heal.timeout.seconds: 5
     # -- Repo server RPC call timeout seconds.
-    controller.repo.server.timeout.seconds: 300
+    controller.repo.server.timeout.seconds: 60
     # -- Specifies the timeout after which a sync would be terminated. 0 means no timeout
     controller.sync.timeout.seconds: 0
 
     ## Server properties
     # -- Run server without TLS
     ## NOTE: This value should be set when you generate params by other means as it changes ports used by ingress template.
-    server.insecure: true
+    server.insecure: false
     # -- Value for base href in index.html. Used if Argo CD is running behind reverse proxy under subpath different from /
     server.basehref: /
     # -- Used if Argo CD is running behind reverse proxy under subpath different from /
@@ -304,6 +422,8 @@ configs:
     server.enable.gzip: true
     # -- Enable proxy extension feature. (proxy extension is in Alpha phase)
     server.enable.proxy.extension: false
+    # -- Enable the hydrator feature (hydrator is in Alpha phase)
+    hydrator.enabled: false
     # -- Set X-Frame-Options header in HTTP responses to value. To disable, set to "".
     server.x.frame.options: sameorigin
 
@@ -430,7 +550,7 @@ configs:
       #   -----END CERTIFICATE-----
 
     # -- Specifies if the argocd-tls-certs-cm configmap should be created by Helm.
-    create: false
+    create: true
 
   # ConfigMap for Config Management Plugins
   # Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/
@@ -741,8 +861,9 @@ controller:
   #    image: alpine:3
   #    command: [sh, -c]
   #    args:
-  #      - wget -qO kubelogin.zip https://github.com/Azure/kubelogin/releases/download/v0.0.25/kubelogin-linux-amd64.zip &&
-  #        unzip kubelogin.zip && mv bin/linux_amd64/kubelogin /custom-tools/
+  #      - wget -qO /custom-tools/kubelogin.zip https://github.com/Azure/kubelogin/releases/download/v0.2.7/kubelogin-linux-amd64.zip &&
+  #        mkdir /custom-tools/tmp && unzip -d /custom-tools/tmp /custom-tools/kubelogin.zip  &&
+  #        mv /custom-tools/tmp/bin/linux_amd64/kubelogin /custom-tools/ && rm -rf custom-tools/tmp && rm /custom-tools/kubelogin.zip
   #    volumeMounts:
   #      - mountPath: /custom-tools
   #        name: custom-tools
@@ -770,6 +891,9 @@ controller:
 
   # -- Annotations for the application controller Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the application controller Deployment
+  deploymentLabels: {}
 
   # -- Annotations to be added to application controller pods
   podAnnotations: {}
@@ -966,10 +1090,16 @@ controller:
     # -- List of custom rules for the application controller's ClusterRole resource
     rules: []
 
+  # Default application controller's network policy
+  networkPolicy:
+    # -- Default network policy rules used by application controller
+    # @default -- `false` (defaults to global.networkPolicy.create)
+    create: false
+
 ## Dex
 dex:
   # -- Enable dex
-  enabled: false
+  enabled: true
   # -- Dex name
   name: dex-server
 
@@ -1037,7 +1167,7 @@ dex:
     # -- Dex image repository
     repository: ghcr.io/dexidp/dex
     # -- Dex image tag
-    tag: v2.42.1
+    tag: v2.43.1
     # -- Dex imagePullPolicy
     # @default -- `""` (defaults to global.image.imagePullPolicy)
     imagePullPolicy: ""
@@ -1118,6 +1248,9 @@ dex:
 
   # -- Annotations to be added to the Dex server Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the Dex server Deployment
+  deploymentLabels: {}
 
   # -- Annotations to be added to the Dex server pods
   podAnnotations: {}
@@ -1262,6 +1395,12 @@ dex:
     #   maxSurge: 25%
     #   maxUnavailable: 25%
 
+  # Default Dex server's network policy
+  networkPolicy:
+    # -- Default network policy rules used by Dex server
+    # @default -- `false` (defaults to global.networkPolicy.create)
+    create: false
+
   # DEPRECATED - Use configs.params to override
   # -- Dex log format. Either `text` or `json`
   # @default -- `""` (defaults to global.logging.format)
@@ -1300,9 +1439,10 @@ redis:
   ## Redis image
   image:
     # -- Redis repository
-    repository: docker.io/redis
+    repository: ecr-public.aws.com/docker/library/redis
     # -- Redis tag
-    tag: 7.4.2-alpine3.21
+    ## Do not upgrade to >= 7.4.0, otherwise you are no longer using an open source version of Redis
+    tag: 7.2.8-alpine
     # -- Redis image pull policy
     # @default -- `""` (defaults to global.image.imagePullPolicy)
     imagePullPolicy: ""
@@ -1318,7 +1458,7 @@ redis:
       # -- Repository to use for the redis-exporter
       repository: ghcr.io/oliver006/redis_exporter
       # -- Tag to use for the redis-exporter
-      tag: v1.70.0
+      tag: v1.75.0
       # -- Image pull policy for the redis-exporter
       # @default -- `""` (defaults to global.image.imagePullPolicy)
       imagePullPolicy: ""
@@ -1438,6 +1578,9 @@ redis:
 
   # -- Annotations to be added to the Redis server Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the Redis server Deployment
+  deploymentLabels: {}
 
   # -- Annotations to be added to the Redis server pods
   podAnnotations: {}
@@ -1578,6 +1721,12 @@ redis:
       # -- Prometheus ServiceMonitor annotations
       annotations: {}
 
+  # Default redis's network policy
+  networkPolicy:
+    # -- Default network policy rules used by redis
+    # @default -- `false` (defaults to global.networkPolicy.create)
+    create: false
+
 ## Redis-HA subchart replaces custom redis deployment when `redis-ha.enabled=true`
 # Ref: https://github.com/DandyDeveloper/charts/blob/master/charts/redis-ha/values.yaml
 redis-ha:
@@ -1586,9 +1735,10 @@ redis-ha:
   ## Redis image
   image:
     # -- Redis repository
-    repository: public.ecr.aws/docker/library/redis
+    repository: ecr-public.aws.com/docker/library/redis
     # -- Redis tag
-    tag: 7.4.2-alpine
+    ## Do not upgrade to >= 7.4.0, otherwise you are no longer using an open source version of Redis
+    tag: 7.2.8-alpine
   ## Prometheus redis-exporter sidecar
   exporter:
     # -- Enable Prometheus redis-exporter sidecar
@@ -1596,7 +1746,7 @@ redis-ha:
     # -- Repository to use for the redis-exporter
     image: ghcr.io/oliver006/redis_exporter
     # -- Tag to use for the redis-exporter
-    tag: v1.69.0
+    tag: v1.75.0
   persistentVolume:
     # -- Configures persistence on Redis nodes
     enabled: false
@@ -1617,6 +1767,9 @@ redis-ha:
     # --  Custom labels for the haproxy pod. This is relevant for Argo CD CLI.
     labels:
       app.kubernetes.io/name: argocd-redis-ha-haproxy
+    image:
+      # -- HAProxy Image Repository
+      repository: ecr-public.aws.com/docker/library/haproxy
     metrics:
       # -- HAProxy enable prometheus metric scraping
       enabled: true
@@ -1681,8 +1834,8 @@ externalRedis:
   password: ""
   # -- External Redis server port
   port: 6379
-  # -- The name of an existing secret with Redis (must contain key `redis-password`) and Sentinel credentials.
-  # When it's set, the `externalRedis.password` parameter is ignored
+  # -- The name of an existing secret with Redis (must contain key `redis-password`. And should contain `redis-username` if username is not `default`) and Sentinel credentials.
+  # When it's set, the `externalRedis.username` and `externalRedis.password` parameters are ignored
   existingSecret: ""
   # -- External Redis Secret annotations
   secretAnnotations: {}
@@ -1770,8 +1923,6 @@ redisSecretInit:
 server:
   # -- Argo CD server name
   name: server
-  config: 
-    kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
 
   # -- The number of server pods to run
   replicas: 1
@@ -1944,8 +2095,9 @@ server:
   #    image: alpine:3
   #    command: [sh, -c]
   #    args:
-  #      - wget -qO kubelogin.zip https://github.com/Azure/kubelogin/releases/download/v0.0.25/kubelogin-linux-amd64.zip &&
-  #        unzip kubelogin.zip && mv bin/linux_amd64/kubelogin /custom-tools/
+  #      - wget -qO /custom-tools/kubelogin.zip https://github.com/Azure/kubelogin/releases/download/v0.2.7/kubelogin-linux-amd64.zip &&
+  #        mkdir /custom-tools/tmp && unzip -d /custom-tools/tmp /custom-tools/kubelogin.zip  &&
+  #        mv /custom-tools/tmp/bin/linux_amd64/kubelogin /custom-tools/ && rm -rf custom-tools/tmp && rm /custom-tools/kubelogin.zip
   #    volumeMounts:
   #      - mountPath: /custom-tools
   #        name: custom-tools
@@ -1970,6 +2122,9 @@ server:
 
   # -- Annotations to be added to server Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the server Deployment
+  deploymentLabels: {}
 
   # -- Annotations to be added to server pods
   podAnnotations: {}
@@ -2236,7 +2391,7 @@ server:
   # Argo CD server ingress configuration
   ingress:
     # -- Enable an ingress resource for the Argo CD server
-    enabled: true
+    enabled: false
     # -- Specific implementation for ingress controller. One of `generic`, `aws` or `gke`
     ## Additional configuration might be required in related configuration sections
     controller: generic
@@ -2249,11 +2404,11 @@ server:
       # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 
     # -- Defines which ingress controller will implement the resource
-    ingressClassName: "nginx"
+    ingressClassName: ""
 
     # -- Argo CD server hostname
     # @default -- `""` (defaults to global.domain)
-    hostname: "argo.talos.asandov.local"
+    hostname: ""
 
     # -- The path to Argo CD server
     path: /
@@ -2438,6 +2593,12 @@ server:
     # -- List of custom rules for the server's ClusterRole resource
     rules: []
 
+  # Default ArgoCD Server's network policy
+  networkPolicy:
+    # -- Default network policy rules used by ArgoCD Server
+    # @default -- `false` (defaults to global.networkPolicy.create)
+    create: false
+
 ## Repo Server
 repoServer:
   # -- Repo server name
@@ -2515,6 +2676,9 @@ repoServer:
   # -- Additional command line arguments to pass to repo server
   extraArgs: []
 
+  # -- Environment variables to pass to repo server
+  env: []
+
   # -- envFrom to pass to repo server
   # @default -- `[]` (See [values.yaml])
   envFrom: []
@@ -2571,188 +2735,19 @@ repoServer:
     #     - mountPath: /tmp
     #       name: cmp-tmp
 
-  env:
-    - name: ARGOCD_EXEC_TIMEOUT
-      value: '2m'
-    - name: HELM_PLUGINS
-      value: /custom-tools/helm-plugins/
-    - name: HELM_SECRETS_CURL_PATH
-      value: /custom-tools/curl
-    - name: HELM_SECRETS_SOPS_PATH
-      value: /custom-tools/sops
-    - name: HELM_SECRETS_VALS_PATH
-      value: /custom-tools/vals
-    - name: HELM_SECRETS_KUBECTL_PATH
-      value: /custom-tools/kubectl
-    - name: HELM_SECRETS_BACKEND
-      value: sops
-    # https://github.com/jkroepke/helm-secrets/wiki/Security-in-shared-environments
-    - name: HELM_SECRETS_VALUES_ALLOW_SYMLINKS
-      value: "false"
-    - name: HELM_SECRETS_VALUES_ALLOW_ABSOLUTE_PATH
-      value: "true"
-    - name: HELM_SECRETS_VALUES_ALLOW_PATH_TRAVERSAL
-      value: "true"
-    - name: HELM_SECRETS_WRAPPER_ENABLED
-      value: "true"
-    - name: HELM_SECRETS_DECRYPT_SECRETS_IN_TMP_DIR
-      value: "true"
-    - name: HELM_SECRETS_HELM_PATH
-      value: /custom-tools/helm
-    - name: HELM_BIN
-      value: /custom-tools/helm
+  # -- Init containers to add to the repo server pods
+  initContainers: []
 
-    - name: HELM_SECRETS_LOAD_GPG_KEYS
-      # Multiple keys can be separated by space
-      value: /sops-gpg/sops.asc
-    
-    - name: GNUPGHOME
-      value: /home/argocd/.gnupg
+  # -- Additional volumeMounts to the repo server main container
+  volumeMounts: []
 
-  initContainers:
-    - command:
-        - /bin/cp
-        - '-n'
-        - /usr/local/bin/argocd
-        - /var/run/argocd/argocd-cmp-server
-      image: 'quay.io/argoproj/argocd:v2.8.5'
-      imagePullPolicy: IfNotPresent
-      name: copyutil-ksops
-      resources: {}
-      securityContext:
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL
-        readOnlyRootFilesystem: true
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
-      terminationMessagePath: /dev/termination-log
-      terminationMessagePolicy: File
-      volumeMounts:
-        - mountPath: /var/run/argocd
-          name: var-files
-
-
-    - name: install-ksops
-      image: viaductoss/ksops:v4.3.1
-      command: ["/bin/sh", "-c"]
-      args:
-        - echo "Installing KSOPS...";
-          mv ksops /custom-tools/;
-          mv kustomize /custom-tools/;
-          echo "Done.";
-      volumeMounts:
-        - mountPath: /custom-tools
-          name: custom-tools
-      securityContext:
-        runAsNonRoot: false
-        runAsUser: 0 
-
-
-    - name: import-gpg-key
-      image: quay.io/argoproj/argocd:v2.8.5
-      command:
-        - gpg
-        - '--batch'
-        - '--import'
-        - /sops-gpg/sops.asc
-      env:
-        - name: GNUPGHOME
-          value: /gnupg-home/.gnupg
-      resources: {}
-      volumeMounts:
-        - name: sops-gpg
-          mountPath: /sops-gpg
-        - name: gnupg-home
-          mountPath: /gnupg-home
-      terminationMessagePath: /dev/termination-log
-      terminationMessagePolicy: File
-      imagePullPolicy: IfNotPresent              
-
-    - name: save-helm-binary
-      image: quay.io/argoproj/argocd:v2.14.8
-      command:
-        - sh
-        - '-ec'
-      args:
-        - |
-          echo "Copying backup helm binary..."
-          cp /usr/local/bin/helm /custom-tools/helm
-          chmod +x /custom-tools/helm
-          echo "Done"
-      volumeMounts:
-        - mountPath: /custom-tools
-          name: custom-tools
-
-    - name: configure-helm-secrets
-      image: alpine:latest
-      command:
-        - sh
-        - '-ec'
-      env:
-        - name: HELM_SECRETS_VERSION
-          value: "4.6.2"
-        - name: KUBECTL_VERSION
-          value: "1.30.2"
-        - name: VALS_VERSION
-          value: "0.37.3"
-        - name: SOPS_VERSION
-          value: "3.9.0"
-      args:
-        - |
-          echo "Installing dependencies..."
-          mkdir -p /custom-tools/helm-plugins
-
-          GO_ARCH=$(uname -m | sed -e 's/x86_64/amd64/')
-          wget -qO /custom-tools/curl https://github.com/moparisthebest/static-curl/releases/latest/download/curl-${GO_ARCH}
-
-          GO_ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/') && \
-          wget -qO /custom-tools/kubectl https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${GO_ARCH}/kubectl
-          wget -qO /custom-tools/sops https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.${GO_ARCH}
-          wget -qO- https://github.com/helmfile/vals/releases/download/v${VALS_VERSION}/vals_${VALS_VERSION}_linux_${GO_ARCH}.tar.gz | tar zxv -C /custom-tools vals
-          echo "Done"
-
-          echo "Installing helm secrets..."
-          wget -qO- https://github.com/jkroepke/helm-secrets/releases/download/v${HELM_SECRETS_VERSION}/helm-secrets.tar.gz | tar -C /custom-tools/helm-plugins -xzf-
-          cp /custom-tools/helm-plugins/helm-secrets/scripts/wrapper/helm.sh /custom-tools/helm.sh
-          chmod +x /custom-tools/*
-          echo "Done"
-      volumeMounts:
-        - mountPath: /custom-tools
-          name: custom-tools
-  
-  volumeMounts:
-    - name: sops-gpg
-      mountPath: /sops-gpg
-    - mountPath: /usr/local/bin/kustomize
-      name: custom-tools
-      subPath: kustomize
-    - mountPath: /usr/local/bin/ksops
-      name: custom-tools
-      subPath: ksops
-    - mountPath: /usr/local/bin/sops
-      name: custom-tools
-      subPath: sops
-    - mountPath: /usr/local/bin/helm
-      name: custom-tools
-      subPath: helm.sh
-    - mountPath: /custom-tools
-      name: custom-tools
-    - name: gnupg-home
-      mountPath: /home/argocd/.gnupg
-      subPath: .gnupg
-
-  volumes:
-    - name: custom-tools
-      emptyDir: {}
-    - name: sops-gpg
-      secret:
-        secretName: sops-gpg
-        defaultMode: 420
-    - name: gnupg-home
-      emptyDir: {}    
+  # -- Additional volumes to the repo server pod
+  volumes: []
+  #  - name: argocd-cmp-cm
+  #    configMap:
+  #      name: argocd-cmp-cm
+  #  - name: cmp-tmp
+  #    emptyDir: {}
 
   # -- Volumes to be used in replacement of emptydir on default volumes
   existingVolumes: {}
@@ -2784,6 +2779,9 @@ repoServer:
 
   # -- Annotations to be added to repo server Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the repo server Deployment
+  deploymentLabels: {}
 
   # -- Annotations to be added to repo server pods
   podAnnotations: {}
@@ -2915,6 +2913,8 @@ repoServer:
     port: 8081
     # -- Repo server service port name
     portName: tcp-repo-server
+    # -- Traffic distribution preference for the repo server service. If the field is not set, the implementation will apply its default routing strategy.
+    trafficDistribution: ""
 
   ## Repo server metrics service configuration
   metrics:
@@ -2997,6 +2997,12 @@ repoServer:
   #     - get
   #     - list
   #     - watch
+
+  # Default repo server's network policy
+  networkPolicy:
+    # -- Default network policy rules used by repo server
+    # @default -- `false` (defaults to global.networkPolicy.create)
+    create: false
 
 ## ApplicationSet controller
 applicationSet:
@@ -3154,6 +3160,9 @@ applicationSet:
 
   # -- Annotations to be added to ApplicationSet controller Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the ApplicationSet controller Deployment
+  deploymentLabels: {}
 
   # -- Annotations for the ApplicationSet controller pods
   podAnnotations: {}
@@ -3367,6 +3376,13 @@ applicationSet:
       #     - argocd-applicationset.example.com
   # -- Enable ApplicationSet in any namespace feature
   allowAnyNamespace: false
+
+  # Default ApplicationSet controller's network policy
+  networkPolicy:
+    # -- Default network policy rules used by ApplicationSet controller
+    # @default -- `false` (defaults to global.networkPolicy.create)
+    create: false
+
 ## Notifications controller
 notifications:
   # -- Enable notifications controller
@@ -3536,6 +3552,9 @@ notifications:
 
   # -- Annotations to be applied to the notifications controller Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the notifications controller Deployment
+  deploymentLabels: {}
 
   # -- Annotations to be applied to the notifications controller Pods
   podAnnotations: {}
@@ -3933,6 +3952,12 @@ notifications:
     # defaultTriggers: |
     #   - on-sync-status-unknown
 
+  # Default notifications controller's network policy
+  networkPolicy:
+    # -- Default network policy rules used by notifications controller
+    # @default -- `false` (defaults to global.networkPolicy.create)
+    create: false
+
 commitServer:
   # -- Enable commit server
   enabled: false
@@ -4001,6 +4026,10 @@ commitServer:
     annotations: {}
     # -- commit server service labels
     labels: {}
+    # -- commit server service port
+    port: 8086
+    # -- commit server service port name
+    portName: server
 
   # -- Automount API credentials for the Service Account into the pod.
   automountServiceAccountToken: false
@@ -4019,6 +4048,9 @@ commitServer:
 
   # -- Annotations to be added to commit server Deployment
   deploymentAnnotations: {}
+
+  # -- Labels for the commit server Deployment
+  deploymentLabels: {}
 
   # -- Annotations for the commit server pods
   podAnnotations: {}
@@ -4112,3 +4144,9 @@ commitServer:
   # -- Priority class for the commit server pods
   # @default -- `""` (defaults to global.priorityClassName)
   priorityClassName: ""
+
+  # Default commit server's network policy
+  networkPolicy:
+    # -- Default network policy rules used by commit server
+    # @default -- `false` (defaults to global.networkPolicy.create)
+    create: false
