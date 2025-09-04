@@ -10,5 +10,5 @@ helmCharts:
     namespace: argo-cd
 
 # TODO: fix argo ksops
-generators:
-  - secrets-generator.yaml
+# generators:
+#   - secrets-generator.yaml
