@@ -6,8 +6,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - 10.0.1.151-10.0.1.160  # Adjust this range as needed
-  - 10.0.1.200/32  # nginx-ingress LoadBalancer IP
+  - 10.0.7.200-10.0.7.210  # LoadBalancer IP range
 ---
 apiVersion: metallb.io/v1beta1
 kind: BGPPeer
