@@ -10,6 +10,7 @@ helmCharts:
     releasename: cloudflared
     valuesFile: myvalues.yaml
 
-generators:
-  - secrets-generator.yaml
+# Commented out - secret is managed separately due to SOPS encryption
+# generators:
+#   - secrets-generator.yaml
 
