@@ -3700,7 +3700,7 @@ prometheus:
     ingressClassName: nginx
 
     annotations:
-      external-dns.alpha.kubernetes.io/target: 10.0.1.13
+      external-dns.alpha.kubernetes.io/target: 10.0.1.28
     labels: {}
 
     ## Redirect ingress to an additional defined port on the service
