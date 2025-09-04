@@ -12,6 +12,8 @@ data:
     web_color = Auto
     refresh_rate = 0
     language = en
+    api_key = 
+    nzb_key = NZBGEEK_API_KEY
     cleanup_list = ,
     cache_limit = 1G
     par_option = 
@@ -100,8 +102,8 @@ data:
     [[news.usenetserver.com]]
     host = news.usenetserver.com
     port = 563
-    username = YOUR_USERNAME
-    password = YOUR_PASSWORD
+    username = verycoolfella
+    password = USENET_PASSWORD
     connections = 10
     ssl = 1
     ssl_verify = 2

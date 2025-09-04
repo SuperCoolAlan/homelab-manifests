@@ -3,3 +3,5 @@ talos/config
 **/.env
 config.yaml
 **/out.yaml
+talos/media/secrets/*.yaml
+!talos/media/secrets/*.enc.yaml
