@@ -19,6 +19,7 @@ helmCharts:
 resources:
   - resources/external-talos-svc.yaml
   - resources/talos-jellyfin-ingress.yaml
+  - configs/media-interconnect.yaml
 
 patches:
 - patch: |-
