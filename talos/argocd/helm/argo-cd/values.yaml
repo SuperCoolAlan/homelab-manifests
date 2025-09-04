@@ -2605,6 +2605,9 @@ repoServer:
     - name: HELM_SECRETS_LOAD_GPG_KEYS
       # Multiple keys can be separated by space
       value: /sops-gpg/sops.asc
+    
+    - name: GNUPGHOME
+      value: /home/argocd/.gnupg
 
   initContainers:
     - command:
