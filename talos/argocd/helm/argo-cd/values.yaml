@@ -2729,6 +2729,9 @@ repoServer:
     - mountPath: /usr/local/bin/ksops
       name: custom-tools
       subPath: ksops
+    - mountPath: /usr/local/bin/sops
+      name: custom-tools
+      subPath: sops
     - mountPath: /usr/local/bin/helm
       name: custom-tools
       subPath: helm.sh
