@@ -84,5 +84,5 @@ patches:
 #     kind: Deployment
 #     name: transmission
 
-# generators:
-#   - secrets-generator.yaml
+generators:
+  - secrets-generator.yaml
