@@ -17,7 +17,7 @@ spec:
     recordTTL: 180
     recordType: A
     targets:
-    - 10.0.1.13
+    - 10.0.1.28
   - dnsName: talos-gk4-f48.asandov.local
     recordTTL: 180
     recordType: A
