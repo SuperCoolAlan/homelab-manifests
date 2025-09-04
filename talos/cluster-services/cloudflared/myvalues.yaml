@@ -3,10 +3,13 @@ cloudflare:
   tunnelId: "b403e1d7-55de-4334-890e-1c5d7951f6ea"
   secretName: "tunnel-credentials"
   ingress:
-    - hostname: "*.asandov.com"
-      service: "https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443"
-      originRequest:
-        noTLSVerify: true
+    - hostname: "jellyfin.asandov.com"
+      service: "http://10.0.1.14:30013"
+    # Wildcard disabled - nginx-ingress not working due to BGP issues
+    # - hostname: "*.asandov.com"
+    #   service: "https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443"
+    #   originRequest:
+    #     noTLSVerify: true
 
 image:
   tag: 2025.6.1
