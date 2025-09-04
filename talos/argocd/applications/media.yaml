@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: media
+  namespace: argo-cd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
+    targetRevision: HEAD
+    path: talos/media
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: media
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
