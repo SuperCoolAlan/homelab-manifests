@@ -85,5 +85,6 @@ patches:
 #     kind: Deployment
 #     name: transmission
 
-generators:
-  - secrets-generator.yaml
+# TODO: Enable after adding ksops to ArgoCD repo server
+# generators:
+#   - secrets-generator.yaml
