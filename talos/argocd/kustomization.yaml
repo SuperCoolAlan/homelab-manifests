@@ -8,6 +8,7 @@ helmCharts:
   - name: argo-cd
     releaseName: talos-argo
     namespace: argo-cd
+    valuesFile: values-override.yaml
 
 # TODO: fix argo ksops
 # generators:

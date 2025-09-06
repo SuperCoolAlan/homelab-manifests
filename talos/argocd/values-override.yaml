@@ -1,0 +1,7 @@
+# ArgoCD values override for Talos cluster
+configs:
+  params:
+    # Enable Helm support in Kustomize builds
+    kustomize.buildOptions: "--enable-helm"
+    # Keep the insecure mode we just configured
+    server.insecure: true
