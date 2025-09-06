@@ -5,3 +5,34 @@ configs:
     kustomize.buildOptions: "--enable-helm --enable-alpha-plugins --enable-exec"
     # Keep the insecure mode we just configured
     server.insecure: true
+
+# Use custom repo server image with ksops support
+repoServer:
+  image:
+    repository: viaductoss/ksops
+    tag: v4.3.2
+  env:
+    - name: KUSTOMIZE_PLUGIN_HOME
+      value: /usr/local/bin
+    - name: XDG_CONFIG_HOME
+      value: /.config
+  volumes:
+    - name: custom-tools
+      emptyDir: {}
+  volumeMounts:
+    - name: custom-tools
+      mountPath: /usr/local/bin/kustomize
+      subPath: kustomize
+  initContainers:
+    - name: install-ksops
+      image: viaductoss/ksops:v4.3.2
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          echo "Installing ksops..."
+          cp /usr/local/bin/ksops /custom-tools/
+          cp /usr/local/bin/kustomize /custom-tools/
+          echo "ksops installation complete"
+      volumeMounts:
+        - name: custom-tools
+          mountPath: /custom-tools
