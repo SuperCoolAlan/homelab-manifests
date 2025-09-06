@@ -48,9 +48,9 @@ data:
     api_key = ***REMOVED***
     nzb_key = ***REMOVED***
     permissions = ""
-    download_dir = /{{ .Values.general.storage.subPaths.downloads }}/{{ .Values.general.storage.subPaths.sabnzbd }}/incomplete
+    download_dir = "/{{ .Values.general.storage.subPaths.downloads }}/{{ .Values.general.storage.subPaths.sabnzbd }}/incomplete"
     download_free = ""
-    complete_dir = /{{ .Values.general.storage.subPaths.downloads }}/{{ .Values.general.storage.subPaths.sabnzbd }}/complete
+    complete_dir = "/{{ .Values.general.storage.subPaths.downloads }}/{{ .Values.general.storage.subPaths.sabnzbd }}/complete"
     complete_free = ""
     fulldisk_autoresume = 0
     script_dir = ""
