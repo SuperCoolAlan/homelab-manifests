@@ -32,14 +32,6 @@ sabnzbd:
     path: /
     annotations:
       external-dns.alpha.kubernetes.io/hostname: sabnzbd.asandov.local
-  # extraVolumes:
-  #   - name: sabnzbd-config
-  #     configMap:
-  #       name: sabnzbd-config
-  # extraVolumeMounts:
-  #   - name: sabnzbd-config
-  #     mountPath: /config/sabnzbd.ini
-  #     subPath: sabnzbd.ini
 
 radarr:
   enabled: true

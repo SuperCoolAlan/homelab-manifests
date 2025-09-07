@@ -1,4 +1,8 @@
 # ArgoCD values override for Talos cluster
+global:
+  image:
+    tag: v3.1.3
+
 configs:
   params:
     # Enable Helm support and alpha plugins (including ksops) in Kustomize builds
