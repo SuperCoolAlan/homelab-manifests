@@ -11,3 +11,9 @@ talos/media/secrets/*.yaml
 sops-gpg*
 *-secret.yaml
 
+*.key
+*.asc
+*.gpg
+**/secrets/*.yaml
+!**/secrets/*.enc.yaml
+!**/secrets/*-generator.yaml
