@@ -4,6 +4,65 @@ persistentVolumeClaims:
     requestStorage: '5Gi'
     storageClassName: 'nfs'
 
+# Application configuration with Eweka news server
+application:
+  config:
+    filename: 'sabnzbd.ini'
+    contents: |
+      [misc]
+      language = en
+      queue_limit = 20
+      port = 8080
+      api_key = $apiKey
+      nzb_key = $nzbKey
+      download_dir = Downloads/incomplete
+      complete_dir = Downloads/complete
+      host_whitelist =
+      auto_browser = 0
+      par2_multicore = 1
+      folder_rename = 1
+      pause_on_pwrar = 1
+      ignore_samples = 1
+      deobfuscate_final_filenames = 1
+      direct_unpack = 1
+      history_retention = 0
+      enable_recursive = 1
+      
+      [servers]
+      [[news.eweka.nl]]
+      name = news.eweka.nl
+      displayname = Eweka
+      host = news.eweka.nl
+      port = 563
+      username = 48ef10df07d993e3
+      password = $ewekaPassword
+      connections = 50
+      ssl = 1
+      ssl_verify = 2
+      enable = 1
+      priority = 0
+      
+      [categories]
+      [[*]]
+      name = *
+      order = 0
+      pp = 3
+      script = None
+      dir = 
+      newzbin = 
+      priority = 0
+    secrets: [ 'apiKey', 'nzbKey', 'ewekaPassword' ]
+
+# Extra environment variables to inject the password from secret
+deployment:
+  container:
+    env:
+      - name: 'ewekaPassword'
+        valueFrom:
+          secretKeyRef:
+            name: sabnzbd-secrets
+            key: eweka-password
+
 # Use chart defaults for volume mounts
 
 ingress:
@@ -14,11 +73,3 @@ ingress:
   pathType: Prefix
   annotations:
     external-dns.alpha.kubernetes.io/hostname: sabnzbd.asandov.local
-
-# VPN configuration from original deployment
-# Note: May need adjustment based on chart support
-# vpn:
-#   enabled: true
-#   provider: windscribe
-#   type: openvpn
-#   existingSecret: windscribe-openvpn-creds
