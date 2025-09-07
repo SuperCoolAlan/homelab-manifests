@@ -6,8 +6,9 @@ namespace: media-v2
 resources:
 - shared-pvcs.yaml
 
-generators:
-- secrets-generator.yaml
+# Disabled - secret already exists in cluster
+# generators:
+# - secrets-generator.yaml
 
 helmCharts:
 - name: sonarr
