@@ -5,6 +5,14 @@ persistentVolumeClaims:
     storageClassName: 'nfs'
 
 deployment:
+  container:
+    volumeMounts:
+      - name: 'config'
+        mountPath: '/config'
+      - name: 'tv'
+        mountPath: '/tv'
+      - name: 'movies'
+        mountPath: '/movies'
   volumes:
     tv:
       persistentVolumeClaim:
@@ -16,10 +24,8 @@ deployment:
 ingress:
   enabled: true
   className: nginx
-  hosts:
-    - host: bazarr.asandov.local
-      paths:
-        - path: /
-          pathType: Prefix
+  host: bazarr.asandov.local
+  path: /
+  pathType: Prefix
   annotations:
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
