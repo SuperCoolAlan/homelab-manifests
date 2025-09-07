@@ -5,7 +5,9 @@ namespace: media-v2
 
 resources:
 - shared-pvcs.yaml
-- secrets/sabnzbd-secret.enc.yaml
+
+generators:
+- secrets-generator.yaml
 
 helmCharts:
 - name: sonarr

@@ -42,6 +42,19 @@ application:
       enable = 1
       priority = 0
       
+      [[news.newshosting.com]]
+      name = news.newshosting.com
+      displayname = Newshosting
+      host = news.newshosting.com
+      port = 563
+      username = olgavcy7wc
+      password = $newshostingPassword
+      connections = 100
+      ssl = 1
+      ssl_verify = 2
+      enable = 1
+      priority = 1
+      
       [categories]
       [[*]]
       name = *
@@ -51,9 +64,9 @@ application:
       dir = 
       newzbin = 
       priority = 0
-    secrets: [ 'apiKey', 'nzbKey', 'ewekaPassword' ]
+    secrets: [ 'apiKey', 'nzbKey', 'ewekaPassword', 'newshostingPassword' ]
 
-# Extra environment variables to inject the password from secret
+# Extra environment variables to inject the passwords from secret
 deployment:
   container:
     env:
@@ -62,6 +75,11 @@ deployment:
           secretKeyRef:
             name: sabnzbd-secrets
             key: eweka-password
+      - name: 'newshostingPassword'
+        valueFrom:
+          secretKeyRef:
+            name: sabnzbd-secrets
+            key: newshosting-password
 
 # Use chart defaults for volume mounts
 
