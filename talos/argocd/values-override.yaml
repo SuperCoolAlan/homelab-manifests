@@ -21,6 +21,8 @@ repoServer:
       value: /home/argocd/.config/kustomize/plugin/viaduct.ai/v1/ksops:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     - name: SOPS_GNUPGHOME
       value: /home/argocd/.gnupg
+    - name: GNUPGHOME
+      value: /home/argocd/.gnupg
   volumes:
     - name: custom-tools
       emptyDir: {}
