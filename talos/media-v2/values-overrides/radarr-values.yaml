@@ -16,10 +16,8 @@ deployment:
 ingress:
   enabled: true
   className: nginx
-  hosts:
-    - host: radarr.asandov.local
-      paths:
-        - path: /
-          pathType: Prefix
+  host: radarr.asandov.local
+  path: /
+  pathType: Prefix
   annotations:
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"

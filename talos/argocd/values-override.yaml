@@ -42,14 +42,15 @@ repoServer:
           cp /usr/local/bin/ksops /custom-tools/ksops
           chmod +x /custom-tools/ksops
           echo "ksops installation complete"
-          echo "Setting up GPG home directory..."
-          mkdir -p /gnupg-home
-          chmod 700 /gnupg-home
+          echo "Setting up GPG..."
           export GNUPGHOME=/gnupg-home
+          mkdir -p /gnupg-home
           echo "Importing GPG key..."
           if [ -f /sops-gpg/sops.asc ]; then
-            gpg --import /sops-gpg/sops.asc 2>/dev/null || true
-            echo "GPG key imported"
+            gpg --import /sops-gpg/sops.asc 2>&1
+            echo "GPG key imported successfully"
+            # List keys to verify
+            gpg --list-secret-keys
           else
             echo "No GPG key found to import"
           fi

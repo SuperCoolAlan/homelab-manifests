@@ -7,8 +7,6 @@ persistentVolumeClaims:
 ingress:
   enabled: true
   className: nginx
-  hosts:
-    - host: prowlarr.asandov.local
-      paths:
-        - path: /
-          pathType: Prefix
+  host: prowlarr.asandov.local
+  path: /
+  pathType: Prefix
