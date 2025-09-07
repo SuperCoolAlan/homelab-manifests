@@ -1,0 +1,14 @@
+# Inherited from original media deployment
+persistentVolumeClaims:
+  prowlarr-config:
+    requestStorage: '5Gi'
+    storageClassName: 'nfs'
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: prowlarr.asandov.local
+      paths:
+        - path: /
+          pathType: Prefix
