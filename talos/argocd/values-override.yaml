@@ -57,12 +57,15 @@ repoServer:
           echo "Setting up GPG..."
           export GNUPGHOME=/gnupg-home
           mkdir -p /gnupg-home
+          chmod 700 /gnupg-home
           echo "Importing GPG key..."
           if [ -f /sops-gpg/sops.asc ]; then
-            gpg --import /sops-gpg/sops.asc 2>&1
+            echo "use-agent" >> /gnupg-home/gpg.conf
+            echo "pinentry-mode loopback" >> /gnupg-home/gpg.conf
+            gpg --batch --import /sops-gpg/sops.asc 2>&1
             echo "GPG key imported successfully"
             # List keys to verify
-            gpg --list-secret-keys
+            gpg --list-secret-keys 2>&1 || true
           else
             echo "No GPG key found to import"
           fi
