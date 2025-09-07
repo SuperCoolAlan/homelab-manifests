@@ -1,0 +1,25 @@
+# Inherited from original media deployment
+persistentVolumeClaims:
+  bazarr-config:
+    requestStorage: '5Gi'
+    storageClassName: 'nfs'
+
+deployment:
+  volumes:
+    tv:
+      persistentVolumeClaim:
+        claimName: 'media-library'
+    movies:
+      persistentVolumeClaim:
+        claimName: 'media-library'
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: bazarr.asandov.local
+      paths:
+        - path: /
+          pathType: Prefix
+  annotations:
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"

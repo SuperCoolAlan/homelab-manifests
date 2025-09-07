@@ -1,0 +1,14 @@
+# Homarr dashboard - new service not in original deployment
+persistentVolumeClaims:
+  homarr-data:
+    requestStorage: '2Gi'
+    storageClassName: 'nfs'
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: homarr.asandov.local
+      paths:
+        - path: /
+          pathType: Prefix

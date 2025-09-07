@@ -1,0 +1,6 @@
+# Downloaded helm charts (pulled from remote repos)
+charts/
+
+# Helm cache
+.helmignore
+*.tgz

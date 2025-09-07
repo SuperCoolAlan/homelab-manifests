@@ -17,6 +17,8 @@ repoServer:
       value: /home/argocd/.config/kustomize/plugin
     - name: XDG_CONFIG_HOME
       value: /home/argocd/.config
+    - name: PATH
+      value: /home/argocd/.config/kustomize/plugin/viaduct.ai/v1/ksops:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   volumes:
     - name: custom-tools
       emptyDir: {}
