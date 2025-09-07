@@ -4,6 +4,10 @@ persistentVolumeClaims:
     requestStorage: '10Gi'
     storageClassName: 'nfs'
 
+# Disable config.xml mounting to avoid conflict with NFS volume
+application:
+  config: null
+
 # Use chart defaults for volume mounts (/config, /downloads, /tv)
 
 # Security context to avoid NFS permission issues
