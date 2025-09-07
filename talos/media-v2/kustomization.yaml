@@ -5,9 +5,11 @@ namespace: media-v2
 
 resources:
 - shared-pvcs.yaml
+- secrets/sabnzbd-secret.yaml
 
-generators:
-- secrets-generator.yaml
+# Temporarily disabled - SOPS decryption failing
+# generators:
+# - secrets-generator.yaml
 
 helmCharts:
 - name: sonarr
