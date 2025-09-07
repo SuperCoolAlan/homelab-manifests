@@ -42,6 +42,18 @@ repoServer:
           cp /usr/local/bin/ksops /custom-tools/ksops
           chmod +x /custom-tools/ksops
           echo "ksops installation complete"
+      volumeMounts:
+        - name: custom-tools
+          mountPath: /custom-tools
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        runAsNonRoot: false
+    - name: import-gpg
+      image: quay.io/argoproj/argocd:v3.1.3
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
           echo "Setting up GPG..."
           export GNUPGHOME=/gnupg-home
           mkdir -p /gnupg-home
@@ -56,8 +68,6 @@ repoServer:
           fi
           echo "GPG setup complete"
       volumeMounts:
-        - name: custom-tools
-          mountPath: /custom-tools
         - name: gnupg-home
           mountPath: /gnupg-home
         - name: sops-gpg
@@ -66,4 +76,4 @@ repoServer:
       securityContext:
         runAsUser: 999
         runAsGroup: 999
-        runAsNonRoot: false
+        runAsNonRoot: true
