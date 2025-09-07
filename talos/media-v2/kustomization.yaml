@@ -11,40 +11,40 @@ helmCharts:
   repo: https://media-servarr.shw.al/charts
   version: 0.8.4
   releaseName: sonarr
-  namespace: media
+  namespace: media-v2
   valuesFile: values-overrides/sonarr-values.yaml
     
 - name: radarr
   repo: https://media-servarr.shw.al/charts
   version: 0.18.0
   releaseName: radarr
-  namespace: media
+  namespace: media-v2
   valuesFile: values-overrides/radarr-values.yaml
 
 - name: prowlarr
   repo: https://media-servarr.shw.al/charts
   version: 0.16.0
   releaseName: prowlarr
-  namespace: media
+  namespace: media-v2
   valuesFile: values-overrides/prowlarr-values.yaml
 
 - name: sabnzbd
   repo: https://media-servarr.shw.al/charts
   version: 0.6.5
   releaseName: sabnzbd
-  namespace: media
+  namespace: media-v2
   valuesFile: values-overrides/sabnzbd-values.yaml
 
 - name: bazarr
   repo: https://media-servarr.shw.al/charts
   version: 0.8.3
   releaseName: bazarr
-  namespace: media
+  namespace: media-v2
   valuesFile: values-overrides/bazarr-values.yaml
 
 - name: homarr
   repo: https://media-servarr.shw.al/charts
   version: 0.16.0
   releaseName: homarr
-  namespace: media
+  namespace: media-v2
   valuesFile: values-overrides/homarr-values.yaml
