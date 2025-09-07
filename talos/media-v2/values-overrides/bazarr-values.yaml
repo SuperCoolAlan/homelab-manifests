@@ -4,22 +4,7 @@ persistentVolumeClaims:
     requestStorage: '5Gi'
     storageClassName: 'nfs'
 
-deployment:
-  container:
-    volumeMounts:
-      - name: 'config'
-        mountPath: '/config'
-      - name: 'tv'
-        mountPath: '/tv'
-      - name: 'movies'
-        mountPath: '/movies'
-  volumes:
-    tv:
-      persistentVolumeClaim:
-        claimName: 'media-library'
-    movies:
-      persistentVolumeClaim:
-        claimName: 'media-library'
+# Use chart defaults for volume mounts (/config only)
 
 ingress:
   enabled: true
