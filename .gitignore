@@ -5,3 +5,9 @@ config.yaml
 **/out.yaml
 talos/media/secrets/*.yaml
 !talos/media/secrets/*.enc.yaml
+
+# GPG/SOPS secrets - never commit these
+*.asc
+sops-gpg*
+*-secret.yaml
+
