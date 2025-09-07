@@ -19,7 +19,7 @@ helmCharts:
 resources:
   - resources/external-talos-svc.yaml
   - resources/talos-jellyfin-ingress.yaml
-  - resources/sabnzbd-config.yaml
+  # - resources/sabnzbd-config.yaml  # Disabled - conflicts with Helm template ConfigMap
 
 patches:
 - patch: |-
