@@ -64,7 +64,7 @@ data:
     load_balancing = 2
     top_only = 0
     sfv_check = 1
-    quick_check_ext_ignore = "nfo, sfv, srr"
+    quick_check_ext_ignore = nfo, sfv, srr
     script_can_fail = 0
     enable_recursive = 1
     flat_unpack = 0
