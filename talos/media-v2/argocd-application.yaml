@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: media-v2
+  namespace: argo-cd
+spec:
+  destination:
+    namespace: media-v2
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: talos/media-v2
+    repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
+    targetRevision: HEAD
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
