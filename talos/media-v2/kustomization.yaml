@@ -5,6 +5,8 @@ namespace: media-v2
 
 resources:
 - shared-pvcs.yaml
+- configs/prowlarr-setup-job.yaml
+- configs/bazarr-setup-job.yaml
 
 # Disabled - secret already exists in cluster
 # generators:
