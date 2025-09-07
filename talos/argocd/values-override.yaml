@@ -39,7 +39,7 @@ repoServer:
   initContainers:
     - name: install-ksops
       image: viaductoss/ksops:v4.4.0  # Latest stable version
-      command: ["/bin/sh", "-c"]
+      command: ["sh", "-c"]
       args:
         - |
           echo "Installing KSOPS toolchain..."
