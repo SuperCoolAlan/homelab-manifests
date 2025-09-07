@@ -22,9 +22,16 @@ repoServer:
   volumes:
     - name: custom-tools
       emptyDir: {}
+    - name: gnupg-home
+      emptyDir: {}
+    - name: sops-gpg
+      secret:
+        secretName: sops-gpg
   volumeMounts:
     - name: custom-tools
       mountPath: /home/argocd/.config/kustomize/plugin/viaduct.ai/v1/ksops
+    - name: gnupg-home
+      mountPath: /home/argocd/.gnupg
   initContainers:
     - name: install-ksops
       image: viaductoss/ksops:v4.3.2
@@ -35,9 +42,26 @@ repoServer:
           cp /usr/local/bin/ksops /custom-tools/ksops
           chmod +x /custom-tools/ksops
           echo "ksops installation complete"
+          echo "Setting up GPG home directory..."
+          mkdir -p /gnupg-home
+          chmod 700 /gnupg-home
+          export GNUPGHOME=/gnupg-home
+          echo "Importing GPG key..."
+          if [ -f /sops-gpg/sops.asc ]; then
+            gpg --import /sops-gpg/sops.asc 2>/dev/null || true
+            echo "GPG key imported"
+          else
+            echo "No GPG key found to import"
+          fi
+          echo "GPG setup complete"
       volumeMounts:
         - name: custom-tools
           mountPath: /custom-tools
+        - name: gnupg-home
+          mountPath: /gnupg-home
+        - name: sops-gpg
+          mountPath: /sops-gpg
+          readOnly: true
       securityContext:
         runAsUser: 999
         runAsGroup: 999
