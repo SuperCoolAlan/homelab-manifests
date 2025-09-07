@@ -6,23 +6,19 @@ configs:
     # Keep the insecure mode we just configured
     server.insecure: true
 
-# Use custom repo server image with ksops support
+# Install ksops in standard ArgoCD repo server
 repoServer:
-  image:
-    repository: viaductoss/ksops
-    tag: v4.3.2
   env:
     - name: KUSTOMIZE_PLUGIN_HOME
-      value: /usr/local/bin
+      value: /home/argocd/.config/kustomize/plugin
     - name: XDG_CONFIG_HOME
-      value: /.config
+      value: /home/argocd/.config
   volumes:
     - name: custom-tools
       emptyDir: {}
   volumeMounts:
     - name: custom-tools
-      mountPath: /usr/local/bin/kustomize
-      subPath: kustomize
+      mountPath: /home/argocd/.config/kustomize/plugin/viaduct.ai/v1/ksops
   initContainers:
     - name: install-ksops
       image: viaductoss/ksops:v4.3.2
@@ -30,9 +26,13 @@ repoServer:
       args:
         - |
           echo "Installing ksops..."
-          cp /usr/local/bin/ksops /custom-tools/
-          cp /usr/local/bin/kustomize /custom-tools/
+          cp /usr/local/bin/ksops /custom-tools/ksops
+          chmod +x /custom-tools/ksops
           echo "ksops installation complete"
       volumeMounts:
         - name: custom-tools
           mountPath: /custom-tools
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        runAsNonRoot: false
