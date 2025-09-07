@@ -4,6 +4,15 @@ persistentVolumeClaims:
     requestStorage: '5Gi'
     storageClassName: 'nfs'
 
+# Use specific UID/GID that matches TrueNAS NFS user
+deployment:
+  container:
+    env:
+      - name: PUID
+        value: "1000"
+      - name: PGID
+        value: "3001"
+
 ingress:
   enabled: true
   className: nginx
