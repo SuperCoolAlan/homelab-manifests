@@ -1,4 +1,4 @@
-# SOPS Key Migration Notes
+# SOPS Key Migration Notes & Media-v2 Setup Status
 
 ## Current Status (2025-09-07) - MIGRATION COMPLETE ✅
 
@@ -39,8 +39,60 @@
 
 #### ❌ Cannot Decrypt (Unknown Key 8006BCF7)
 - `/talos/cluster-services/democratic-csi/secrets/secret-csi-driver-config.enc.yaml`
-  - This file uses a different GPG key that we don't have access to
-  - May need to be recreated from scratch
+  - This was an old revoked key (found revocation cert in ~/.gnupg/openpgp-revocs.d/)
+  - File was deleted as it wasn't being used
+
+---
+
+## Media-v2 Stack Status (2025-09-07)
+
+### Current Pod Status:
+- ✅ **SABnzbd** - Running (2/2 containers), accessible at https://sabnzbd.asandov.local/
+- ✅ **Sonarr** - Running (1/1), had permission issues but resolved
+- ❌ **Bazarr** - Permission issues with NFS volume (UID 950 vs expected 1000)
+- ✅ **Homarr, Prowlarr, Radarr** - All running fine
+
+### Fixes Applied:
+
+#### 1. Secret References Fixed:
+- Fixed SABnzbd secret references from `sabnzbd-secrets` to `sabnzbd`
+- Fixed secret key names to match actual secret structure
+
+#### 2. Config Mounting Disabled:
+- Set `application.config: null` for both Sonarr and Bazarr
+- Prevents conflict between ConfigMap mounts and NFS volumes
+- Allows containers to create their own config files
+
+#### 3. PUID/PGID Configuration:
+- Added environment variables to all LinuxServer.io containers:
+  ```yaml
+  env:
+    - name: PUID
+      value: "1000"
+    - name: PGID
+      value: "1000"
+  ```
+
+### Remaining Issues:
+
+#### NFS Permission Problem:
+- **Root Cause**: TrueNAS NFS directories have wrong ownership (UID 950 instead of 1000)
+- **Impact**: Bazarr can't write to `/config/config/` directory
+- **Solution Needed**: 
+  1. SSH into TrueNAS: `ssh username@truenas-ip`
+  2. Run: `chown -R 1000:1000 /mnt/pool/dataset/path`
+  3. Or in TrueNAS Web UI: Datasets → Edit Permissions → Apply Recursively
+
+### TrueNAS Configuration Required:
+1. Create user with UID 1000, group with GID 1000
+2. Set dataset permissions to this user/group with 775
+3. Configure NFS share with `Mapall User` and `Mapall Group` to UID/GID 1000
+4. Apply permissions recursively to fix existing directories
+
+### Files Modified:
+- `/talos/media-v2/values-overrides/sabnzbd-values.yaml`
+- `/talos/media-v2/values-overrides/sonarr-values.yaml`
+- `/talos/media-v2/values-overrides/bazarr-values.yaml`
 
 ### Migration Plan
 1. Decrypt each file with old key
