@@ -6,6 +6,15 @@ persistentVolumeClaims:
 
 # Use chart defaults for volume mounts (/config only)
 
+# Security context to avoid NFS permission issues
+deployment:
+  pod:
+    securityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroupChangePolicy: "OnRootMismatch"
+
 ingress:
   enabled: true
   className: nginx
