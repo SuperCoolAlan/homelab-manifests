@@ -10,10 +10,14 @@ application:
 
 # Use chart defaults for volume mounts (/config, /downloads, /tv)
 
-# Let container run as root to handle NFS permissions
-# LinuxServer.io containers handle their own user mapping
+# Use specific UID/GID that matches TrueNAS NFS user
 deployment:
-  podSecurityContext: {}
+  container:
+    env:
+      - name: PUID
+        value: "1000"
+      - name: PGID
+        value: "1000"
 
 ingress:
   enabled: true
