@@ -4,3 +4,8 @@ charts/
 # Helm cache
 .helmignore
 *.tgz
+
+# Unencrypted secrets - NEVER commit these!
+secrets/media-secrets.yaml
+secrets/*.yaml
+!secrets/*.enc.yaml

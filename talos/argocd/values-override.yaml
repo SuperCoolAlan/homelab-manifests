@@ -19,6 +19,8 @@ repoServer:
       value: /home/argocd/.config
     - name: PATH
       value: /home/argocd/.config/kustomize/plugin/viaduct.ai/v1/ksops:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    - name: SOPS_GNUPGHOME
+      value: /home/argocd/.gnupg
   volumes:
     - name: custom-tools
       emptyDir: {}
@@ -38,9 +40,17 @@ repoServer:
       command: ["/bin/sh", "-c"]
       args:
         - |
-          echo "Installing ksops..."
+          echo "Installing ksops and dependencies..."
           cp /usr/local/bin/ksops /custom-tools/ksops
           chmod +x /custom-tools/ksops
+          # Copy sops if it exists
+          if [ -f /usr/local/bin/sops ]; then
+            cp /usr/local/bin/sops /custom-tools/sops
+            chmod +x /custom-tools/sops
+            echo "sops installed"
+          fi
+          # List what's available
+          ls -la /usr/local/bin/ | grep -E "(sops|age)" || true
           echo "ksops installation complete"
       volumeMounts:
         - name: custom-tools
