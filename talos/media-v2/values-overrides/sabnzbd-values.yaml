@@ -4,11 +4,7 @@ persistentVolumeClaims:
     requestStorage: '5Gi'
     storageClassName: 'nfs'
 
-deployment:
-  volumes:
-    downloads:
-      persistentVolumeClaim:
-        claimName: 'media-downloads'
+# Use chart defaults for volume mounts
 
 ingress:
   enabled: true
