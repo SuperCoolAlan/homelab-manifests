@@ -73,7 +73,7 @@ deployment:
       - name: PUID
         value: "1000"
       - name: PGID
-        value: "1000"
+        value: "3001"
       - name: 'ewekaPassword'
         valueFrom:
           secretKeyRef:

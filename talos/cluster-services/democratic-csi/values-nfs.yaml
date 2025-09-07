@@ -44,9 +44,9 @@ driver:
       detachedSnapshotsDatasetParentName: ST6000NM0095-pool0/media/nfs/s
       datasetEnableQuotas: true
       datasetEnableReservation: false
-      datasetPermissionsMode: "0777"
-      datasetPermissionsUser: 0
-      datasetPermissionsGroup: 0
+      datasetPermissionsMode: "0775"
+      datasetPermissionsUser: 1000
+      datasetPermissionsGroup: 3001
     nfs:
       shareHost: truenas.asandov.local
       shareAlldirs: false
