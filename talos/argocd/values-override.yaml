@@ -34,9 +34,6 @@ repoServer:
   volumeMounts:
     - name: custom-tools
       mountPath: /home/argocd/.config/kustomize/plugin/viaduct.ai/v1/ksops
-    - name: custom-tools
-      mountPath: /usr/local/bin/sops
-      subPath: sops
     - name: gnupg-home
       mountPath: /home/argocd/.gnupg
   initContainers:
