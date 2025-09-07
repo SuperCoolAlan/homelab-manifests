@@ -8,12 +8,11 @@ persistentVolumeClaims:
 
 # Security context to avoid NFS permission issues
 deployment:
-  pod:
-    securityContext:
-      fsGroup: 1000
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroupChangePolicy: "OnRootMismatch"
+  podSecurityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroupChangePolicy: "OnRootMismatch"
 
 ingress:
   enabled: true
