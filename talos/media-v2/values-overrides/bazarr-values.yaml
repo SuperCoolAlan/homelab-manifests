@@ -6,13 +6,10 @@ persistentVolumeClaims:
 
 # Use chart defaults for volume mounts (/config only)
 
-# Security context to avoid NFS permission issues
+# Let container run as root to handle NFS permissions
+# LinuxServer.io containers handle their own user mapping
 deployment:
-  podSecurityContext:
-    fsGroup: 1000
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroupChangePolicy: "OnRootMismatch"
+  podSecurityContext: {}
 
 ingress:
   enabled: true
