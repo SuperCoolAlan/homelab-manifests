@@ -5,7 +5,7 @@ namespace: media-v2
 
 resources:
 - shared-pvcs.yaml
-- secrets/sabnzbd-secret.yaml
+- secrets/sabnzbd-newsreader.yaml
 
 # Temporarily disabled - SOPS decryption failing
 # generators:
