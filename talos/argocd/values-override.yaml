@@ -38,23 +38,38 @@ repoServer:
       mountPath: /home/argocd/.gnupg
   initContainers:
     - name: install-ksops
-      image: viaductoss/ksops:v4.4.0  # Latest stable version
+      image: viaductoss/ksops:v4.3.2  # v4.4.0 has no shell, using v4.3.2
       command: ["sh", "-c"]
       args:
         - |
           echo "Installing KSOPS toolchain..."
-          # The ksops image includes all necessary binaries
+          # Copy binaries from ksops image
           cp /usr/local/bin/ksops /custom-tools/ksops
           cp /usr/local/bin/kustomize /custom-tools/kustomize
-          cp /usr/local/bin/sops /custom-tools/sops
           chmod +x /custom-tools/*
           # Verify installations
           echo "Verifying installations:"
           /custom-tools/ksops version 2>/dev/null || echo "ksops: ready"
           /custom-tools/kustomize version
-          /custom-tools/sops --version
           ls -la /custom-tools/
           echo "KSOPS toolchain installation complete"
+      volumeMounts:
+        - name: custom-tools
+          mountPath: /custom-tools
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+    - name: install-sops
+      image: curlimages/curl:8.11.1
+      command: ["sh", "-c"]
+      args:
+        - |
+          echo "Installing SOPS..."
+          curl -L -o /custom-tools/sops https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
+          chmod +x /custom-tools/sops
+          echo "Verifying SOPS installation:"
+          /custom-tools/sops --version
+          echo "SOPS installation complete"
       volumeMounts:
         - name: custom-tools
           mountPath: /custom-tools
@@ -74,8 +89,13 @@ repoServer:
           if [ -f /sops-gpg/sops.asc ]; then
             echo "use-agent" >> /gnupg-home/gpg.conf
             echo "pinentry-mode loopback" >> /gnupg-home/gpg.conf
+            echo "allow-loopback-pinentry" >> /gnupg-home/gpg-agent.conf
+            echo "batch" >> /gnupg-home/gpg.conf
+            echo "no-tty" >> /gnupg-home/gpg.conf
             gpg --batch --import /sops-gpg/sops.asc 2>&1
             echo "GPG key imported successfully"
+            # Fix ownership
+            chown -R 999:999 /gnupg-home
             # List keys to verify
             gpg --list-secret-keys 2>&1 || true
           else
