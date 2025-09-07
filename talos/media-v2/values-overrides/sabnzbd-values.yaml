@@ -68,6 +68,11 @@ application:
 
 # Extra environment variables to inject the passwords from secret
 deployment:
+  podSecurityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroupChangePolicy: "OnRootMismatch"
   container:
     env:
       - name: 'ewekaPassword'
