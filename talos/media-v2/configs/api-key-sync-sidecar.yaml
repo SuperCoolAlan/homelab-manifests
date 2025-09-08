@@ -21,7 +21,7 @@ data:
     # Function to extract API key from config file
     extract_api_key() {
       if [ -f "$CONFIG_PATH" ]; then
-        grep -oP '(?<=<ApiKey>)[^<]+' "$CONFIG_PATH" 2>/dev/null || true
+        sed -n 's/.*<ApiKey>\([^<]*\)<\/ApiKey>.*/\1/p' "$CONFIG_PATH" 2>/dev/null || true
       fi
     }
     
