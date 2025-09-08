@@ -12,6 +12,17 @@ spec:
       - name: setup
         image: curlimages/curl:latest
         command: ["/bin/sh"]
+        env:
+        - name: SONARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: sonarr-api-key
+        - name: RADARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: radarr-api-key
         args:
         - -c
         - |
@@ -44,15 +55,15 @@ spec:
           echo "After initial setup, configure the following:"
           echo "1. Sonarr:"
           echo "   - URL: http://sonarr:8989"
-          echo "   - API Key: 5097a715fb084ca1ab07670ef50dcd68"
+          echo "   - API Key is stored in secret 'media-api-keys' key 'sonarr-api-key'"
           echo ""
           echo "2. Radarr:"
           echo "   - URL: http://radarr:7878"
-          echo "   - API Key: 1ac50a71923a4e9589e028dbc89140a3"
+          echo "   - API Key is stored in secret 'media-api-keys' key 'radarr-api-key'"
           echo ""
           echo "3. Configure quality profiles and root folders as needed"
           
-          # Create a ConfigMap with the connection details for reference
+          # Create a ConfigMap with the connection details for reference (without exposing secrets)
           cat <<EOF | kubectl apply -f -
           apiVersion: v1
           kind: ConfigMap
@@ -61,10 +72,9 @@ spec:
             namespace: media-v2
           data:
             sonarr-url: "http://sonarr:8989"
-            sonarr-api-key: "5097a715fb084ca1ab07670ef50dcd68"
             radarr-url: "http://radarr:7878"
-            radarr-api-key: "1ac50a71923a4e9589e028dbc89140a3"
             jellyseerr-url: "https://jellyseerr.asandov.local/"
+            note: "API keys are stored in secret 'media-api-keys'"
           EOF
           
           echo "Connection info saved to ConfigMap 'jellyseerr-connection-info'"

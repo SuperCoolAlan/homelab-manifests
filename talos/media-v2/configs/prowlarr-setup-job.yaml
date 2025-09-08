@@ -12,12 +12,28 @@ spec:
       - name: setup
         image: curlimages/curl:latest
         command: ["/bin/sh"]
+        env:
+        - name: PROWLARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: prowlarr-api-key
+        - name: SONARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: sonarr-api-key
+        - name: RADARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: radarr-api-key
         args:
         - -c
         - |
           set -e
           echo "Waiting for Prowlarr to be ready..."
-          until curl -f http://prowlarr:9696/prowlarr/api/v1/health -H "X-Api-Key: e5462d745721475db235a8bc4eb32a07"; do
+          until curl -f http://prowlarr:9696/prowlarr/api/v1/health -H "X-Api-Key: $PROWLARR_API_KEY"; do
             echo "Prowlarr not ready yet, waiting..."
             sleep 5
           done
@@ -25,28 +41,28 @@ spec:
           
           # Check if Sonarr already exists
           echo "Checking existing applications..."
-          EXISTING_APPS=$(curl -s http://prowlarr:9696/prowlarr/api/v1/applications -H "X-Api-Key: e5462d745721475db235a8bc4eb32a07")
+          EXISTING_APPS=$(curl -s http://prowlarr:9696/prowlarr/api/v1/applications -H "X-Api-Key: $PROWLARR_API_KEY")
           
           # Add Sonarr if not exists
           if ! echo "$EXISTING_APPS" | grep -q "Sonarr"; then
             echo "Adding Sonarr to Prowlarr..."
             curl -X POST http://prowlarr:9696/prowlarr/api/v1/applications \
-              -H "X-Api-Key: e5462d745721475db235a8bc4eb32a07" \
+              -H "X-Api-Key: $PROWLARR_API_KEY" \
               -H "Content-Type: application/json" \
-              -d '{
-                "name": "Sonarr",
-                "implementation": "Sonarr",
-                "configContract": "SonarrSettings",
-                "fields": [
-                  {"name": "prowlarrUrl", "value": "http://prowlarr:9696"},
-                  {"name": "baseUrl", "value": "http://sonarr:8989"},
-                  {"name": "apiKey", "value": "5097a715fb084ca1ab07670ef50dcd68"},
-                  {"name": "syncCategories", "value": [5000, 5010, 5020, 5030, 5040, 5045, 5050]},
-                  {"name": "animeSyncCategories", "value": [5070]},
-                  {"name": "syncLevel", "value": "fullSync"}
+              -d "{
+                \"name\": \"Sonarr\",
+                \"implementation\": \"Sonarr\",
+                \"configContract\": \"SonarrSettings\",
+                \"fields\": [
+                  {\"name\": \"prowlarrUrl\", \"value\": \"http://prowlarr:9696\"},
+                  {\"name\": \"baseUrl\", \"value\": \"http://sonarr:8989\"},
+                  {\"name\": \"apiKey\", \"value\": \"$SONARR_API_KEY\"},
+                  {\"name\": \"syncCategories\", \"value\": [5000, 5010, 5020, 5030, 5040, 5045, 5050]},
+                  {\"name\": \"animeSyncCategories\", \"value\": [5070]},
+                  {\"name\": \"syncLevel\", \"value\": \"fullSync\"}
                 ],
-                "tags": []
-              }'
+                \"tags\": []
+              }"
             echo "Sonarr added successfully"
           else
             echo "Sonarr already configured"
@@ -56,21 +72,21 @@ spec:
           if ! echo "$EXISTING_APPS" | grep -q "Radarr"; then
             echo "Adding Radarr to Prowlarr..."
             curl -X POST http://prowlarr:9696/prowlarr/api/v1/applications \
-              -H "X-Api-Key: e5462d745721475db235a8bc4eb32a07" \
+              -H "X-Api-Key: $PROWLARR_API_KEY" \
               -H "Content-Type: application/json" \
-              -d '{
-                "name": "Radarr",
-                "implementation": "Radarr",
-                "configContract": "RadarrSettings",
-                "fields": [
-                  {"name": "prowlarrUrl", "value": "http://prowlarr:9696"},
-                  {"name": "baseUrl", "value": "http://radarr:7878"},
-                  {"name": "apiKey", "value": "1ac50a71923a4e9589e028dbc89140a3"},
-                  {"name": "syncCategories", "value": [2000, 2010, 2020, 2030, 2040, 2045, 2050]},
-                  {"name": "syncLevel", "value": "fullSync"}
+              -d "{
+                \"name\": \"Radarr\",
+                \"implementation\": \"Radarr\",
+                \"configContract\": \"RadarrSettings\",
+                \"fields\": [
+                  {\"name\": \"prowlarrUrl\", \"value\": \"http://prowlarr:9696\"},
+                  {\"name\": \"baseUrl\", \"value\": \"http://radarr:7878\"},
+                  {\"name\": \"apiKey\", \"value\": \"$RADARR_API_KEY\"},
+                  {\"name\": \"syncCategories\", \"value\": [2000, 2010, 2020, 2030, 2040, 2045, 2050]},
+                  {\"name\": \"syncLevel\", \"value\": \"fullSync\"}
                 ],
-                "tags": []
-              }'
+                \"tags\": []
+              }"
             echo "Radarr added successfully"
           else
             echo "Radarr already configured"
@@ -79,7 +95,7 @@ spec:
           # Trigger sync
           echo "Triggering application sync..."
           curl -X POST http://prowlarr:9696/prowlarr/api/v1/applications/sync \
-            -H "X-Api-Key: e5462d745721475db235a8bc4eb32a07" \
+            -H "X-Api-Key: $PROWLARR_API_KEY" \
             -H "Content-Type: application/json" \
             -d '{}'
           

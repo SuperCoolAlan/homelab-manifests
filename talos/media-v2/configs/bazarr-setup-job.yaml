@@ -12,12 +12,28 @@ spec:
       - name: setup
         image: curlimages/curl:latest
         command: ["/bin/sh"]
+        env:
+        - name: BAZARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: bazarr-api-key
+        - name: SONARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: sonarr-api-key
+        - name: RADARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: radarr-api-key
         args:
         - -c
         - |
           set -e
           echo "Waiting for Bazarr to be ready..."
-          until curl -f http://bazarr:6767/api/system/health -H "X-Api-Key: 6ad3e11326f41310f01942750a984825"; do
+          until curl -f http://bazarr:6767/api/system/health -H "X-Api-Key: $BAZARR_API_KEY"; do
             echo "Bazarr not ready yet, waiting..."
             sleep 5
           done
@@ -26,53 +42,53 @@ spec:
           # Configure Sonarr connection
           echo "Configuring Sonarr connection..."
           curl -X POST http://bazarr:6767/api/system/settings \
-            -H "X-Api-Key: 6ad3e11326f41310f01942750a984825" \
+            -H "X-Api-Key: $BAZARR_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "sonarr": {
-                "use_sonarr": true,
-                "ip": "sonarr",
-                "port": 8989,
-                "base_url": "",
-                "ssl": false,
-                "apikey": "5097a715fb084ca1ab07670ef50dcd68",
-                "full_update": "Daily",
-                "full_update_day": 6,
-                "full_update_hour": 4,
-                "only_monitored": false,
-                "series_sync": 15,
-                "episodes_sync": 15,
-                "excluded_tags": [],
-                "excluded_series_types": []
+            -d "{
+              \"sonarr\": {
+                \"use_sonarr\": true,
+                \"ip\": \"sonarr\",
+                \"port\": 8989,
+                \"base_url\": \"\",
+                \"ssl\": false,
+                \"apikey\": \"$SONARR_API_KEY\",
+                \"full_update\": \"Daily\",
+                \"full_update_day\": 6,
+                \"full_update_hour\": 4,
+                \"only_monitored\": false,
+                \"series_sync\": 15,
+                \"episodes_sync\": 15,
+                \"excluded_tags\": [],
+                \"excluded_series_types\": []
               }
-            }'
+            }"
           
           # Configure Radarr connection
           echo "Configuring Radarr connection..."
           curl -X POST http://bazarr:6767/api/system/settings \
-            -H "X-Api-Key: 6ad3e11326f41310f01942750a984825" \
+            -H "X-Api-Key: $BAZARR_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "radarr": {
-                "use_radarr": true,
-                "ip": "radarr",
-                "port": 7878,
-                "base_url": "",
-                "ssl": false,
-                "apikey": "1ac50a71923a4e9589e028dbc89140a3",
-                "full_update": "Daily",
-                "full_update_day": 6,
-                "full_update_hour": 4,
-                "only_monitored": false,
-                "movies_sync": 15,
-                "excluded_tags": []
+            -d "{
+              \"radarr\": {
+                \"use_radarr\": true,
+                \"ip\": \"radarr\",
+                \"port\": 7878,
+                \"base_url\": \"\",
+                \"ssl\": false,
+                \"apikey\": \"$RADARR_API_KEY\",
+                \"full_update\": \"Daily\",
+                \"full_update_day\": 6,
+                \"full_update_hour\": 4,
+                \"only_monitored\": false,
+                \"movies_sync\": 15,
+                \"excluded_tags\": []
               }
-            }'
+            }"
           
           # Configure subtitle providers (OpenSubtitles as example)
           echo "Configuring subtitle providers..."
           curl -X POST http://bazarr:6767/api/system/settings \
-            -H "X-Api-Key: 6ad3e11326f41310f01942750a984825" \
+            -H "X-Api-Key: $BAZARR_API_KEY" \
             -H "Content-Type: application/json" \
             -d '{
               "subliminal": {
