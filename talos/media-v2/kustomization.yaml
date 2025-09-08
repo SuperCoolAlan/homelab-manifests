@@ -11,6 +11,7 @@ resources:
 - configs/bazarr-setup-job.yaml
 - configs/prowlarr-indexer-setup-job.yaml
 - configs/jellyseerr-setup-job.yaml
+- configs/jellyseerr-config-job.yaml
 
 # Disabled - secrets already exist in cluster
 # generators:

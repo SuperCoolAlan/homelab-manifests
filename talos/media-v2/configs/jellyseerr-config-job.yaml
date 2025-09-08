@@ -1,0 +1,118 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jellyseerr-config
+  namespace: media-v2
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: setup
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        env:
+        - name: SONARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: sonarr-api-key
+        - name: RADARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: radarr-api-key
+        args:
+        - -c
+        - |
+          set -e
+          
+          # Wait for Jellyseerr to be ready
+          echo "Waiting for Jellyseerr to be ready..."
+          COUNTER=0
+          until curl -f http://jellyseerr:5055/api/v1/status 2>/dev/null || [ $COUNTER -eq 60 ]; do
+            echo "Jellyseerr not ready yet, waiting... (attempt $COUNTER/60)"
+            sleep 5
+            COUNTER=$((COUNTER + 1))
+          done
+          
+          if [ $COUNTER -eq 60 ]; then
+            echo "Jellyseerr did not become ready in time."
+            exit 1
+          fi
+          
+          echo "Jellyseerr is ready!"
+          
+          # Check if already initialized
+          INIT_STATUS=$(curl -s http://jellyseerr:5055/api/v1/settings/public | grep -o '"initialized":[^,}]*' | cut -d: -f2)
+          
+          if [ "$INIT_STATUS" = "false" ]; then
+            echo "Jellyseerr needs initial setup through web UI first"
+            echo "Please complete the initial setup at http://jellyseerr.asandov.local"
+            echo ""
+            echo "Use these settings:"
+            echo "1. Jellyfin Server URL: http://10.0.1.14:30013"
+            echo "2. Create an admin account"
+            echo "3. Then re-run this job to configure Sonarr/Radarr"
+            exit 0
+          fi
+          
+          echo "Jellyseerr is initialized, configuring services..."
+          
+          # Get the API key from Jellyseerr (this requires the initial setup to be done)
+          # Note: After initial setup, you'll need to get the Jellyseerr API key and add it to the secret
+          
+          # Configure Sonarr
+          echo "Configuring Sonarr..."
+          curl -X POST http://jellyseerr:5055/api/v1/settings/sonarr \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"name\": \"Sonarr\",
+              \"hostname\": \"sonarr\",
+              \"port\": 8989,
+              \"apiKey\": \"$SONARR_API_KEY\",
+              \"useSsl\": false,
+              \"baseUrl\": \"\",
+              \"activeProfileId\": 1,
+              \"activeLanguageProfileId\": 1,
+              \"activeAnimeProfileId\": 1,
+              \"activeAnimeLanguageProfileId\": 1,
+              \"rootFolder\": \"/tv\",
+              \"activeDirectory\": \"/tv\",
+              \"is4k\": false,
+              \"isDefault\": true,
+              \"externalUrl\": \"http://sonarr.asandov.local\",
+              \"syncEnabled\": true,
+              \"preventSearch\": false,
+              \"tagIds\": []
+            }"
+          
+          # Configure Radarr
+          echo "Configuring Radarr..."
+          curl -X POST http://jellyseerr:5055/api/v1/settings/radarr \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"name\": \"Radarr\",
+              \"hostname\": \"radarr\",
+              \"port\": 7878,
+              \"apiKey\": \"$RADARR_API_KEY\",
+              \"useSsl\": false,
+              \"baseUrl\": \"\",
+              \"activeProfileId\": 1,
+              \"rootFolder\": \"/movies\",
+              \"activeDirectory\": \"/movies\",
+              \"is4k\": false,
+              \"isDefault\": true,
+              \"externalUrl\": \"http://radarr.asandov.local\",
+              \"syncEnabled\": true,
+              \"preventSearch\": false,
+              \"tagIds\": []
+            }"
+          
+          echo "Configuration complete!"
+          echo ""
+          echo "Note: You may need to:"
+          echo "1. Verify the quality profiles IDs in Sonarr/Radarr match"
+          echo "2. Update root folders if different from /tv and /movies"
+          echo "3. Configure notification agents if desired"
