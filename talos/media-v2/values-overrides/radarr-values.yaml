@@ -6,10 +6,9 @@ persistentVolumeClaims:
 
 # Use chart defaults for volume mounts (/config, /downloads, /film)
 
-# Configure Radarr to serve from root without URL base
-env:
-  - name: RADARR__URL_BASE
-    value: ""
+# Configure URL base
+application:
+  urlBase: ""
 
 ingress:
   enabled: true

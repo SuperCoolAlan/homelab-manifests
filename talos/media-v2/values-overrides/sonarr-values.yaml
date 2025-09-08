@@ -18,8 +18,10 @@ deployment:
         value: "1000"
       - name: PGID
         value: "3001"
-      - name: SONARR__URL_BASE
-        value: ""
+
+# Configure URL base  
+application:
+  urlBase: ""
 
 ingress:
   enabled: true
