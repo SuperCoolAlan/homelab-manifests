@@ -38,35 +38,28 @@
    - jellyseerr-setup-job.yaml - Provides setup instructions
    - jellyseerr-config-job.yaml - For post-setup configuration
 
-## 🔧 In Progress - Firewall Rules
+## ✅ Firewall Rules - FIXED
 
-### Problem
-- OPNsense firewall blocking traffic from LAN (10.0.1.32) to Kubernetes LoadBalancer IPs (10.0.7.200)
-- This prevents browser-based configuration of Jellyseerr -> Radarr/Sonarr connections
+### Problem (Resolved)
+- OPNsense firewall was blocking traffic from LAN (10.0.1.32) to Kubernetes LoadBalancer IPs (10.0.7.200)
+- This prevented browser-based configuration of Jellyseerr -> Radarr/Sonarr connections
 - Blocked connections seen: `10.0.1.32:xxxxx -> 10.0.7.200:80`
 
-### Solution Needed
-Create OPNsense firewall rule:
+### Solution Implemented
+Created OPNsense firewall rule via API:
+- **Rule UUID**: d91c805c-263b-4e4d-b4de-ec12f55033da
 - **Action**: Pass
 - **Interface**: LAN
-- **Source**: LAN net (10.0.1.0/24) or specific host 10.0.1.32
-- **Destination**: 10.0.7.200/29 (MetalLB range: .200-.210)
-- **Port**: 80, 443
-- **Protocol**: TCP
+- **Direction**: In
+- **Source**: LAN net (10.0.1.0/24)
+- **Destination**: 10.0.7.200/29 (MetalLB range)
+- **Ports**: All ports allowed
+- **Protocol**: All
+- **Description**: "Allow LAN to Kubernetes LoadBalancer"
 
-### Existing Configuration
-- User mentioned existing "kubernetes_loadbalancer" rule that needs to be checked/fixed
-- OPNsense API credentials provided but appear to be web UI credentials, not API keys
-- API authentication failing with 401 - may need proper API key/secret setup
-
-### Alternative Approaches
-1. **Manual Web UI Configuration**:
-   - Login to OPNsense at https://10.0.1.1
-   - Navigate to Firewall → Rules → LAN
-   - Find or create "kubernetes_loadbalancer" rule
-   - Ensure rule allows LAN → 10.0.7.200/29 on ports 80/443
-
-2. **Test Direct Connectivity**:
+### Verification
+- Rule successfully created and applied via OPNsense API
+- Connectivity confirmed - all services now accessible from LAN
    - From the Kubernetes node, test if services are accessible
    - Verify MetalLB is advertising the correct IPs via BGP
 

@@ -14,9 +14,8 @@ resources:
 - configs/jellyseerr-setup-job.yaml
 - configs/jellyseerr-config-job.yaml
 
-# Disabled - secrets already exist in cluster
-# generators:
-# - secrets-generator.yaml
+generators:
+- secrets-generator.yaml
 
 helmCharts:
 - name: sonarr
