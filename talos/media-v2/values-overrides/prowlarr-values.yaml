@@ -4,6 +4,25 @@ persistentVolumeClaims:
     requestStorage: '5Gi'
     storageClassName: 'nfs'
 
+# Configure URL base to serve from root
+application:
+  urlBase: ""
+  config:
+    contents: |
+      <Config>
+        <LogLevel>info</LogLevel>
+        <EnableSsl>False</EnableSsl>
+        <Port>9696</Port>
+        <UrlBase></UrlBase>
+        <BindAddress>*</BindAddress>
+        <ApiKey>$apiKey</ApiKey>
+        <AnalyticsEnabled>False</AnalyticsEnabled>
+        <AuthenticationMethod>External</AuthenticationMethod>
+        <UpdateMechanism>Docker</UpdateMechanism>
+        <Branch>master</Branch>
+        <InstanceName>Prowlarr</InstanceName>
+      </Config>
+
 # Use specific UID/GID that matches TrueNAS NFS user
 deployment:
   serviceAccountName: media-apps
