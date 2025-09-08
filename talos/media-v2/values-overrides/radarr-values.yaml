@@ -6,9 +6,24 @@ persistentVolumeClaims:
 
 # Use chart defaults for volume mounts (/config, /downloads, /film)
 
-# Configure URL base
+# Configure URL base to serve from root
 application:
   urlBase: ""
+  config:
+    contents: |
+      <Config>
+        <LogLevel>info</LogLevel>
+        <EnableSsl>False</EnableSsl>
+        <Port>7878</Port>
+        <UrlBase></UrlBase>
+        <BindAddress>*</BindAddress>
+        <ApiKey>$apiKey</ApiKey>
+        <AnalyticsEnabled>False</AnalyticsEnabled>
+        <AuthenticationMethod>External</AuthenticationMethod>
+        <UpdateMechanism>Docker</UpdateMechanism>
+        <Branch>master</Branch>
+        <InstanceName>Radarr</InstanceName>
+      </Config>
 
 ingress:
   enabled: true
