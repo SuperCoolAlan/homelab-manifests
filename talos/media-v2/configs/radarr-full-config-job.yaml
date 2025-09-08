@@ -31,7 +31,7 @@ spec:
           # Wait for Radarr to be ready
           echo "Waiting for Radarr to be ready..."
           COUNTER=0
-          until curl -f http://radarr:7878/api/v3/system/status -H "X-Api-Key: $RADARR_API_KEY" 2>/dev/null || [ $COUNTER -eq 60 ]; do
+          until curl -f http://radarr:7878/radarr/api/v3/system/status -H "X-Api-Key: $RADARR_API_KEY" 2>/dev/null || [ $COUNTER -eq 60 ]; do
             echo "Radarr not ready yet, waiting... (attempt $COUNTER/60)"
             sleep 5
             COUNTER=$((COUNTER + 1))
@@ -46,13 +46,13 @@ spec:
           
           # 1. Configure root folder
           echo "Checking existing root folders..."
-          EXISTING=$(curl -s http://radarr:7878/api/v3/rootfolder -H "X-Api-Key: $RADARR_API_KEY")
+          EXISTING=$(curl -s http://radarr:7878/radarr/api/v3/rootfolder -H "X-Api-Key: $RADARR_API_KEY")
           
           if echo "$EXISTING" | grep -q '"/movies"'; then
             echo "Root folder /movies already exists"
           else
             echo "Adding root folder /movies..."
-            curl -X POST http://radarr:7878/api/v3/rootfolder \
+            curl -X POST http://radarr:7878/radarr/api/v3/rootfolder \
               -H "X-Api-Key: $RADARR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
@@ -64,13 +64,14 @@ spec:
           
           # 2. Add SABnzbd as download client
           echo "Checking existing download clients..."
-          EXISTING_DC=$(curl -s http://radarr:7878/api/v3/downloadclient -H "X-Api-Key: $RADARR_API_KEY")
+          EXISTING_DC=$(curl -s http://radarr:7878/radarr/api/v3/downloadclient -H "X-Api-Key: $RADARR_API_KEY")
           
           if echo "$EXISTING_DC" | grep -q '"name":"SABnzbd"'; then
             echo "SABnzbd download client already exists"
           else
             echo "Adding SABnzbd download client..."
-            curl -X POST http://radarr:7878/api/v3/downloadclient \
+            # Note: SABnzbd uses "apiKey" as its default API key in our deployment
+            curl -X POST http://radarr:7878/radarr/api/v3/downloadclient \
               -H "X-Api-Key: $RADARR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
@@ -84,7 +85,7 @@ spec:
                   {"name": "host", "value": "sabnzbd"},
                   {"name": "port", "value": 8080},
                   {"name": "useSsl", "value": false},
-                  {"name": "apiKey", "value": ""},
+                  {"name": "apiKey", "value": "apiKey"},
                   {"name": "movieCategory", "value": "movies"},
                   {"name": "recentMoviePriority", "value": 0},
                   {"name": "olderMoviePriority", "value": 0}
@@ -100,7 +101,7 @@ spec:
           
           # 3. Connect to Prowlarr for indexer management
           echo "Checking existing indexers..."
-          EXISTING_INDEXERS=$(curl -s http://radarr:7878/api/v3/indexer -H "X-Api-Key: $RADARR_API_KEY")
+          EXISTING_INDEXERS=$(curl -s http://radarr:7878/radarr/api/v3/indexer -H "X-Api-Key: $RADARR_API_KEY")
           
           if echo "$EXISTING_INDEXERS" | grep -q '"name":"Prowlarr"'; then
             echo "Prowlarr indexer already exists"
@@ -129,11 +130,11 @@ spec:
           
           # 4. Create default quality profile if needed
           echo "Checking quality profiles..."
-          PROFILES=$(curl -s http://radarr:7878/api/v3/qualityprofile -H "X-Api-Key: $RADARR_API_KEY")
+          PROFILES=$(curl -s http://radarr:7878/radarr/api/v3/qualityprofile -H "X-Api-Key: $RADARR_API_KEY")
           
           if ! echo "$PROFILES" | grep -q '"name":"HD - 1080p"'; then
             echo "Creating default HD quality profile..."
-            curl -X POST http://radarr:7878/api/v3/qualityprofile \
+            curl -X POST http://radarr:7878/radarr/api/v3/qualityprofile \
               -H "X-Api-Key: $RADARR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
