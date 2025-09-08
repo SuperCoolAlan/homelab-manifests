@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sonarr-rootfolder-setup
+  namespace: media-v2
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: setup
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        env:
+        - name: SONARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: sonarr-api-key
+        args:
+        - -c
+        - |
+          set -e
+          
+          # Wait for Sonarr to be ready
+          echo "Waiting for Sonarr to be ready..."
+          COUNTER=0
+          until curl -f http://sonarr:8989/api/v3/system/status -H "X-Api-Key: $SONARR_API_KEY" 2>/dev/null || [ $COUNTER -eq 60 ]; do
+            echo "Sonarr not ready yet, waiting... (attempt $COUNTER/60)"
+            sleep 5
+            COUNTER=$((COUNTER + 1))
+          done
+          
+          if [ $COUNTER -eq 60 ]; then
+            echo "Sonarr did not become ready in time."
+            exit 1
+          fi
+          
+          echo "Sonarr is ready!"
+          
+          # Check if root folder already exists
+          echo "Checking existing root folders..."
+          EXISTING=$(curl -s http://sonarr:8989/api/v3/rootfolder -H "X-Api-Key: $SONARR_API_KEY")
+          
+          if echo "$EXISTING" | grep -q '"/tv"'; then
+            echo "Root folder /tv already exists"
+          else
+            echo "Adding root folder /tv..."
+            curl -X POST http://sonarr:8989/api/v3/rootfolder \
+              -H "X-Api-Key: $SONARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "path": "/tv",
+                "accessible": true,
+                "freeSpace": 0,
+                "unmappedFolders": []
+              }'
+            echo "Root folder added successfully"
+          fi
+          
+          echo "Root folder configuration complete!"

@@ -12,6 +12,8 @@ resources:
 - configs/prowlarr-indexer-setup-job.yaml
 - configs/jellyseerr-setup-job.yaml
 - configs/jellyseerr-config-job.yaml
+- configs/radarr-rootfolder-job.yaml
+- configs/sonarr-rootfolder-job.yaml
 
 # Disabled - secrets already exist in cluster
 # generators:
