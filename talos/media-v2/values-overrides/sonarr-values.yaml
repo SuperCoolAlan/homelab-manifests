@@ -19,9 +19,24 @@ deployment:
       - name: PGID
         value: "3001"
 
-# Configure URL base  
+# Configure URL base to serve from root
 application:
   urlBase: ""
+  config:
+    contents: |
+      <Config>
+        <LogLevel>info</LogLevel>
+        <EnableSsl>False</EnableSsl>
+        <Port>8989</Port>
+        <UrlBase></UrlBase>
+        <BindAddress>*</BindAddress>
+        <ApiKey>$apiKey</ApiKey>
+        <AnalyticsEnabled>False</AnalyticsEnabled>
+        <AuthenticationMethod>External</AuthenticationMethod>
+        <UpdateMechanism>Docker</UpdateMechanism>
+        <Branch>master</Branch>
+        <InstanceName>Sonarr</InstanceName>
+      </Config>
 
 ingress:
   enabled: true
