@@ -8,26 +8,12 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
+      serviceAccountName: media-setup
       containers:
       - name: setup
-        image: curlimages/curl:latest
+        image: alpine/k8s:1.30.8
         command: ["/bin/sh"]
         env:
-        - name: PROWLARR_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: media-api-keys
-              key: prowlarr-api-key
-        - name: SONARR_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: media-api-keys
-              key: sonarr-api-key
-        - name: RADARR_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: media-api-keys
-              key: radarr-api-key
         - name: NZBGEEK_API_KEY
           valueFrom:
             secretKeyRef:
@@ -37,6 +23,30 @@ spec:
         - -c
         - |
           set -e
+          
+          # Function to get API key from service config
+          get_api_key() {
+            SERVICE=$1
+            PORT=$2
+            CONFIG_PATH=$3
+            
+            echo "Fetching API key for $SERVICE..."
+            # Use kubectl exec to get the API key from the service's config.xml
+            API_KEY=$(kubectl exec -n media-v2 deploy/$SERVICE -- cat $CONFIG_PATH 2>/dev/null | grep -oP '(?<=<ApiKey>)[^<]+' | head -1)
+            
+            if [ -z "$API_KEY" ]; then
+              echo "Failed to get API key for $SERVICE"
+              exit 1
+            fi
+            
+            echo "Got API key for $SERVICE"
+            echo "$API_KEY"
+          }
+          
+          # Get API keys from running services
+          PROWLARR_API_KEY=$(get_api_key "prowlarr" "9696" "/config/config.xml")
+          SONARR_API_KEY=$(get_api_key "sonarr" "8989" "/config/config.xml")
+          RADARR_API_KEY=$(get_api_key "radarr" "7878" "/config/config.xml")
           
           # Wait for all services to be ready
           echo "Waiting for Prowlarr to be ready..."
@@ -74,7 +84,7 @@ spec:
                 \"implementation\": \"Sonarr\",
                 \"configContract\": \"SonarrSettings\",
                 \"fields\": [
-                  {\"name\": \"prowlarrUrl\", \"value\": \"http://prowlarr:9696\"},
+                  {\"name\": \"prowlarrUrl\", \"value\": \"http://prowlarr:9696/prowlarr\"},
                   {\"name\": \"baseUrl\", \"value\": \"http://sonarr:8989\"},
                   {\"name\": \"apiKey\", \"value\": \"$SONARR_API_KEY\"},
                   {\"name\": \"syncCategories\", \"value\": [5000, 5010, 5020, 5030, 5040, 5045, 5050]}
@@ -99,7 +109,7 @@ spec:
                 \"implementation\": \"Radarr\",
                 \"configContract\": \"RadarrSettings\",
                 \"fields\": [
-                  {\"name\": \"prowlarrUrl\", \"value\": \"http://prowlarr:9696\"},
+                  {\"name\": \"prowlarrUrl\", \"value\": \"http://prowlarr:9696/prowlarr\"},
                   {\"name\": \"baseUrl\", \"value\": \"http://radarr:7878\"},
                   {\"name\": \"apiKey\", \"value\": \"$RADARR_API_KEY\"},
                   {\"name\": \"syncCategories\", \"value\": [2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060]}
@@ -169,9 +179,10 @@ spec:
           
           # Sync all apps
           echo "Syncing indexers to all applications..."
-          curl -X POST http://prowlarr:9696/prowlarr/api/v1/applications/syncall \
+          curl -X POST http://prowlarr:9696/prowlarr/api/v1/command \
             -H "X-Api-Key: $PROWLARR_API_KEY" \
-            -H "Content-Type: application/json" || true
+            -H "Content-Type: application/json" \
+            -d '{"name": "ApplicationIndexerSync"}' || true
           
           echo "Prowlarr complete setup finished!"
           
