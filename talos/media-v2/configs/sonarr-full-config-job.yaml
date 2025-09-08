@@ -86,8 +86,8 @@ spec:
                   {"name": "useSsl", "value": false},
                   {"name": "apiKey", "value": "apiKey"},
                   {"name": "tvCategory", "value": "tv"},
-                  {"name": "recentTvPriority", "value": 0},
-                  {"name": "olderTvPriority", "value": 0}
+                  {"name": "recentTvPriority", "value": -100},
+                  {"name": "olderTvPriority", "value": -100}
                 ],
                 "implementationName": "SABnzbd",
                 "implementation": "Sabnzbd",
@@ -106,7 +106,8 @@ spec:
             echo "Prowlarr indexer already exists"
           else
             echo "Adding Prowlarr as indexer manager..."
-            # First add Sonarr to Prowlarr (if not already)
+            # Ensure Sonarr is properly configured in Prowlarr
+            echo "Configuring Sonarr in Prowlarr..."
             curl -X POST http://prowlarr:9696/api/v1/applications \
               -H "X-Api-Key: $PROWLARR_API_KEY" \
               -H "Content-Type: application/json" \
@@ -123,6 +124,13 @@ spec:
                 ],
                 \"tags\": []
               }" || true
+            
+            # Trigger sync from Prowlarr
+            echo "Triggering indexer sync from Prowlarr..."
+            curl -X POST http://prowlarr:9696/api/v1/command \
+              -H "X-Api-Key: $PROWLARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"name": "ApplicationIndexerSync"}' || true
             
             echo "Prowlarr integration configured"
           fi

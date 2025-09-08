@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: remove-urlbase
+  namespace: media-v2
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: fix
+        image: alpine:latest
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - |
+          echo "Removing URL base from Radarr config..."
+          if [ -f /radarr-config/config.xml ]; then
+            sed -i 's|<UrlBase>radarr</UrlBase>|<UrlBase></UrlBase>|' /radarr-config/config.xml
+            echo "Radarr URL base removed"
+            cat /radarr-config/config.xml | grep UrlBase
+          fi
+          
+          echo "Removing URL base from Sonarr config..."
+          if [ -f /sonarr-config/config.xml ]; then
+            sed -i 's|<UrlBase>sonarr</UrlBase>|<UrlBase></UrlBase>|' /sonarr-config/config.xml
+            echo "Sonarr URL base removed"
+            cat /sonarr-config/config.xml | grep UrlBase
+          fi
+          
+          echo "URL base removal complete!"
+        volumeMounts:
+        - name: radarr-config
+          mountPath: /radarr-config
+        - name: sonarr-config
+          mountPath: /sonarr-config
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 3001
+      volumes:
+      - name: radarr-config
+        persistentVolumeClaim:
+          claimName: radarr-config
+      - name: sonarr-config
+        persistentVolumeClaim:
+          claimName: sonarr-config
