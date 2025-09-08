@@ -86,8 +86,8 @@ spec:
                   {"name": "useSsl", "value": false},
                   {"name": "apiKey", "value": "apiKey"},
                   {"name": "tvCategory", "value": "tv"},
-                  {"name": "recentTvPriority", "value": -100},
-                  {"name": "olderTvPriority", "value": -100}
+                  {"name": "recentTvPriority", "value": 0},
+                  {"name": "olderTvPriority", "value": 0}
                 ],
                 "implementationName": "SABnzbd",
                 "implementation": "Sabnzbd",

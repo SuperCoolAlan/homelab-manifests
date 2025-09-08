@@ -86,8 +86,8 @@ spec:
                   {"name": "useSsl", "value": false},
                   {"name": "apiKey", "value": "apiKey"},
                   {"name": "movieCategory", "value": "movies"},
-                  {"name": "recentMoviePriority", "value": -100},
-                  {"name": "olderMoviePriority", "value": -100}
+                  {"name": "recentMoviePriority", "value": 0},
+                  {"name": "olderMoviePriority", "value": 0}
                 ],
                 "implementationName": "SABnzbd",
                 "implementation": "Sabnzbd",
