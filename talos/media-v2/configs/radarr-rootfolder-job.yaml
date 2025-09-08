@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: radarr-rootfolder-setup
+  namespace: media-v2
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: setup
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        env:
+        - name: RADARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: radarr-api-key
+        args:
+        - -c
+        - |
+          set -e
+          
+          # Wait for Radarr to be ready
+          echo "Waiting for Radarr to be ready..."
+          COUNTER=0
+          until curl -f http://radarr:7878/api/v3/system/status -H "X-Api-Key: $RADARR_API_KEY" 2>/dev/null || [ $COUNTER -eq 60 ]; do
+            echo "Radarr not ready yet, waiting... (attempt $COUNTER/60)"
+            sleep 5
+            COUNTER=$((COUNTER + 1))
+          done
+          
+          if [ $COUNTER -eq 60 ]; then
+            echo "Radarr did not become ready in time."
+            exit 1
+          fi
+          
+          echo "Radarr is ready!"
+          
+          # Check if root folder already exists
+          echo "Checking existing root folders..."
+          EXISTING=$(curl -s http://radarr:7878/api/v3/rootfolder -H "X-Api-Key: $RADARR_API_KEY")
+          
+          if echo "$EXISTING" | grep -q '"/movies"'; then
+            echo "Root folder /movies already exists"
+          else
+            echo "Adding root folder /movies..."
+            curl -X POST http://radarr:7878/api/v3/rootfolder \
+              -H "X-Api-Key: $RADARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "path": "/movies",
+                "accessible": true,
+                "freeSpace": 0,
+                "unmappedFolders": []
+              }'
+            echo "Root folder added successfully"
+          fi
+          
+          echo "Root folder configuration complete!"
