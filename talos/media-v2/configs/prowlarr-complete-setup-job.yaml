@@ -4,7 +4,6 @@ metadata:
   name: prowlarr-complete-setup
   namespace: media-v2
 spec:
-  ttlSecondsAfterFinished: 300
   template:
     spec:
       restartPolicy: OnFailure
