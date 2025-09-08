@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fix-urlbase
+  namespace: media-v2
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: fix
+        image: busybox:latest
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - |
+          echo "Fixing URL base in Radarr config..."
+          if [ -f /radarr-config/config.xml ]; then
+            cp /radarr-config/config.xml /radarr-config/config.xml.bak
+            sed 's|<UrlBase>radarr</UrlBase>|<UrlBase></UrlBase>|' /radarr-config/config.xml.bak > /radarr-config/config.xml
+            echo "Radarr URL base removed"
+          fi
+          
+          echo "Fixing URL base in Sonarr config..."
+          if [ -f /sonarr-config/config.xml ]; then
+            cp /sonarr-config/config.xml /sonarr-config/config.xml.bak
+            sed 's|<UrlBase>sonarr</UrlBase>|<UrlBase></UrlBase>|' /sonarr-config/config.xml.bak > /sonarr-config/config.xml
+            echo "Sonarr URL base removed"
+          fi
+          
+          echo "URL base fix complete!"
+        volumeMounts:
+        - name: radarr-config
+          mountPath: /radarr-config
+        - name: sonarr-config
+          mountPath: /sonarr-config
+      volumes:
+      - name: radarr-config
+        persistentVolumeClaim:
+          claimName: radarr-config
+      - name: sonarr-config
+        persistentVolumeClaim:
+          claimName: sonarr-config

@@ -32,7 +32,7 @@ spec:
             
             echo "Fetching API key for $SERVICE..."
             # Use kubectl exec to get the API key from the service's config.xml
-            API_KEY=$(kubectl exec -n media-v2 deploy/$SERVICE -- cat $CONFIG_PATH 2>/dev/null | grep -oP '(?<=<ApiKey>)[^<]+' | head -1)
+            API_KEY=$(kubectl exec -n media-v2 deploy/$SERVICE -- cat $CONFIG_PATH 2>/dev/null | sed -n 's/.*<ApiKey>\(.*\)<\/ApiKey>.*/\1/p' | head -1)
             
             if [ -z "$API_KEY" ]; then
               echo "Failed to get API key for $SERVICE"
@@ -51,7 +51,7 @@ spec:
           # Wait for all services to be ready
           echo "Waiting for Prowlarr to be ready..."
           COUNTER=0
-          until curl -f http://prowlarr:9696/prowlarr/api/v1/health -H "X-Api-Key: $PROWLARR_API_KEY" 2>/dev/null || [ $COUNTER -eq 60 ]; do
+          until curl -s http://prowlarr:9696/prowlarr/api/v1/system/status -H "X-Api-Key: $PROWLARR_API_KEY" 2>/dev/null | grep -q "version" || [ $COUNTER -eq 60 ]; do
             echo "Prowlarr not ready yet, waiting..."
             sleep 5
             COUNTER=$((COUNTER + 1))
