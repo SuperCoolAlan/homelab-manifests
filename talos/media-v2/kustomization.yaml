@@ -8,6 +8,8 @@ resources:
 - resources/external-truenas-svc.yaml
 - resources/jellyfin-ingress.yaml
 - configs/setup-rbac.yaml
+- configs/api-key-sync-script.yaml
+- configs/api-key-sync-deployment.yaml
 - configs/prowlarr-complete-setup-job.yaml
 - configs/radarr-full-config-job.yaml
 - configs/sonarr-full-config-job.yaml
