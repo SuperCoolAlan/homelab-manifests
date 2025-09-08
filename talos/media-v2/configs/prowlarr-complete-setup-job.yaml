@@ -19,34 +19,31 @@ spec:
             secretKeyRef:
               name: media-api-keys
               key: nzbgeek-api-key
+        - name: PROWLARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: prowlarr-api-key
+        - name: SONARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: sonarr-api-key
+        - name: RADARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: radarr-api-key
         args:
         - -c
         - |
           set -e
           
-          # Function to get API key from service config
-          get_api_key() {
-            SERVICE=$1
-            PORT=$2
-            CONFIG_PATH=$3
-            
-            echo "Fetching API key for $SERVICE..."
-            # Use kubectl exec to get the API key from the service's config.xml
-            API_KEY=$(kubectl exec -n media-v2 deploy/$SERVICE -- cat $CONFIG_PATH 2>/dev/null | sed -n 's/.*<ApiKey>\(.*\)<\/ApiKey>.*/\1/p' | head -1)
-            
-            if [ -z "$API_KEY" ]; then
-              echo "Failed to get API key for $SERVICE"
-              exit 1
-            fi
-            
-            echo "Got API key for $SERVICE"
-            echo "$API_KEY"
-          }
-          
-          # Get API keys from running services
-          PROWLARR_API_KEY=$(get_api_key "prowlarr" "9696" "/config/config.xml")
-          SONARR_API_KEY=$(get_api_key "sonarr" "8989" "/config/config.xml")
-          RADARR_API_KEY=$(get_api_key "radarr" "7878" "/config/config.xml")
+          # API keys are now provided via environment variables from the secret
+          echo "Using API keys from media-api-keys secret..."
+          echo "Prowlarr API key: ${PROWLARR_API_KEY:0:8}..."
+          echo "Sonarr API key: ${SONARR_API_KEY:0:8}..."
+          echo "Radarr API key: ${RADARR_API_KEY:0:8}..."
           
           # Wait for all services to be ready
           echo "Waiting for Prowlarr to be ready..."
