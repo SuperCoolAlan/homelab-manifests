@@ -23,15 +23,23 @@ spec:
         - |
           set -e
           
-          # Hardcode the API keys that we know are correct
-          PROWLARR_API_KEY="173db0f2d3464d5ca213aa166e5a3eef"
-          SONARR_API_KEY="5097a715fb084ca1ab07670ef50dcd68"
-          RADARR_API_KEY="1ac50a71923a4e9589e028dbc89140a3"
+          # For this simplified version, we'll use a ConfigMap or Secret that gets updated
+          # by another job that has RBAC permissions to read the configs
+          # For now, we'll just document that these should never be hardcoded
           
-          echo "Using known API keys:"
-          echo "Prowlarr: $PROWLARR_API_KEY"
-          echo "Sonarr: $SONARR_API_KEY"
-          echo "Radarr: $RADARR_API_KEY"
+          echo "ERROR: This job needs to be updated to fetch API keys dynamically"
+          echo "Options:"
+          echo "1. Use a separate job with RBAC to fetch and store keys in a ConfigMap"
+          echo "2. Use init containers to fetch the keys"
+          echo "3. Mount the config volumes directly (if possible)"
+          echo ""
+          echo "For now, please run the prowlarr-dynamic-setup-job instead"
+          exit 1
+          
+          echo "Got API keys:"
+          echo "Prowlarr: ${PROWLARR_API_KEY:0:8}..."
+          echo "Sonarr: ${SONARR_API_KEY:0:8}..."
+          echo "Radarr: ${RADARR_API_KEY:0:8}..."
           
           # Wait for Prowlarr to be ready
           echo "Waiting for Prowlarr to be ready..."
