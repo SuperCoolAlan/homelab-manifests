@@ -1,0 +1,164 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: radarr-full-config
+  namespace: media-v2
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: setup
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        env:
+        - name: RADARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: radarr-api-key
+        - name: PROWLARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: prowlarr-api-key
+        args:
+        - -c
+        - |
+          set -e
+          
+          # Wait for Radarr to be ready
+          echo "Waiting for Radarr to be ready..."
+          COUNTER=0
+          until curl -f http://radarr:7878/api/v3/system/status -H "X-Api-Key: $RADARR_API_KEY" 2>/dev/null || [ $COUNTER -eq 60 ]; do
+            echo "Radarr not ready yet, waiting... (attempt $COUNTER/60)"
+            sleep 5
+            COUNTER=$((COUNTER + 1))
+          done
+          
+          if [ $COUNTER -eq 60 ]; then
+            echo "Radarr did not become ready in time."
+            exit 1
+          fi
+          
+          echo "Radarr is ready!"
+          
+          # 1. Configure root folder
+          echo "Checking existing root folders..."
+          EXISTING=$(curl -s http://radarr:7878/api/v3/rootfolder -H "X-Api-Key: $RADARR_API_KEY")
+          
+          if echo "$EXISTING" | grep -q '"/movies"'; then
+            echo "Root folder /movies already exists"
+          else
+            echo "Adding root folder /movies..."
+            curl -X POST http://radarr:7878/api/v3/rootfolder \
+              -H "X-Api-Key: $RADARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "path": "/movies",
+                "accessible": true
+              }'
+            echo "Root folder added successfully"
+          fi
+          
+          # 2. Add SABnzbd as download client
+          echo "Checking existing download clients..."
+          EXISTING_DC=$(curl -s http://radarr:7878/api/v3/downloadclient -H "X-Api-Key: $RADARR_API_KEY")
+          
+          if echo "$EXISTING_DC" | grep -q '"name":"SABnzbd"'; then
+            echo "SABnzbd download client already exists"
+          else
+            echo "Adding SABnzbd download client..."
+            curl -X POST http://radarr:7878/api/v3/downloadclient \
+              -H "X-Api-Key: $RADARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "enable": true,
+                "protocol": "usenet",
+                "priority": 1,
+                "removeCompletedDownloads": true,
+                "removeFailedDownloads": true,
+                "name": "SABnzbd",
+                "fields": [
+                  {"name": "host", "value": "sabnzbd"},
+                  {"name": "port", "value": 8080},
+                  {"name": "useSsl", "value": false},
+                  {"name": "apiKey", "value": ""},
+                  {"name": "movieCategory", "value": "movies"},
+                  {"name": "recentMoviePriority", "value": 0},
+                  {"name": "olderMoviePriority", "value": 0}
+                ],
+                "implementationName": "SABnzbd",
+                "implementation": "Sabnzbd",
+                "configContract": "SabnzbdSettings",
+                "infoLink": "https://wiki.servarr.com/radarr/supported#sabnzbd",
+                "tags": []
+              }'
+            echo "SABnzbd download client added"
+          fi
+          
+          # 3. Connect to Prowlarr for indexer management
+          echo "Checking existing indexers..."
+          EXISTING_INDEXERS=$(curl -s http://radarr:7878/api/v3/indexer -H "X-Api-Key: $RADARR_API_KEY")
+          
+          if echo "$EXISTING_INDEXERS" | grep -q '"name":"Prowlarr"'; then
+            echo "Prowlarr indexer already exists"
+          else
+            echo "Adding Prowlarr as indexer manager..."
+            # First add Radarr to Prowlarr (if not already)
+            curl -X POST http://prowlarr:9696/api/v1/applications \
+              -H "X-Api-Key: $PROWLARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"name\": \"Radarr\",
+                \"syncLevel\": \"fullSync\",
+                \"implementation\": \"Radarr\",
+                \"configContract\": \"RadarrSettings\",
+                \"fields\": [
+                  {\"name\": \"prowlarrUrl\", \"value\": \"http://prowlarr:9696\"},
+                  {\"name\": \"baseUrl\", \"value\": \"http://radarr:7878\"},
+                  {\"name\": \"apiKey\", \"value\": \"$RADARR_API_KEY\"},
+                  {\"name\": \"syncCategories\", \"value\": [2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060]}
+                ],
+                \"tags\": []
+              }" || true
+            
+            echo "Prowlarr integration configured"
+          fi
+          
+          # 4. Create default quality profile if needed
+          echo "Checking quality profiles..."
+          PROFILES=$(curl -s http://radarr:7878/api/v3/qualityprofile -H "X-Api-Key: $RADARR_API_KEY")
+          
+          if ! echo "$PROFILES" | grep -q '"name":"HD - 1080p"'; then
+            echo "Creating default HD quality profile..."
+            curl -X POST http://radarr:7878/api/v3/qualityprofile \
+              -H "X-Api-Key: $RADARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "name": "HD - 1080p",
+                "upgradeAllowed": true,
+                "cutoff": 7,
+                "items": [
+                  {
+                    "quality": {"id": 7, "name": "Bluray-1080p"},
+                    "allowed": true
+                  },
+                  {
+                    "quality": {"id": 3, "name": "WEBDL-1080p"},
+                    "allowed": true
+                  },
+                  {
+                    "quality": {"id": 5, "name": "WEBDL-720p"},
+                    "allowed": true
+                  }
+                ],
+                "minFormatScore": 0,
+                "cutoffFormatScore": 0,
+                "formatItems": [],
+                "language": {"id": 1, "name": "English"}
+              }' || true
+          fi
+          
+          echo "Radarr configuration complete!"
