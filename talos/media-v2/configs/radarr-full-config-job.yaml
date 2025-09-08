@@ -70,7 +70,6 @@ spec:
             echo "SABnzbd download client already exists"
           else
             echo "Adding SABnzbd download client..."
-            # Note: SABnzbd uses "apiKey" as its default API key in our deployment
             curl -X POST http://radarr:7878/radarr/api/v3/downloadclient \
               -H "X-Api-Key: $RADARR_API_KEY" \
               -H "Content-Type: application/json" \
@@ -87,8 +86,8 @@ spec:
                   {"name": "useSsl", "value": false},
                   {"name": "apiKey", "value": "apiKey"},
                   {"name": "movieCategory", "value": "movies"},
-                  {"name": "recentMoviePriority", "value": 0},
-                  {"name": "olderMoviePriority", "value": 0}
+                  {"name": "recentMoviePriority", "value": -100},
+                  {"name": "olderMoviePriority", "value": -100}
                 ],
                 "implementationName": "SABnzbd",
                 "implementation": "Sabnzbd",
@@ -107,7 +106,8 @@ spec:
             echo "Prowlarr indexer already exists"
           else
             echo "Adding Prowlarr as indexer manager..."
-            # First add Radarr to Prowlarr (if not already)
+            # Ensure Radarr is properly configured in Prowlarr
+            echo "Configuring Radarr in Prowlarr..."
             curl -X POST http://prowlarr:9696/api/v1/applications \
               -H "X-Api-Key: $PROWLARR_API_KEY" \
               -H "Content-Type: application/json" \
@@ -124,6 +124,13 @@ spec:
                 ],
                 \"tags\": []
               }" || true
+            
+            # Trigger sync from Prowlarr
+            echo "Triggering indexer sync from Prowlarr..."
+            curl -X POST http://prowlarr:9696/api/v1/command \
+              -H "X-Api-Key: $PROWLARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"name": "ApplicationIndexerSync"}' || true
             
             echo "Prowlarr integration configured"
           fi
