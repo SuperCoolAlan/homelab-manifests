@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: api-key-sync
+  namespace: media-v2
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: api-key-sync
+  namespace: media-v2
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: api-key-sync
+  namespace: media-v2
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: api-key-sync
+subjects:
+- kind: ServiceAccount
+  name: api-key-sync
+  namespace: media-v2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-key-sync
+  namespace: media-v2
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  # Only one instance should run at a time
+  selector:
+    matchLabels:
+      app: api-key-sync
+  template:
+    metadata:
+      labels:
+        app: api-key-sync
+    spec:
+      serviceAccountName: api-key-sync
+      containers:
+      - name: sync
+        image: alpine/k8s:1.28.3  # Alpine with kubectl pre-installed
+        command: ["/bin/sh"]
+        args: ["/scripts/sync-api-keys.sh"]
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: script
+          mountPath: /scripts
+          readOnly: true
+        - name: radarr-config
+          mountPath: /radarr-config
+          readOnly: true
+        - name: sonarr-config
+          mountPath: /sonarr-config
+          readOnly: true
+        - name: prowlarr-config
+          mountPath: /prowlarr-config
+          readOnly: true
+        - name: bazarr-config
+          mountPath: /bazarr-config
+          readOnly: true
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      volumes:
+      - name: script
+        configMap:
+          name: api-key-sync-script
+          defaultMode: 0755
+      - name: radarr-config
+        persistentVolumeClaim:
+          claimName: radarr-config
+      - name: sonarr-config
+        persistentVolumeClaim:
+          claimName: sonarr-config
+      - name: prowlarr-config
+        persistentVolumeClaim:
+          claimName: prowlarr-config
+      - name: bazarr-config
+        persistentVolumeClaim:
+          claimName: bazarr-config
