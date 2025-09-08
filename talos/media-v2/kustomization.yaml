@@ -12,8 +12,9 @@ resources:
 - configs/prowlarr-indexer-setup-job.yaml
 - configs/jellyseerr-setup-job.yaml
 
-generators:
-- secrets-generator.yaml
+# Disabled - secrets already exist in cluster
+# generators:
+# - secrets-generator.yaml
 
 helmCharts:
 - name: sonarr
