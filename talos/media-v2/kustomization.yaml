@@ -7,13 +7,12 @@ resources:
 - shared-pvcs.yaml
 - resources/external-truenas-svc.yaml
 - resources/jellyfin-ingress.yaml
-- configs/prowlarr-setup-job.yaml
+- configs/prowlarr-complete-setup-job.yaml
+- configs/radarr-full-config-job.yaml
+- configs/sonarr-full-config-job.yaml
 - configs/bazarr-setup-job.yaml
-- configs/prowlarr-indexer-setup-job.yaml
 - configs/jellyseerr-setup-job.yaml
 - configs/jellyseerr-config-job.yaml
-- configs/radarr-rootfolder-job.yaml
-- configs/sonarr-rootfolder-job.yaml
 
 # Disabled - secrets already exist in cluster
 # generators:

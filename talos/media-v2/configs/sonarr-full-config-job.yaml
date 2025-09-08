@@ -1,0 +1,163 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sonarr-full-config
+  namespace: media-v2
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: setup
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        env:
+        - name: SONARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: sonarr-api-key
+        - name: PROWLARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: prowlarr-api-key
+        args:
+        - -c
+        - |
+          set -e
+          
+          # Wait for Sonarr to be ready
+          echo "Waiting for Sonarr to be ready..."
+          COUNTER=0
+          until curl -f http://sonarr:8989/api/v3/system/status -H "X-Api-Key: $SONARR_API_KEY" 2>/dev/null || [ $COUNTER -eq 60 ]; do
+            echo "Sonarr not ready yet, waiting... (attempt $COUNTER/60)"
+            sleep 5
+            COUNTER=$((COUNTER + 1))
+          done
+          
+          if [ $COUNTER -eq 60 ]; then
+            echo "Sonarr did not become ready in time."
+            exit 1
+          fi
+          
+          echo "Sonarr is ready!"
+          
+          # 1. Configure root folder
+          echo "Checking existing root folders..."
+          EXISTING=$(curl -s http://sonarr:8989/api/v3/rootfolder -H "X-Api-Key: $SONARR_API_KEY")
+          
+          if echo "$EXISTING" | grep -q '"/tv"'; then
+            echo "Root folder /tv already exists"
+          else
+            echo "Adding root folder /tv..."
+            curl -X POST http://sonarr:8989/api/v3/rootfolder \
+              -H "X-Api-Key: $SONARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "path": "/tv",
+                "accessible": true
+              }'
+            echo "Root folder added successfully"
+          fi
+          
+          # 2. Add SABnzbd as download client
+          echo "Checking existing download clients..."
+          EXISTING_DC=$(curl -s http://sonarr:8989/api/v3/downloadclient -H "X-Api-Key: $SONARR_API_KEY")
+          
+          if echo "$EXISTING_DC" | grep -q '"name":"SABnzbd"'; then
+            echo "SABnzbd download client already exists"
+          else
+            echo "Adding SABnzbd download client..."
+            curl -X POST http://sonarr:8989/api/v3/downloadclient \
+              -H "X-Api-Key: $SONARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "enable": true,
+                "protocol": "usenet",
+                "priority": 1,
+                "removeCompletedDownloads": true,
+                "removeFailedDownloads": true,
+                "name": "SABnzbd",
+                "fields": [
+                  {"name": "host", "value": "sabnzbd"},
+                  {"name": "port", "value": 8080},
+                  {"name": "useSsl", "value": false},
+                  {"name": "apiKey", "value": ""},
+                  {"name": "tvCategory", "value": "tv"},
+                  {"name": "recentTvPriority", "value": 0},
+                  {"name": "olderTvPriority", "value": 0}
+                ],
+                "implementationName": "SABnzbd",
+                "implementation": "Sabnzbd",
+                "configContract": "SabnzbdSettings",
+                "infoLink": "https://wiki.servarr.com/sonarr/supported#sabnzbd",
+                "tags": []
+              }'
+            echo "SABnzbd download client added"
+          fi
+          
+          # 3. Connect to Prowlarr for indexer management
+          echo "Checking existing indexers..."
+          EXISTING_INDEXERS=$(curl -s http://sonarr:8989/api/v3/indexer -H "X-Api-Key: $SONARR_API_KEY")
+          
+          if echo "$EXISTING_INDEXERS" | grep -q '"name":"Prowlarr"'; then
+            echo "Prowlarr indexer already exists"
+          else
+            echo "Adding Prowlarr as indexer manager..."
+            # First add Sonarr to Prowlarr (if not already)
+            curl -X POST http://prowlarr:9696/api/v1/applications \
+              -H "X-Api-Key: $PROWLARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"name\": \"Sonarr\",
+                \"syncLevel\": \"fullSync\",
+                \"implementation\": \"Sonarr\",
+                \"configContract\": \"SonarrSettings\",
+                \"fields\": [
+                  {\"name\": \"prowlarrUrl\", \"value\": \"http://prowlarr:9696\"},
+                  {\"name\": \"baseUrl\", \"value\": \"http://sonarr:8989\"},
+                  {\"name\": \"apiKey\", \"value\": \"$SONARR_API_KEY\"},
+                  {\"name\": \"syncCategories\", \"value\": [5000, 5010, 5020, 5030, 5040, 5045, 5050]}
+                ],
+                \"tags\": []
+              }" || true
+            
+            echo "Prowlarr integration configured"
+          fi
+          
+          # 4. Create default quality profile if needed
+          echo "Checking quality profiles..."
+          PROFILES=$(curl -s http://sonarr:8989/api/v3/qualityprofile -H "X-Api-Key: $SONARR_API_KEY")
+          
+          if ! echo "$PROFILES" | grep -q '"name":"HD - 1080p"'; then
+            echo "Creating default HD quality profile..."
+            curl -X POST http://sonarr:8989/api/v3/qualityprofile \
+              -H "X-Api-Key: $SONARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "name": "HD - 1080p",
+                "upgradeAllowed": true,
+                "cutoff": 7,
+                "items": [
+                  {
+                    "quality": {"id": 7, "name": "Bluray-1080p"},
+                    "allowed": true
+                  },
+                  {
+                    "quality": {"id": 3, "name": "WEBDL-1080p"},
+                    "allowed": true
+                  },
+                  {
+                    "quality": {"id": 5, "name": "WEBDL-720p"},
+                    "allowed": true
+                  }
+                ],
+                "minFormatScore": 0,
+                "cutoffFormatScore": 0,
+                "formatItems": []
+              }' || true
+          fi
+          
+          echo "Sonarr configuration complete!"
