@@ -1,0 +1,103 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prowlarr-indexer-setup
+  namespace: media-v2
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: setup
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - |
+          set -e
+          echo "Waiting for Prowlarr to be ready..."
+          until curl -f http://prowlarr:9696/prowlarr/api/v1/health -H "X-Api-Key: e5462d745721475db235a8bc4eb32a07"; do
+            echo "Prowlarr not ready yet, waiting..."
+            sleep 5
+          done
+          echo "Prowlarr is ready!"
+          
+          # Check if NZBgeek already exists
+          echo "Checking existing indexers..."
+          EXISTING_INDEXERS=$(curl -s http://prowlarr:9696/prowlarr/api/v1/indexer -H "X-Api-Key: e5462d745721475db235a8bc4eb32a07")
+          
+          # Add NZBgeek if not exists
+          if ! echo "$EXISTING_INDEXERS" | grep -q "NZBgeek"; then
+            echo "Adding NZBgeek indexer to Prowlarr..."
+            curl -X POST http://prowlarr:9696/prowlarr/api/v1/indexer \
+              -H "X-Api-Key: e5462d745721475db235a8bc4eb32a07" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "enable": true,
+                "redirect": true,
+                "name": "NZBgeek",
+                "fields": [
+                  {"name": "baseUrl", "value": "https://api.nzbgeek.info"},
+                  {"name": "apiPath", "value": "/api"},
+                  {"name": "apiKey", "value": "VIcQhG9ELcIQRpFgPctQB2a3jHStkpeu"},
+                  {"name": "categories", "value": [2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060, 2070, 2080, 2090, 5000, 5010, 5020, 5030, 5040, 5045, 5050, 5060, 5070, 5080, 5090]},
+                  {"name": "animeCategories", "value": [5070]},
+                  {"name": "animeStandardFormatSearch", "value": false},
+                  {"name": "baseSettings.limitsUnit", "value": 0},
+                  {"name": "torrentBaseSettings.appMinimumSeeders", "value": 1},
+                  {"name": "torrentBaseSettings.seedRatio", "value": ""},
+                  {"name": "torrentBaseSettings.seedTime", "value": ""},
+                  {"name": "torrentBaseSettings.packSeedTime", "value": ""}
+                ],
+                "implementationName": "Newznab",
+                "implementation": "Newznab",
+                "configContract": "NewznabSettings",
+                "appProfileId": 1,
+                "tags": [],
+                "protocol": "usenet",
+                "priority": 25
+              }'
+            
+            if [ $? -eq 0 ]; then
+              echo "NZBgeek indexer added successfully"
+              
+              # Test the indexer
+              echo "Testing NZBgeek indexer..."
+              TEST_RESULT=$(curl -X POST http://prowlarr:9696/prowlarr/api/v1/indexer/test \
+                -H "X-Api-Key: e5462d745721475db235a8bc4eb32a07" \
+                -H "Content-Type: application/json" \
+                -d '{
+                  "enable": true,
+                  "redirect": false,
+                  "name": "NZBgeek",
+                  "fields": [
+                    {"name": "baseUrl", "value": "https://api.nzbgeek.info"},
+                    {"name": "apiPath", "value": "/api"},
+                    {"name": "apiKey", "value": "VIcQhG9ELcIQRpFgPctQB2a3jHStkpeu"}
+                  ],
+                  "implementationName": "Newznab",
+                  "implementation": "Newznab",
+                  "configContract": "NewznabSettings",
+                  "protocol": "usenet"
+                }')
+              
+              echo "Test result: $TEST_RESULT"
+              
+              # Trigger sync to push indexer to apps
+              echo "Syncing indexers to applications..."
+              curl -X POST http://prowlarr:9696/prowlarr/api/v1/applications/sync \
+                -H "X-Api-Key: e5462d745721475db235a8bc4eb32a07" \
+                -H "Content-Type: application/json" \
+                -d '{}'
+                
+              echo "Indexer sync triggered"
+            else
+              echo "Failed to add NZBgeek indexer"
+              exit 1
+            fi
+          else
+            echo "NZBgeek indexer already configured"
+          fi
+          
+          echo "Prowlarr indexer setup complete!"
