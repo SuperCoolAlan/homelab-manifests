@@ -149,9 +149,6 @@ spec:
         - name: CONFIG_PATH
           value: "/config/config.yaml"
         volumeMounts:
-        - name: config-map-processed
-          mountPath: /mounted-config
-          readOnly: true
         - name: config
           mountPath: /config
         - name: api-sync-script
