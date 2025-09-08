@@ -78,12 +78,12 @@ deployment:
       - name: 'ewekaPassword'
         valueFrom:
           secretKeyRef:
-            name: sabnzbd
+            name: sabnzbd-passwords
             key: ewekaPassword
       - name: 'newshostingPassword'
         valueFrom:
           secretKeyRef:
-            name: sabnzbd
+            name: sabnzbd-passwords
             key: newshostingPassword
 
 # Use chart defaults for volume mounts
