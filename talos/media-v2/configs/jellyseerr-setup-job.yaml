@@ -50,7 +50,11 @@ spec:
           # 3. Adding Sonarr/Radarr servers
           
           # We can pre-configure some settings once the initial setup is done
-          echo "Jellyseerr requires initial setup through the web UI at https://jellyseerr.asandov.local/"
+          echo "Jellyseerr requires initial setup through the web UI at http://jellyseerr.asandov.local/"
+          echo ""
+          echo "Jellyfin server configuration:"
+          echo "  - URL: http://jellyfin.asandov.local"
+          echo "  - Or internal: http://external-truenas:30013"
           echo ""
           echo "After initial setup, configure the following:"
           echo "1. Sonarr:"
