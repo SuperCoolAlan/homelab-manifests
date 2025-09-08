@@ -8,6 +8,7 @@ resources:
 - configs/prowlarr-setup-job.yaml
 - configs/bazarr-setup-job.yaml
 - configs/prowlarr-indexer-setup-job.yaml
+- configs/jellyseerr-setup-job.yaml
 
 # Disabled - secret already exists in cluster
 # generators:
@@ -55,3 +56,10 @@ helmCharts:
   releaseName: homarr
   namespace: media-v2
   valuesFile: values-overrides/homarr-values.yaml
+
+- name: jellyseerr
+  repo: https://media-servarr.shw.al/charts
+  version: 0.5.0
+  releaseName: jellyseerr
+  namespace: media-v2
+  valuesFile: values-overrides/jellyseerr-values.yaml

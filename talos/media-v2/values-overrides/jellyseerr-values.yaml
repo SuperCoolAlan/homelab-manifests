@@ -1,0 +1,29 @@
+# Jellyseerr configuration for media requests
+persistentVolumeClaims:
+  jellyseerr-config:
+    requestStorage: '5Gi'
+    storageClassName: 'nfs'
+
+# Use specific UID/GID that matches TrueNAS NFS user
+deployment:
+  container:
+    env:
+      - name: PUID
+        value: "1000"
+      - name: PGID
+        value: "3001"
+      - name: TZ
+        value: "America/New_York"
+
+# Disable initial config to let it create its own
+application:
+  config: null
+
+ingress:
+  enabled: true
+  className: nginx
+  host: jellyseerr.asandov.local
+  path: /
+  pathType: Prefix
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: jellyseerr.asandov.local
