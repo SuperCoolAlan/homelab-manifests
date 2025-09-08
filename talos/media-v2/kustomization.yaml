@@ -20,6 +20,9 @@ resources:
 generators:
 - secrets-generator.yaml
 
+patchesStrategicMerge:
+- patches/add-api-sync-sidecars.yaml
+
 helmCharts:
 - name: sonarr
   repo: https://media-servarr.shw.al/charts
