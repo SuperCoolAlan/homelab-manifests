@@ -13,11 +13,12 @@ spec:
       labels:
         app: gluetun
     spec:
-      hostNetwork: false
-      dnsPolicy: "None"
-      dnsConfig:
-        nameservers:
-          - 10.255.255.1
+      securityContext:
+        sysctls:
+        - name: net.ipv4.conf.all.src_valid_mark
+          value: "1"
+        - name: net.ipv6.conf.all.disable_ipv6
+          value: "1"
       containers:
       - name: gluetun
         image: qmcgaw/gluetun:latest
