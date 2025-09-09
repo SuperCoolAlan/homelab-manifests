@@ -4,39 +4,9 @@ persistentVolumeClaims:
     requestStorage: '10Gi'
     storageClassName: 'nfs'
 
-# Disable config.xml mounting to avoid conflict with NFS volume
+# Disable config.xml mounting - let app manage its own config
 application:
   config: null
-
-# Use chart defaults for volume mounts (/config, /downloads, /tv)
-
-# Use specific UID/GID that matches TrueNAS NFS user
-deployment:
-  container:
-    env:
-      - name: PUID
-        value: "1000"
-      - name: PGID
-        value: "3001"
-
-# Configure URL base to serve from root
-application:
-  urlBase: ""
-  config:
-    contents: |
-      <Config>
-        <LogLevel>info</LogLevel>
-        <EnableSsl>False</EnableSsl>
-        <Port>8989</Port>
-        <UrlBase></UrlBase>
-        <BindAddress>*</BindAddress>
-        <ApiKey>$apiKey</ApiKey>
-        <AnalyticsEnabled>False</AnalyticsEnabled>
-        <AuthenticationMethod>External</AuthenticationMethod>
-        <UpdateMechanism>Docker</UpdateMechanism>
-        <Branch>master</Branch>
-        <InstanceName>Sonarr</InstanceName>
-      </Config>
 
 ingress:
   enabled: true
@@ -47,9 +17,27 @@ ingress:
   annotations:
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 
-# Add API key sync sidecar
+# Configure deployment with volumes and API key sync sidecar
 deployment:
   serviceAccountName: media-apps
+  # Configure volumes to use shared PVCs
+  volumes:
+    config:
+      persistentVolumeClaim:
+        claimName: 'sonarr-config'
+    downloads:
+      persistentVolumeClaim:
+        claimName: 'media-downloads'
+    tv:
+      persistentVolumeClaim:
+        claimName: 'media-library'
+  # Use specific UID/GID that matches TrueNAS NFS user
+  container:
+    env:
+      - name: PUID
+        value: "1000"
+      - name: PGID
+        value: "3001"
   additionalContainers:
   - name: api-key-sync
     image: alpine/k8s:1.28.3

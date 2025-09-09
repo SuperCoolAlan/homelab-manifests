@@ -47,9 +47,19 @@ data:
         # Patch the secret
         kubectl patch secret media-api-keys -n media-v2 --type='merge' -p "{\"data\": $UPDATED_DATA}"
       else
-        # Create new secret with this key
+        # Create new secret with all required keys (placeholders for those not yet populated)
+        # NZBgeek credentials are static and known
         kubectl create secret generic media-api-keys -n media-v2 \
-          --from-literal="$SECRET_KEY=$key_value"
+          --from-literal="prowlarr-api-key=placeholder" \
+          --from-literal="sonarr-api-key=placeholder" \
+          --from-literal="radarr-api-key=placeholder" \
+          --from-literal="bazarr-api-key=placeholder" \
+          --from-literal="nzbgeek-api-key=VIcQhG9ELcIQRpFgPctQB2a3jHStkpeu" \
+          --from-literal="nzbgeek-username=verycoolfella"
+        
+        # Then update with the actual value
+        kubectl patch secret media-api-keys -n media-v2 --type='merge' \
+          -p "{\"data\": {\"$SECRET_KEY\": \"$(echo -n "$key_value" | base64)\"}}"
       fi
       
       echo "$(date): Secret updated successfully"
