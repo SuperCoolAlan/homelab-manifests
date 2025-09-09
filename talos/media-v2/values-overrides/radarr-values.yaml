@@ -28,18 +28,9 @@ deployment:
     downloads:
       persistentVolumeClaim:
         claimName: 'media-downloads'
-    movies:
+    film:
       persistentVolumeClaim:
         claimName: 'media-library'
-  # Override volumeMounts to change /film to /movies
-  container:
-    volumeMounts:
-      - name: 'config'
-        mountPath: '/config'
-      - name: 'downloads'
-        mountPath: '/downloads'
-      - name: 'movies'
-        mountPath: '/movies'
   additionalContainers:
   - name: api-key-sync
     image: alpine/k8s:1.28.3

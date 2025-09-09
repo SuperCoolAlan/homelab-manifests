@@ -47,15 +47,15 @@ spec:
           echo "Checking existing root folders..."
           EXISTING=$(curl -s http://radarr:7878/radarr/api/v3/rootfolder -H "X-Api-Key: $RADARR_API_KEY")
           
-          if echo "$EXISTING" | grep -q '"/movies"'; then
-            echo "Root folder /movies already exists"
+          if echo "$EXISTING" | grep -q '"/film"'; then
+            echo "Root folder /film already exists"
           else
-            echo "Adding root folder /movies..."
+            echo "Adding root folder /film..."
             curl -X POST http://radarr:7878/radarr/api/v3/rootfolder \
               -H "X-Api-Key: $RADARR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
-                "path": "/movies",
+                "path": "/film",
                 "accessible": true
               }'
             echo "Root folder added successfully"
