@@ -27,8 +27,8 @@
     - secretRef:
         name: windscribe-openvpn-creds
     ports:
-    - containerPort: 8080
-      name: http
+    - containerPort: 8888
+      name: http-proxy
       protocol: TCP
     resources:
       requests:
@@ -43,6 +43,12 @@
         - NET_ADMIN
     terminationMessagePath: /dev/termination-log
     terminationMessagePolicy: File
+- op: add
+  path: /spec/template/spec/hostNetwork
+  value: true
+- op: add
+  path: /spec/template/spec/dnsPolicy
+  value: ClusterFirstWithHostNet
 - op: add
   path: /spec/template/spec/containers/0/env/-
   value:

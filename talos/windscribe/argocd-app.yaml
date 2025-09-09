@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: windscribe
+  namespace: argo-cd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
+    targetRevision: main
+    path: talos/windscribe
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: windscribe
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

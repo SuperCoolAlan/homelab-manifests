@@ -10,6 +10,7 @@ resources:
 - configs/setup-rbac.yaml
 - configs/api-key-sync-sidecar.yaml
 - configs/api-key-sync-rbac.yaml
+- configs/namespace-config.yaml
 - configs/prowlarr-complete-setup-job.yaml
 - configs/radarr-full-config-job.yaml
 - configs/sonarr-full-config-job.yaml
@@ -20,11 +21,12 @@ resources:
 generators:
 - secrets-generator.yaml
 
-patches:
-- target:
-    kind: Deployment
-    name: sabnzbd
-  path: patches/add-vpn-sidecars.yaml
+# VPN is now in separate windscribe namespace
+#patches:
+#- target:
+#    kind: Deployment
+#    name: sabnzbd
+#  path: patches/add-vpn-sidecars.yaml
 
 # Sidecars are now added via helm values, not patches
 #patchesStrategicMerge:
