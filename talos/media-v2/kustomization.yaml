@@ -8,7 +8,7 @@ resources:
 - resources/external-truenas-svc.yaml
 - resources/jellyfin-ingress.yaml
 - configs/setup-rbac.yaml
-- configs/api-key-sync-sidecar.yaml
+#- configs/api-key-sync-sidecar.yaml
 - configs/api-key-sync-rbac.yaml
 - configs/prowlarr-complete-setup-job.yaml
 - configs/radarr-full-config-job.yaml
