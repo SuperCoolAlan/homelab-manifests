@@ -10,7 +10,6 @@ resources:
 - configs/setup-rbac.yaml
 - configs/api-key-sync-sidecar.yaml
 - configs/api-key-sync-rbac.yaml
-- configs/namespace-config.yaml
 - configs/prowlarr-complete-setup-job.yaml
 - configs/radarr-full-config-job.yaml
 - configs/sonarr-full-config-job.yaml
@@ -28,9 +27,9 @@ generators:
 #    name: sabnzbd
 #  path: patches/add-vpn-sidecars.yaml
 
-# API sync sidecars are needed for config jobs to work
-patchesStrategicMerge:
-- patches/add-api-sync-sidecars.yaml
+# API sync sidecars are configured in values files, not patches
+#patchesStrategicMerge:
+#- patches/add-api-sync-sidecars.yaml
 
 helmCharts:
 - name: sonarr
