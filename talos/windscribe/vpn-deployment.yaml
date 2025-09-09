@@ -47,6 +47,7 @@ spec:
           protocol: TCP
         resources: {}
         securityContext:
+          privileged: true
           capabilities:
             add:
             - NET_ADMIN
