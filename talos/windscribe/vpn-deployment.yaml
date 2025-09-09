@@ -18,14 +18,8 @@ spec:
         image: qmcgaw/gluetun:latest
         imagePullPolicy: Always
         env:
-        - name: DOT
-          value: "off"
-        - name: BLOCK_MALICIOUS
-          value: "off"
-        - name: BLOCK_SURVEILLANCE
-          value: "off"
-        - name: BLOCK_ADS
-          value: "off"
+        - name: DNS_ADDRESS
+          value: "10.255.255.1"
         - name: TZ
           value: America/Chicago
         - name: VPN_SERVICE_PROVIDER
