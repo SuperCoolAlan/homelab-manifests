@@ -21,11 +21,10 @@ generators:
 - secrets-generator.yaml
 
 patches:
-- path: patches/add-vpn-sidecars.yaml
-  target:
+- target:
     kind: Deployment
     name: sabnzbd
-    namespace: media-v2
+  path: patches/add-vpn-sidecars.yaml
 
 # Sidecars are now added via helm values, not patches
 #patchesStrategicMerge:
