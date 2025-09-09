@@ -30,7 +30,7 @@ spec:
           # Wait for Sonarr to be ready
           echo "Waiting for Sonarr to be ready..."
           COUNTER=0
-          until curl -f http://sonarr:8989/sonarr/api/v3/system/status -H "X-Api-Key: $SONARR_API_KEY" 2>/dev/null || [ $COUNTER -eq 60 ]; do
+          until curl -f http://sonarr:8989/api/v3/system/status -H "X-Api-Key: $SONARR_API_KEY" 2>/dev/null || [ $COUNTER -eq 60 ]; do
             echo "Sonarr not ready yet, waiting... (attempt $COUNTER/60)"
             sleep 5
             COUNTER=$((COUNTER + 1))
@@ -45,13 +45,13 @@ spec:
           
           # 1. Configure root folder
           echo "Checking existing root folders..."
-          EXISTING=$(curl -s http://sonarr:8989/sonarr/api/v3/rootfolder -H "X-Api-Key: $SONARR_API_KEY")
+          EXISTING=$(curl -s http://sonarr:8989/api/v3/rootfolder -H "X-Api-Key: $SONARR_API_KEY")
           
           if echo "$EXISTING" | grep -q '"/tv"'; then
             echo "Root folder /tv already exists"
           else
             echo "Adding root folder /tv..."
-            curl -X POST http://sonarr:8989/sonarr/api/v3/rootfolder \
+            curl -X POST http://sonarr:8989/api/v3/rootfolder \
               -H "X-Api-Key: $SONARR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
@@ -63,13 +63,13 @@ spec:
           
           # 2. Add SABnzbd as download client
           echo "Checking existing download clients..."
-          EXISTING_DC=$(curl -s http://sonarr:8989/sonarr/api/v3/downloadclient -H "X-Api-Key: $SONARR_API_KEY")
+          EXISTING_DC=$(curl -s http://sonarr:8989/api/v3/downloadclient -H "X-Api-Key: $SONARR_API_KEY")
           
           if echo "$EXISTING_DC" | grep -q '"name":"SABnzbd"'; then
             echo "SABnzbd download client already exists"
           else
             echo "Adding SABnzbd download client..."
-            curl -X POST http://sonarr:8989/sonarr/api/v3/downloadclient \
+            curl -X POST http://sonarr:8989/api/v3/downloadclient \
               -H "X-Api-Key: $SONARR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
@@ -99,7 +99,7 @@ spec:
           
           # 3. Connect to Prowlarr for indexer management
           echo "Checking existing indexers..."
-          EXISTING_INDEXERS=$(curl -s http://sonarr:8989/sonarr/api/v3/indexer -H "X-Api-Key: $SONARR_API_KEY")
+          EXISTING_INDEXERS=$(curl -s http://sonarr:8989/api/v3/indexer -H "X-Api-Key: $SONARR_API_KEY")
           
           if echo "$EXISTING_INDEXERS" | grep -q '"name":"Prowlarr"'; then
             echo "Prowlarr indexer already exists"
@@ -136,11 +136,11 @@ spec:
           
           # 4. Create default quality profile if needed
           echo "Checking quality profiles..."
-          PROFILES=$(curl -s http://sonarr:8989/sonarr/api/v3/qualityprofile -H "X-Api-Key: $SONARR_API_KEY")
+          PROFILES=$(curl -s http://sonarr:8989/api/v3/qualityprofile -H "X-Api-Key: $SONARR_API_KEY")
           
           if ! echo "$PROFILES" | grep -q '"name":"HD - 1080p"'; then
             echo "Creating default HD quality profile..."
-            curl -X POST http://sonarr:8989/sonarr/api/v3/qualityprofile \
+            curl -X POST http://sonarr:8989/api/v3/qualityprofile \
               -H "X-Api-Key: $SONARR_API_KEY" \
               -H "Content-Type: application/json" \
               -d '{
