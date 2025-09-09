@@ -13,6 +13,11 @@ spec:
       labels:
         app: gluetun
     spec:
+      hostNetwork: false
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - 10.255.255.1
       containers:
       - name: gluetun
         image: qmcgaw/gluetun:latest
