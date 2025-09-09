@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gluetun
+  namespace: windscribe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gluetun
+  template:
+    metadata:
+      labels:
+        app: gluetun
+    spec:
+      containers:
+      - name: gluetun
+        image: qmcgaw/gluetun:latest
+        imagePullPolicy: Always
+        env:
+        - name: DNS_ADDRESS
+          value: "10.255.255.1"
+        - name: TZ
+          value: America/Chicago
+        - name: VPN_SERVICE_PROVIDER
+          value: windscribe
+        - name: VPN_TYPE
+          value: openvpn
+        - name: SERVER_REGIONS
+          value: "US Central"
+        - name: FIREWALL
+          value: "off"  # We'll use k8s network policies instead
+        - name: FIREWALL_OUTBOUND_SUBNETS
+          value: "10.0.0.0/8"  # Allow cluster network
+        - name: FIREWALL_INPUT_PORTS
+          value: "8080,8888"  # SABnzbd and HTTP proxy ports
+        envFrom:
+        - secretRef:
+            name: windscribe-openvpn-creds
+        ports:
+        - containerPort: 8888
+          name: http-proxy
+          protocol: TCP
+        - containerPort: 8080
+          name: sabnzbd
+          protocol: TCP
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        livenessProbe:
+          exec:
+            command:
+            - /gluetun-entrypoint
+            - healthcheck
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+            - /gluetun-entrypoint
+            - healthcheck
+          initialDelaySeconds: 10
+          periodSeconds: 10

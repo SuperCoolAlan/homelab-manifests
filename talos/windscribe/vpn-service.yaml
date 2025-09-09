@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gluetun
+  namespace: windscribe
+spec:
+  selector:
+    app: gluetun
+  ports:
+  - name: http-proxy
+    port: 8888
+    targetPort: 8888
+    protocol: TCP
+  - name: sabnzbd-proxy
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+# Service that media-v2 namespace can access
+apiVersion: v1
+kind: Service
+metadata:
+  name: windscribe-proxy
+  namespace: media-v2
+spec:
+  type: ExternalName
+  externalName: gluetun.windscribe.svc.cluster.local
+  ports:
+  - name: http-proxy
+    port: 8888
+    protocol: TCP
