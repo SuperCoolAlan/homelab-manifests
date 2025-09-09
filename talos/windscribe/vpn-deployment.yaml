@@ -19,7 +19,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: DNS_ADDRESS
-          value: "10.96.0.10"
+          value: "10.96.0.10"  # Using actual cluster DNS instead of 10.255.255.1
         - name: TZ
           value: America/Chicago
         - name: VPN_SERVICE_PROVIDER
@@ -28,44 +28,27 @@ spec:
           value: openvpn
         - name: SERVER_REGIONS
           value: "US Central"
-        - name: FIREWALL
-          value: "off"  # We'll use k8s network policies instead
-        - name: FIREWALL_OUTBOUND_SUBNETS
-          value: "10.0.0.0/8"  # Allow cluster network
-        - name: FIREWALL_INPUT_PORTS
-          value: "8080,8888"  # SABnzbd and HTTP proxy ports
+        - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
+          value: "14s"
+        - name: WIREGUARD_MTU
+          value: "1410"
+        - name: HEALTH_VPN_DURATION_INITIAL
+          value: "10s"
+        - name: HEALTH_VPN_DURATION_ADDITION
+          value: "5s"
         envFrom:
         - secretRef:
             name: windscribe-openvpn-creds
         ports:
+        - containerPort: 9091
+          protocol: TCP
         - containerPort: 8888
           name: http-proxy
           protocol: TCP
-        - containerPort: 8080
-          name: sabnzbd
-          protocol: TCP
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
+        resources: {}
         securityContext:
           capabilities:
             add:
             - NET_ADMIN
-        livenessProbe:
-          exec:
-            command:
-            - /gluetun-entrypoint
-            - healthcheck
-          initialDelaySeconds: 30
-          periodSeconds: 30
-        readinessProbe:
-          exec:
-            command:
-            - /gluetun-entrypoint
-            - healthcheck
-          initialDelaySeconds: 10
-          periodSeconds: 10
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
