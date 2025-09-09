@@ -19,7 +19,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: DNS_ADDRESS
-          value: "10.255.255.1"
+          value: "10.96.0.10"
         - name: TZ
           value: America/Chicago
         - name: VPN_SERVICE_PROVIDER
