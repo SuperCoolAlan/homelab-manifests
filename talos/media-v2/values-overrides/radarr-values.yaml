@@ -4,26 +4,9 @@ persistentVolumeClaims:
     requestStorage: '10Gi'
     storageClassName: 'nfs'
 
-# Use chart defaults for volume mounts (/config, /downloads, /film)
-
-# Configure URL base to serve from root
+# Disable config.xml mounting - let app manage its own config
 application:
-  urlBase: ""
-  config:
-    contents: |
-      <Config>
-        <LogLevel>info</LogLevel>
-        <EnableSsl>False</EnableSsl>
-        <Port>7878</Port>
-        <UrlBase></UrlBase>
-        <BindAddress>*</BindAddress>
-        <ApiKey>$apiKey</ApiKey>
-        <AnalyticsEnabled>False</AnalyticsEnabled>
-        <AuthenticationMethod>External</AuthenticationMethod>
-        <UpdateMechanism>Docker</UpdateMechanism>
-        <Branch>master</Branch>
-        <InstanceName>Radarr</InstanceName>
-      </Config>
+  config: null
 
 ingress:
   enabled: true
@@ -34,9 +17,29 @@ ingress:
   annotations:
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 
-# Add API key sync sidecar
+# Configure deployment with volumes and API key sync sidecar
 deployment:
   serviceAccountName: media-apps
+  # Configure volumes to use shared PVCs
+  volumes:
+    config:
+      persistentVolumeClaim:
+        claimName: 'radarr-config'
+    downloads:
+      persistentVolumeClaim:
+        claimName: 'media-downloads'
+    movies:
+      persistentVolumeClaim:
+        claimName: 'media-library'
+  # Override volumeMounts to change /film to /movies
+  container:
+    volumeMounts:
+      - name: 'config'
+        mountPath: '/config'
+      - name: 'downloads'
+        mountPath: '/downloads'
+      - name: 'movies'
+        mountPath: '/movies'
   additionalContainers:
   - name: api-key-sync
     image: alpine/k8s:1.28.3
