@@ -28,9 +28,9 @@ generators:
 #    name: sabnzbd
 #  path: patches/add-vpn-sidecars.yaml
 
-# Sidecars are now added via helm values, not patches
-#patchesStrategicMerge:
-#- patches/add-api-sync-sidecars.yaml
+# API sync sidecars are needed for config jobs to work
+patchesStrategicMerge:
+- patches/add-api-sync-sidecars.yaml
 
 helmCharts:
 - name: sonarr
