@@ -85,8 +85,48 @@ deployment:
           secretKeyRef:
             name: sabnzbd-passwords
             key: newshostingPassword
-
-# Use chart defaults for volume mounts
+  # Add VPN sidecar for secure connections
+  additionalContainers:
+    - name: gluetun
+      image: qmcgaw/gluetun:latest
+      imagePullPolicy: Always
+      env:
+      - name: DNS_ADDRESS
+        value: "10.255.255.1"
+      - name: TZ
+        value: America/Chicago
+      - name: VPN_SERVICE_PROVIDER
+        value: windscribe
+      - name: VPN_TYPE
+        value: openvpn
+      - name: SERVER_REGIONS
+        value: "US Central"
+      - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
+        value: "14s"
+      - name: WIREGUARD_MTU
+        value: "1410"
+      - name: HEALTH_VPN_DURATION_INITIAL
+        value: "10s"
+      - name: HEALTH_VPN_DURATION_ADDITION
+        value: "5s"
+      envFrom:
+      - secretRef:
+          name: windscribe-openvpn-creds
+      ports:
+      - containerPort: 8080
+        name: http-vpn
+        protocol: TCP
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+      securityContext:
+        capabilities:
+          add:
+          - NET_ADMIN
 
 ingress:
   enabled: true
