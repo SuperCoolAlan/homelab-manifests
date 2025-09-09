@@ -20,8 +20,9 @@ resources:
 generators:
 - secrets-generator.yaml
 
-patchesStrategicMerge:
-- patches/add-api-sync-sidecars.yaml
+# Sidecars are now added via helm values, not patches
+#patchesStrategicMerge:
+#- patches/add-api-sync-sidecars.yaml
 
 helmCharts:
 - name: sonarr

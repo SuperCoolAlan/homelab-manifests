@@ -18,11 +18,8 @@ spec:
         - name: SECRET_KEY
           value: "radarr-api-key"
         - name: CONFIG_PATH
-          value: "/mounted-config/config.xml"
+          value: "/config/config.xml"
         volumeMounts:
-        - name: config-map-processed
-          mountPath: /mounted-config
-          readOnly: true
         - name: config
           mountPath: /config
         - name: api-sync-script
@@ -61,11 +58,8 @@ spec:
         - name: SECRET_KEY
           value: "sonarr-api-key"
         - name: CONFIG_PATH
-          value: "/mounted-config/config.xml"
+          value: "/config/config.xml"
         volumeMounts:
-        - name: config-map-processed
-          mountPath: /mounted-config
-          readOnly: true
         - name: config
           mountPath: /config
         - name: api-sync-script
@@ -104,11 +98,8 @@ spec:
         - name: SECRET_KEY
           value: "prowlarr-api-key"
         - name: CONFIG_PATH
-          value: "/mounted-config/config.xml"
+          value: "/config/config.xml"
         volumeMounts:
-        - name: config-map-processed
-          mountPath: /mounted-config
-          readOnly: true
         - name: config
           mountPath: /config
         - name: api-sync-script
