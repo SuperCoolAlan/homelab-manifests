@@ -8,7 +8,7 @@ resources:
 - resources/external-truenas-svc.yaml
 - resources/jellyfin-ingress.yaml
 - configs/setup-rbac.yaml
-#- configs/api-key-sync-sidecar.yaml
+- configs/api-key-sync-sidecar.yaml
 - configs/api-key-sync-rbac.yaml
 - configs/prowlarr-complete-setup-job.yaml
 - configs/radarr-full-config-job.yaml
@@ -27,9 +27,9 @@ generators:
 #    name: sabnzbd
 #  path: patches/add-vpn-sidecars.yaml
 
-# API sync sidecars are configured in values files, not patches
-#patchesStrategicMerge:
-#- patches/add-api-sync-sidecars.yaml
+# API sync sidecars
+patchesStrategicMerge:
+- patches/add-api-sync-sidecars.yaml
 
 helmCharts:
 - name: sonarr
