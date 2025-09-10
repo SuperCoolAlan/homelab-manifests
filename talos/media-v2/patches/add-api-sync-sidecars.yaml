@@ -8,6 +8,8 @@ spec:
     spec:
       serviceAccountName: media-apps
       containers:
+      - name: radarr
+        $patch: retain
       - name: api-key-sync
         image: alpine/k8s:1.28.3
         command: ["/bin/sh"]
@@ -48,6 +50,8 @@ spec:
     spec:
       serviceAccountName: media-apps
       containers:
+      - name: sonarr
+        $patch: retain
       - name: api-key-sync
         image: alpine/k8s:1.28.3
         command: ["/bin/sh"]
@@ -88,6 +92,8 @@ spec:
     spec:
       serviceAccountName: media-apps
       containers:
+      - name: prowlarr
+        $patch: retain
       - name: api-key-sync
         image: alpine/k8s:1.28.3
         command: ["/bin/sh"]
@@ -128,6 +134,8 @@ spec:
     spec:
       serviceAccountName: media-apps
       containers:
+      - name: bazarr
+        $patch: retain
       - name: api-key-sync
         image: alpine/k8s:1.28.3
         command: ["/bin/sh"]
