@@ -33,5 +33,5 @@
 
 ## Cluster Configuration
 - **Default deployment cluster**: Talos-Dell (Talos Linux)
-- Dell cluster kubeconfig location: `~/.kube/clusters/kubeconfig-talos-dell`
-- Always use `--kubeconfig ~/.kube/clusters/kubeconfig-talos-dell` for kubectl commands
+- Dell cluster kubeconfig location: `~/.kube/clusters/kubeconfig-talos-dell.yaml`
+- Always use `--kubeconfig ~/.kube/clusters/kubeconfig-talos-dell.yaml` for kubectl commands

@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unifi-controller
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/ssl-verify: "false"
+    nginx.ingress.kubernetes.io/upstream-vhost: "unifi.asandov.local"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: unifi.asandov.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: unifi-controller-external
+            port:
+              number: 443

@@ -16,6 +16,7 @@ resources:
 - configs/bazarr-setup-job.yaml
 - configs/jellyseerr-setup-job.yaml
 - configs/jellyseerr-config-job.yaml
+- configs/download-client-setup-job.yaml
 
 generators:
 - secrets-generator.yaml
@@ -170,6 +171,47 @@ patches:
           value: "bazarr-api-key"
         - name: CONFIG_PATH
           value: "/config/config.yaml"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: api-sync-script
+          mountPath: /scripts
+          readOnly: true
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+    - op: add
+      path: /spec/template/spec/volumes/-
+      value:
+        name: api-sync-script
+        configMap:
+          name: api-key-sync-sidecar
+          defaultMode: 0755
+    - op: replace
+      path: /spec/template/spec/serviceAccountName
+      value: media-apps
+- target:
+    kind: Deployment
+    name: sabnzbd
+  patch: |-
+    - op: add
+      path: /spec/template/spec/containers/-
+      value:
+        name: api-key-sync
+        image: alpine/k8s:1.28.3
+        command: ["/bin/sh"]
+        args: ["/scripts/sync-api-key.sh"]
+        env:
+        - name: SERVICE_NAME
+          value: "sabnzbd"
+        - name: SECRET_KEY
+          value: "sabnzbd-api-key"
+        - name: CONFIG_PATH
+          value: "/config/sabnzbd.ini"
         volumeMounts:
         - name: config
           mountPath: /config

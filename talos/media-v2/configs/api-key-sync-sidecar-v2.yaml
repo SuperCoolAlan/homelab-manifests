@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-key-sync-sidecar-v2
+  namespace: media-v2
+data:
+  sync-api-key.sh: |
+    #!/bin/sh
+    set -e
+
+    # Get service name from environment
+    SERVICE="${SERVICE_NAME:-unknown}"
+    SECRET_KEY="${SECRET_KEY:-$SERVICE-api-key}"
+    CONFIG_PATH="${CONFIG_PATH:-/config/config.xml}"
+
+    echo "Starting API key sync for $SERVICE..."
+
+    # Install required tools
+    apk add --no-cache inotify-tools kubectl jq 2>/dev/null || true
+
+    # Function to extract API key from config file
+    extract_api_key() {
+      if [ -f "$CONFIG_PATH" ]; then
+        # Check if it's an XML file (for *arr services)
+        if echo "$CONFIG_PATH" | grep -q "\.xml$"; then
+          sed -n 's/.*<ApiKey>\([^<]*\)<\/ApiKey>.*/\1/p' "$CONFIG_PATH" 2>/dev/null || true
+        # Check if it's an INI file (for SABnzbd)
+        elif echo "$CONFIG_PATH" | grep -q "\.ini$"; then
+          grep "^api_key = " "$CONFIG_PATH" | sed 's/^api_key = //' 2>/dev/null || true
+        # Check if it's a YAML file (for Bazarr)
+        elif echo "$CONFIG_PATH" | grep -q "\.yaml$"; then
+          grep "^  apikey: " "$CONFIG_PATH" | sed 's/^  apikey: //' 2>/dev/null || true
+        fi
+      fi
+    }
+
+    # Function to update or create secret
+    update_secret() {
+      local key_value="$1"
+
+      if [ -z "$key_value" ] || [ "$key_value" = "\$apiKey" ]; then
+        echo "No valid API key value found, skipping..."
+        return
+      fi
+
+      echo "$(date): Updating secret key: $SECRET_KEY = ${key_value:0:8}..."
+
+      # Check if secret exists
+      if kubectl get secret media-api-keys -n media-v2 >/dev/null 2>&1; then
+        # Get current secret data as JSON
+        CURRENT_DATA=$(kubectl get secret media-api-keys -n media-v2 -o json | jq -r '.data // {}')
+
+        # Add or update our key
+        UPDATED_DATA=$(echo "$CURRENT_DATA" | jq --arg key "$SECRET_KEY" --arg value "$(echo -n "$key_value" | base64)" '. + {($key): $value}')
+
+        # Patch the secret
+        kubectl patch secret media-api-keys -n media-v2 --type='merge' -p "{\"data\": $UPDATED_DATA}"
+      else
+        # Create new secret with all required keys (placeholders for those not yet populated)
+        kubectl create secret generic media-api-keys -n media-v2 \
+          --from-literal="prowlarr-api-key=placeholder" \
+          --from-literal="sonarr-api-key=placeholder" \
+          --from-literal="radarr-api-key=placeholder" \
+          --from-literal="bazarr-api-key=placeholder" \
+          --from-literal="sabnzbd-api-key=placeholder" \
+          --from-literal="nzbgeek-api-key=VIcQhG9ELcIQRpFgPctQB2a3jHStkpeu" \
+          --from-literal="nzbgeek-username=verycoolfella"
+
+        # Then update with the actual value
+        kubectl patch secret media-api-keys -n media-v2 --type='merge' \
+          -p "{\"data\": {\"$SECRET_KEY\": \"$(echo -n "$key_value" | base64)\"}}"
+      fi
+
+      echo "$(date): Secret updated successfully"
+    }
+
+    # Function to sync config
+    sync_config() {
+      echo "$(date): Checking $SERVICE config at $CONFIG_PATH"
+      API_KEY=$(extract_api_key)
+      if [ -n "$API_KEY" ] && [ "$API_KEY" != "\$apiKey" ]; then
+        update_secret "$API_KEY"
+      else
+        echo "$(date): No valid API key found in config yet"
+      fi
+    }
+
+    # Initial sync on startup
+    echo "$(date): Performing initial sync..."
+    sync_config
+
+    # Set up file watcher
+    echo "$(date): Setting up file watcher for $CONFIG_PATH..."
+
+    while true; do
+      # Wait for file changes
+      inotifywait -e modify,create "$CONFIG_PATH" 2>/dev/null && sync_config || true
+
+      # Also do a periodic sync every 5 minutes as backup
+      sleep 300 && sync_config || true
+    done

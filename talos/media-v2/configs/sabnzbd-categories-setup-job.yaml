@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sabnzbd-categories-setup
+  namespace: media-v2
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: setup
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        env:
+        - name: SABNZBD_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: sabnzbd-api-key
+        args:
+        - -c
+        - |
+          set -e
+
+          echo "Waiting for SABnzbd to be ready..."
+          until curl -f "http://sabnzbd:8080/api?mode=version&apikey=$SABNZBD_API_KEY" 2>/dev/null; do
+            echo "Waiting for SABnzbd..."
+            sleep 5
+          done
+
+          echo "SABnzbd is ready!"
+
+          # Add movies category
+          echo "Adding movies category..."
+          curl -X GET "http://sabnzbd:8080/api?mode=set_config&section=categories&keyword=movies&apikey=$SABNZBD_API_KEY&pp=Default&script=Default&priority=0&dir="
+
+          # Add tv category
+          echo "Adding tv category..."
+          curl -X GET "http://sabnzbd:8080/api?mode=set_config&section=categories&keyword=tv&apikey=$SABNZBD_API_KEY&pp=Default&script=Default&priority=0&dir="
+
+          # Add prowlarr category
+          echo "Adding prowlarr category..."
+          curl -X GET "http://sabnzbd:8080/api?mode=set_config&section=categories&keyword=prowlarr&apikey=$SABNZBD_API_KEY&pp=Default&script=Default&priority=0&dir="
+
+          echo "Categories setup complete!"

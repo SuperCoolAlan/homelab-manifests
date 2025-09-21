@@ -1,0 +1,107 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prowlarr-download-client-setup
+  namespace: media-v2
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: setup
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        env:
+        - name: PROWLARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: prowlarr-api-key
+        - name: SABNZBD_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: media-api-keys
+              key: sabnzbd-api-key
+        args:
+        - -c
+        - |
+          set -e
+
+          echo "Waiting for Prowlarr to be ready..."
+          until curl -f http://prowlarr:9696/api/v1/system/status -H "X-Api-Key: $PROWLARR_API_KEY" 2>/dev/null; do
+            echo "Waiting for Prowlarr..."
+            sleep 5
+          done
+
+          echo "Prowlarr is ready!"
+
+          # Check if download client already exists
+          echo "Checking existing download clients..."
+          EXISTING=$(curl -s http://prowlarr:9696/api/v1/downloadclient -H "X-Api-Key: $PROWLARR_API_KEY")
+
+          if echo "$EXISTING" | grep -q "SABnzbd"; then
+            echo "SABnzbd download client already exists"
+          else
+            echo "Adding SABnzbd download client to Prowlarr..."
+
+            # Try without specifying categories
+            RESPONSE=$(curl -X POST http://prowlarr:9696/api/v1/downloadclient \
+              -H "X-Api-Key: $PROWLARR_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"enable\": true,
+                \"protocol\": \"usenet\",
+                \"priority\": 1,
+                \"name\": \"SABnzbd\",
+                \"categories\": [],
+                \"supportsCategories\": true,
+                \"fields\": [
+                  {\"name\": \"host\", \"value\": \"sabnzbd\"},
+                  {\"name\": \"port\", \"value\": 8080},
+                  {\"name\": \"useSsl\", \"value\": false},
+                  {\"name\": \"urlBase\", \"value\": \"\"},
+                  {\"name\": \"apiKey\", \"value\": \"${SABNZBD_API_KEY}\"},
+                  {\"name\": \"username\", \"value\": \"\"},
+                  {\"name\": \"password\", \"value\": \"\"},
+                  {\"name\": \"category\", \"value\": \"prowlarr\"},
+                  {\"name\": \"priority\", \"value\": -100}
+                ],
+                \"implementationName\": \"SABnzbd\",
+                \"implementation\": \"Sabnzbd\",
+                \"configContract\": \"SabnzbdSettings\",
+                \"tags\": []
+              }" 2>&1)
+
+            echo "Response: $RESPONSE"
+
+            # If it failed due to category, try without category
+            if echo "$RESPONSE" | grep -q "category"; then
+              echo "Retrying without category..."
+              curl -X POST http://prowlarr:9696/api/v1/downloadclient \
+                -H "X-Api-Key: $PROWLARR_API_KEY" \
+                -H "Content-Type: application/json" \
+                -d "{
+                  \"enable\": true,
+                  \"protocol\": \"usenet\",
+                  \"priority\": 1,
+                  \"name\": \"SABnzbd\",
+                  \"fields\": [
+                    {\"name\": \"host\", \"value\": \"sabnzbd\"},
+                    {\"name\": \"port\", \"value\": 8080},
+                    {\"name\": \"useSsl\", \"value\": false},
+                    {\"name\": \"urlBase\", \"value\": \"\"},
+                    {\"name\": \"apiKey\", \"value\": \"${SABNZBD_API_KEY}\"},
+                    {\"name\": \"username\", \"value\": \"\"},
+                    {\"name\": \"password\", \"value\": \"\"},
+                    {\"name\": \"category\", \"value\": \"\"},
+                    {\"name\": \"priority\", \"value\": -100}
+                  ],
+                  \"implementationName\": \"SABnzbd\",
+                  \"implementation\": \"Sabnzbd\",
+                  \"configContract\": \"SabnzbdSettings\",
+                  \"tags\": []
+                }"
+            fi
+          fi
+
+          echo "Download client setup complete!"
