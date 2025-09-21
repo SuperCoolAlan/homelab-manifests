@@ -84,29 +84,102 @@ spec:
               }
             }"
           
-          # Configure subtitle providers (OpenSubtitles as example)
+          # Configure general settings
+          echo "Configuring general settings..."
+          curl -X POST http://bazarr:6767/api/system/settings \
+            -H "X-Api-Key: $BAZARR_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "general": {
+                "auto_update": false,
+                "single_language": false,
+                "minimum_score": 90,
+                "use_postprocessing": false,
+                "postprocessing_cmd": "",
+                "use_sonarr": true,
+                "use_radarr": true,
+                "path_mappings": [],
+                "serie_default_enabled": true,
+                "serie_default_language": ["en"],
+                "serie_default_hi": false,
+                "serie_default_forced": false,
+                "movie_default_enabled": true,
+                "movie_default_language": ["en"],
+                "movie_default_hi": false,
+                "movie_default_forced": false
+              }
+            }'
+
+          # Configure subtitle providers
           echo "Configuring subtitle providers..."
           curl -X POST http://bazarr:6767/api/system/settings \
             -H "X-Api-Key: $BAZARR_API_KEY" \
             -H "Content-Type: application/json" \
             -d '{
-              "subliminal": {
-                "providers": {
-                  "opensubtitles": {
-                    "enabled": true,
-                    "username": "",
-                    "password": ""
-                  },
-                  "subscene": {
-                    "enabled": true
-                  },
-                  "addic7ed": {
-                    "enabled": true,
-                    "username": "",
-                    "password": ""
-                  }
+              "providers": {
+                "opensubtitles": {
+                  "enabled": true,
+                  "username": "",
+                  "password": "",
+                  "use_tag_search": true,
+                  "use_hash": true
+                },
+                "opensubtitlescom": {
+                  "enabled": true,
+                  "username": "",
+                  "password": "",
+                  "use_tag_search": true,
+                  "use_hash": true
+                },
+                "subscene": {
+                  "enabled": true,
+                  "username": "",
+                  "password": ""
+                },
+                "podnapisi": {
+                  "enabled": true
+                },
+                "subdivx": {
+                  "enabled": true
+                },
+                "tvsubtitles": {
+                  "enabled": true
+                },
+                "yifysubtitles": {
+                  "enabled": true
                 }
               }
             }'
-          
+
+          # Create English language profile for series
+          echo "Creating language profiles..."
+          curl -X POST http://bazarr:6767/api/profiles \
+            -H "X-Api-Key: $BAZARR_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "English",
+              "cutoff": 1,
+              "items": [
+                {
+                  "language": "en",
+                  "hi": false,
+                  "forced": false
+                }
+              ]
+            }'
+
+          # Configure scheduler for automatic subtitle downloads
+          echo "Configuring scheduler..."
+          curl -X POST http://bazarr:6767/api/system/settings \
+            -H "X-Api-Key: $BAZARR_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "scheduler": {
+                "wanted_search_frequency": 6,
+                "wanted_search_frequency_movie": 6,
+                "upgrade_frequency": 24,
+                "upgrade_frequency_movie": 24
+              }
+            }'
+
           echo "Bazarr setup complete!"

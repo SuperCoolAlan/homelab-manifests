@@ -54,12 +54,12 @@ spec:
           done
           
           echo "Waiting for Sonarr to be ready..."
-          until curl -f http://sonarr:8989/sonarr/api/v3/system/status -H "X-Api-Key: $SONARR_API_KEY" 2>/dev/null; do
+          until curl -f http://sonarr:8989/api/v3/system/status -H "X-Api-Key: $SONARR_API_KEY" 2>/dev/null; do
             sleep 5
           done
           
           echo "Waiting for Radarr to be ready..."
-          until curl -f http://radarr:7878/radarr/api/v3/system/status -H "X-Api-Key: $RADARR_API_KEY" 2>/dev/null; do
+          until curl -f http://radarr:7878/api/v3/system/status -H "X-Api-Key: $RADARR_API_KEY" 2>/dev/null; do
             sleep 5
           done
           
@@ -81,7 +81,7 @@ spec:
                 \"configContract\": \"SonarrSettings\",
                 \"fields\": [
                   {\"name\": \"prowlarrUrl\", \"value\": \"http://prowlarr:9696\"},
-                  {\"name\": \"baseUrl\", \"value\": \"http://sonarr:8989/sonarr\"},
+                  {\"name\": \"baseUrl\", \"value\": \"http://sonarr:8989\"},
                   {\"name\": \"apiKey\", \"value\": \"$SONARR_API_KEY\"},
                   {\"name\": \"syncCategories\", \"value\": [5000, 5010, 5020, 5030, 5040, 5045, 5050]}
                 ],
@@ -106,7 +106,7 @@ spec:
                 \"configContract\": \"RadarrSettings\",
                 \"fields\": [
                   {\"name\": \"prowlarrUrl\", \"value\": \"http://prowlarr:9696\"},
-                  {\"name\": \"baseUrl\", \"value\": \"http://radarr:7878/radarr\"},
+                  {\"name\": \"baseUrl\", \"value\": \"http://radarr:7878\"},
                   {\"name\": \"apiKey\", \"value\": \"$RADARR_API_KEY\"},
                   {\"name\": \"syncCategories\", \"value\": [2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060]}
                 ],
@@ -128,7 +128,7 @@ spec:
               -H "Content-Type: application/json" \
               -d "{
                 \"enable\": true,
-                \"redirect\": false,
+                \"redirect\": true,
                 \"name\": \"NZBgeek\",
                 \"fields\": [
                   {\"name\": \"baseUrl\", \"value\": \"https://api.nzbgeek.info\"},
