@@ -7,6 +7,9 @@ persistentVolumeClaims:
 # Use specific UID/GID that matches TrueNAS NFS user
 deployment:
   container:
+    image:
+      repository: 'fallenbagel/jellyseerr'
+      tag: '2.7.3'
     env:
       - name: PUID
         value: "1000"

@@ -13,12 +13,28 @@ application:
 # Use specific UID/GID that matches TrueNAS NFS user
 deployment:
   serviceAccountName: media-apps
+  # Configure volumes to use shared PVCs
+  volumes:
+    config:
+      persistentVolumeClaim:
+        claimName: 'bazarr-config'
+    downloads:
+      persistentVolumeClaim:
+        claimName: 'media-downloads'
+    media:
+      persistentVolumeClaim:
+        claimName: 'media-library'
   container:
     env:
       - name: PUID
         value: "1000"
       - name: PGID
         value: "3001"
+    volumeMounts:
+      - name: downloads
+        mountPath: /downloads
+      - name: media
+        mountPath: /media
   additionalContainers:
   - name: api-key-sync
     image: alpine/k8s:1.28.3

@@ -16,7 +16,7 @@ application:
       api_key = f0237ecaa8419fc7f1f2d8d4cfb75c11
       nzb_key = abc123nzbkey456
       download_dir = /config/Downloads/incomplete
-      complete_dir = /config/Downloads
+      complete_dir = /config/Downloads/complete
       host_whitelist = sabnzbd,localhost,sabnzbd.media-v2.svc.cluster.local,radarr,sonarr,prowlarr
       auto_browser = 0
       par2_multicore = 1
