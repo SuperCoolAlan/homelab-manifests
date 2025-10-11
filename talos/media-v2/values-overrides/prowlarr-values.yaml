@@ -32,36 +32,6 @@ deployment:
         value: "1000"
       - name: PGID
         value: "3001"
-  additionalContainers:
-  - name: api-key-sync
-    image: alpine/k8s:1.28.3
-    command: ["/bin/sh"]
-    args: ["/scripts/sync-api-key.sh"]
-    env:
-    - name: SERVICE_NAME
-      value: "prowlarr"
-    - name: SECRET_KEY
-      value: "prowlarr-api-key"
-    - name: CONFIG_PATH
-      value: "/config/config.xml"
-    volumeMounts:
-    - name: config
-      mountPath: /config
-    - name: api-sync-script
-      mountPath: /scripts
-      readOnly: true
-    resources:
-      requests:
-        memory: "32Mi"
-        cpu: "10m"
-      limits:
-        memory: "64Mi"
-        cpu: "50m"
-  additionalVolumes:
-  - name: api-sync-script
-    configMap:
-      name: api-key-sync-sidecar
-      defaultMode: 0755
 
 ingress:
   enabled: true
