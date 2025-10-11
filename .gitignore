@@ -15,3 +15,6 @@ sops-gpg*
 *.gpg
 !**/secrets/*.enc.yaml
 !**/secrets/*-generator.yaml
+
+# Kustomize helm chart cache - charts are referenced from remote repos
+**/charts/
