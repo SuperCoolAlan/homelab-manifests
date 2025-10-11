@@ -9,7 +9,7 @@ prometheus:
     annotations:
       external-dns.alpha.kubernetes.io/target: 10.0.1.28
     hosts:
-      - prometheus.asandov.local
+      - prometheus.talos.asandov.local
     paths:
       - /
     pathType: Prefix
@@ -21,6 +21,11 @@ prometheus:
 
     # Retention
     retention: 48h
+
+    # Search all namespaces for ServiceMonitors, PrometheusRules, and PodMonitors
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
 
     # Storage - disabled for now until storage class is configured
     # storageSpec:
