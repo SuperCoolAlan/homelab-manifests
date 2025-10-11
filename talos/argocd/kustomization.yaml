@@ -10,5 +10,6 @@ helmCharts:
     namespace: argo-cd
     valuesFile: values-override.yaml
 
-generators:
-  - secrets-generator.yaml
+# generators:
+#   - secrets-generator.yaml
+# Secrets applied manually

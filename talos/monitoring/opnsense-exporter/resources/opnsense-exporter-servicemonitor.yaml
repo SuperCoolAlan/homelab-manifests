@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: opnsense-exporter
+  labels:
+    app: opnsense-exporter
+    io.kompose.service: opnsense-exporter
+spec:
+  endpoints:
+  - port: metrics
+    path: /metrics
+    scheme: http
+    interval: 30s
+  selector:
+    matchLabels:
+      io.kompose.service: opnsense-exporter

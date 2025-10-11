@@ -5,6 +5,7 @@ metadata:
   annotations:
     external-dns.alpha.kubernetes.io/target: 10.0.1.28
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP" #important
+    nginx.ingress.kubernetes.io/disable-admission-webhook: "true"
 spec:
   rules:
   - host: adguard.asandov.local # eg external-service.yourdomain.com
