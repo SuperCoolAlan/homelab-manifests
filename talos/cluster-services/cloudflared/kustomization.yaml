@@ -7,9 +7,10 @@ helmGlobals:
 helmCharts:
   - name: cloudflare-tunnel
     namespace: cloudflare
-    releasename: cloudflared
+    releaseName: cloudflared
     valuesFile: myvalues.yaml
 
-generators:
-  - secrets-generator.yaml
+# generators:
+#   - secrets-generator.yaml
+# Secret applied manually
 

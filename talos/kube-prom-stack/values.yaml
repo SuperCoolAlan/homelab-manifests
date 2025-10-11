@@ -1,0 +1,40 @@
+# kube-prometheus-stack values
+# Remote write to TrueNAS prometheus aggregator
+
+prometheus:
+  # Ingress configuration
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      external-dns.alpha.kubernetes.io/target: 10.0.1.28
+    hosts:
+      - prometheus.asandov.local
+    paths:
+      - /
+    pathType: Prefix
+
+  prometheusSpec:
+    # Remote write to TrueNAS prometheus
+    remoteWrite:
+    - url: http://truenas.asandov.local:9090/api/v1/write
+
+    # Retention
+    retention: 48h
+
+    # Storage - disabled for now until storage class is configured
+    # storageSpec:
+    #   volumeClaimTemplate:
+    #     spec:
+    #       storageClassName: nfs
+    #       accessModes: ["ReadWriteOnce"]
+    #       resources:
+    #         requests:
+    #           storage: 20Gi
+
+# Disable components we don't need
+alertmanager:
+  enabled: false
+
+grafana:
+  enabled: false

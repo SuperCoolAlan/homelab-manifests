@@ -3,13 +3,18 @@ kind: Kustomization
 
 namespace: twingate
 
+buildMetadata: [originAnnotations]
+
 generators:
   - secrets-generator.yaml
 
-helmGlobals:
-  chartHome: ./helm
-
 helmCharts:
   - name: connector
+    repo: https://twingate.github.io/helm-charts
+    version: 0.1.31
     releaseName: twingate-op
     namespace: twingate
+    valuesInline:
+      connector:
+        network: asandov
+        existingSecret: "twingate-op-connector"
