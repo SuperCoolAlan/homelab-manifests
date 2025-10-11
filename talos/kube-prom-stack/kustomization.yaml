@@ -10,3 +10,6 @@ helmCharts:
   releaseName: kube-prometheus-stack
   namespace: monitoring
   valuesFile: values.yaml
+
+patchesStrategicMerge:
+- patches/admission-role-patch.yaml
