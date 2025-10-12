@@ -35,6 +35,12 @@
       value: "5s"
     - name: FIREWALL_OUTBOUND_SUBNETS
       value: "10.0.0.0/8"
+    - name: FIREWALL
+      value: "off"
+    - name: HTTPPROXY
+      value: "on"
+    - name: HTTPPROXY_LOG
+      value: "on"
     envFrom:
     - secretRef:
         name: windscribe-openvpn-creds
