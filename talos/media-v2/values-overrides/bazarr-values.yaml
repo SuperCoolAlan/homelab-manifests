@@ -31,6 +31,8 @@ deployment:
       - name: PGID
         value: "3001"
     volumeMounts:
+      - name: config
+        mountPath: /config
       - name: downloads
         mountPath: /downloads
       - name: media
