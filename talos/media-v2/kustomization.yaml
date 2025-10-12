@@ -10,6 +10,9 @@ resources:
 - configs/setup-rbac.yaml
 - configs/api-key-sync-sidecar.yaml
 - configs/api-key-sync-rbac.yaml
+# Applied separately via: sops -d windscribe-openvpn-creds.enc.yaml | kubectl apply -f -
+#- windscribe-openvpn-creds.enc.yaml
+- windscribe-openvpn-configmap.yaml
 # Disabled - config jobs suck and don't work
 #- configs/prowlarr-complete-setup-job.yaml
 #- configs/radarr-full-config-job.yaml
