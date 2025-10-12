@@ -1,10 +1,26 @@
 - op: add
+  path: /spec/template/spec/dnsPolicy
+  value: "None"
+- op: add
+  path: /spec/template/spec/dnsConfig
+  value:
+    nameservers:
+      - 10.96.0.10
+- op: add
   path: /spec/template/spec/containers/-
   value:
     name: gluetun
     image: qmcgaw/gluetun:latest
     imagePullPolicy: Always
     env:
+    - name: DOT
+      value: "off"
+    - name: BLOCK_MALICIOUS
+      value: "off"
+    - name: BLOCK_SURVEILLANCE
+      value: "off"
+    - name: BLOCK_ADS
+      value: "off"
     - name: TZ
       value: America/Chicago
     - name: VPN_SERVICE_PROVIDER
