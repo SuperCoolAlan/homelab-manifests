@@ -11,6 +11,7 @@ application:
     contents: |
       [misc]
       language = en
+      log_level = 2
       queue_limit = 20
       port = 8080
       api_key = f0237ecaa8419fc7f1f2d8d4cfb75c11
