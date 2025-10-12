@@ -35,7 +35,7 @@ application:
       host = news.eweka.nl
       port = 563
       username = 48ef10df07d993e3
-      password = $ewekaPassword
+      password = "$ewekaPassword"
       connections = 50
       ssl = 1
       ssl_verify = 2
@@ -48,7 +48,7 @@ application:
       host = news.newshosting.com
       port = 563
       username = olgavcy7wc
-      password = $newshostingPassword
+      password = "$newshostingPassword"
       connections = 100
       ssl = 1
       ssl_verify = 2
