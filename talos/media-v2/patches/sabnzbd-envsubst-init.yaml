@@ -1,0 +1,23 @@
+- op: replace
+  path: /spec/template/spec/initContainers/0/args/1
+  value: |
+    #!/bin/sh
+    # Install envsubst for variable substitution
+    apk add --no-cache gettext >/dev/null 2>&1
+    # Export password variables so envsubst can see them
+    export ewekaPassword newshostingPassword
+    # Substitute environment variables in config
+    envsubst < /config-map/sabnzbd.ini > /config-processed/sabnzbd.ini
+- op: add
+  path: /spec/template/spec/initContainers/0/env
+  value:
+    - name: ewekaPassword
+      valueFrom:
+        secretKeyRef:
+          name: sabnzbd-passwords
+          key: ewekaPassword
+    - name: newshostingPassword
+      valueFrom:
+        secretKeyRef:
+          name: sabnzbd-passwords
+          key: newshostingPassword

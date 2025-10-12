@@ -26,12 +26,16 @@ resources:
 # - secrets-generator.yaml
 # Secrets applied manually
 
-# VPN sidecar for SABnzbd
+# VPN sidecar for SABnzbd and password substitution
 patches:
 - target:
     kind: Deployment
     name: sabnzbd
   path: patches/add-gluetun-to-sabnzbd.yaml
+- target:
+    kind: Deployment
+    name: sabnzbd
+  path: patches/sabnzbd-envsubst-init.yaml
 
 # API sync sidecars - DISABLED
 #patches_disabled:
