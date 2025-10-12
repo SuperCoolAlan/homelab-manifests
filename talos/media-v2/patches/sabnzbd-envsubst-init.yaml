@@ -2,12 +2,16 @@
   path: /spec/template/spec/initContainers/0/args/1
   value: |
     #!/bin/sh
-    # Install envsubst for variable substitution
-    apk add --no-cache gettext >/dev/null 2>&1
-    # Export password variables so envsubst can see them
-    export ewekaPassword newshostingPassword
-    # Substitute environment variables in config
-    envsubst < /config-map/sabnzbd.ini > /config-processed/sabnzbd.ini
+    # Copy config template
+    cp /config-map/sabnzbd.ini /config-processed/sabnzbd.ini
+
+    # Escape special characters in passwords for sed
+    EWEKA_ESC=$(printf '%s\n' "$ewekaPassword" | sed 's/[&/\]/\\&/g')
+    NEWSHOSTING_ESC=$(printf '%s\n' "$newshostingPassword" | sed 's/[&/\]/\\&/g')
+
+    # Substitute passwords using sed with escaped values
+    sed -i "s/\$ewekaPassword/$EWEKA_ESC/g" /config-processed/sabnzbd.ini
+    sed -i "s/\$newshostingPassword/$NEWSHOSTING_ESC/g" /config-processed/sabnzbd.ini
 - op: add
   path: /spec/template/spec/initContainers/0/env
   value:
