@@ -5,13 +5,16 @@
     # Copy config template
     cp /config-map/sabnzbd.ini /config-processed/sabnzbd.ini
 
-    # Escape special characters in passwords for sed
-    EWEKA_ESC=$(printf '%s\n' "$ewekaPassword" | sed 's/[&/\]/\\&/g')
-    NEWSHOSTING_ESC=$(printf '%s\n' "$newshostingPassword" | sed 's/[&/\]/\\&/g')
+    # Use printf to avoid shell interpretation of special characters
+    # Escape special characters for sed (& / \)
+    EWEKA_ESC=$(printf '%s' "$ewekaPassword" | sed -e 's/[&/\]/\\&/g')
+    NEWSHOSTING_ESC=$(printf '%s' "$newshostingPassword" | sed -e 's/[&/\]/\\&/g')
 
     # Substitute passwords using sed with escaped values
-    sed -i "s/\$ewekaPassword/$EWEKA_ESC/g" /config-processed/sabnzbd.ini
-    sed -i "s/\$newshostingPassword/$NEWSHOSTING_ESC/g" /config-processed/sabnzbd.ini
+    sed -i "s|\$ewekaPassword|$EWEKA_ESC|g" /config-processed/sabnzbd.ini
+    sed -i "s|\$newshostingPassword|$NEWSHOSTING_ESC|g" /config-processed/sabnzbd.ini
+
+    echo "Password substitution completed"
 - op: add
   path: /spec/template/spec/initContainers/0/env
   value:
