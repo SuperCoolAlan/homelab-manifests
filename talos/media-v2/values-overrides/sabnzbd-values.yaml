@@ -53,7 +53,7 @@ application:
       ssl = 1
       ssl_verify = 2
       enable = 1
-      priority = 1
+      priority = 0
       
       [categories]
       [[*]]
