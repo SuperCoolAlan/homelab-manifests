@@ -5,6 +5,8 @@ cloudflare:
   ingress:
     - hostname: "jellyfin.asandov.com"
       service: "http://10.0.1.14:30013"
+    - hostname: "jellyseer.asandov.com"
+      service: "http://jellyseerr.media-v2.svc.cluster.local:5055"
     # Wildcard disabled - nginx-ingress not working due to BGP issues
     # - hostname: "*.asandov.com"
     #   service: "https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443"
