@@ -76,13 +76,6 @@ helmCharts:
   namespace: media-v2
   valuesFile: values-overrides/bazarr-values.yaml
 
-- name: homarr
-  repo: https://media-servarr.shw.al/charts
-  version: 0.16.0
-  releaseName: homarr
-  namespace: media-v2
-  valuesFile: values-overrides/homarr-values.yaml
-
 - name: jellyseerr
   repo: https://media-servarr.shw.al/charts
   version: 0.5.0
