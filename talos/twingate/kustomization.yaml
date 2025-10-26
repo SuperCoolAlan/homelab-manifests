@@ -18,3 +18,5 @@ helmCharts:
       connector:
         network: asandov
         existingSecret: "twingate-op-connector"
+      nodeSelector:
+        kubernetes.io/hostname: talos-eggbert
