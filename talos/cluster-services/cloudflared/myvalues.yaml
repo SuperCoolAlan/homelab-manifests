@@ -23,6 +23,9 @@ resources:
 
 replicaCount: 1
 
+nodeSelector:
+  kubernetes.io/hostname: talos-eggbert
+
 livenessProbe:
   enabled: false
 readinessProbe:

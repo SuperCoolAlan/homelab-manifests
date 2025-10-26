@@ -112,3 +112,29 @@ repoServer:
         runAsUser: 999
         runAsGroup: 999
         runAsNonRoot: true
+  nodeSelector:
+    kubernetes.io/hostname: talos-eggbert
+
+controller:
+  nodeSelector:
+    kubernetes.io/hostname: talos-eggbert
+
+server:
+  nodeSelector:
+    kubernetes.io/hostname: talos-eggbert
+
+dex:
+  nodeSelector:
+    kubernetes.io/hostname: talos-eggbert
+
+redis:
+  nodeSelector:
+    kubernetes.io/hostname: talos-eggbert
+
+applicationSet:
+  nodeSelector:
+    kubernetes.io/hostname: talos-eggbert
+
+notifications:
+  nodeSelector:
+    kubernetes.io/hostname: talos-eggbert
