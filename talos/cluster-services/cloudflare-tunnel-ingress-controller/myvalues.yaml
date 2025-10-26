@@ -1,0 +1,25 @@
+cloudflare:
+  secretRef:
+    name: cloudflare-credentials
+    accountIDKey: account_id
+    tunnelNameKey: tunnel_name
+    apiTokenKey: api_token
+
+ingressClass:
+  name: cloudflare-tunnel
+  isDefaultClass: false
+
+replicaCount: 1
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+cloudflared:
+  replicaCount: 1
+  image:
+    tag: latest
