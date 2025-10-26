@@ -105,6 +105,13 @@ deployment:
   securityContext:
     fsGroup: 3001
   container:
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
     env:
       - name: PUID
         value: "1000"
@@ -120,6 +127,9 @@ deployment:
           secretKeyRef:
             name: sabnzbd-passwords
             key: newshostingPassword
+    volumeMounts:
+      - name: downloads
+        mountPath: /downloads
   # Configure volumes to use shared PVCs
   volumes:
     config:
@@ -128,10 +138,6 @@ deployment:
     downloads:
       persistentVolumeClaim:
         claimName: 'media-downloads'
-  container:
-    volumeMounts:
-      - name: downloads
-        mountPath: /downloads
 
 ingress:
   enabled: true
