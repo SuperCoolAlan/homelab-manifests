@@ -15,6 +15,9 @@ ingress:
   path: /
   pathType: Prefix
 
+# Override image version at top level
+imageTag: "5.28.0"
+
 # Configure deployment with volumes and API key sync sidecar
 deployment:
   serviceAccountName: media-apps
