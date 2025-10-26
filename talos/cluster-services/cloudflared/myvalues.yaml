@@ -23,8 +23,16 @@ resources:
 
 replicaCount: 1
 
-nodeSelector:
-  kubernetes.io/hostname: talos-eggbert
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      preference:
+        matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - talos-eggbert
 
 livenessProbe:
   enabled: false

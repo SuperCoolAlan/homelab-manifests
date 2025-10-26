@@ -6,8 +6,16 @@ persistentVolumeClaims:
 
 # Use specific UID/GID that matches TrueNAS NFS user
 deployment:
-  nodeSelector:
-    kubernetes.io/hostname: talos-eggbert
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - talos-eggbert
   container:
     image:
       repository: 'fallenbagel/jellyseerr'

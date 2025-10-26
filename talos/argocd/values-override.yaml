@@ -112,29 +112,85 @@ repoServer:
         runAsUser: 999
         runAsGroup: 999
         runAsNonRoot: true
-  nodeSelector:
-    kubernetes.io/hostname: talos-eggbert
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - talos-eggbert
 
 controller:
-  nodeSelector:
-    kubernetes.io/hostname: talos-eggbert
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - talos-eggbert
 
 server:
-  nodeSelector:
-    kubernetes.io/hostname: talos-eggbert
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - talos-eggbert
 
 dex:
-  nodeSelector:
-    kubernetes.io/hostname: talos-eggbert
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - talos-eggbert
 
 redis:
-  nodeSelector:
-    kubernetes.io/hostname: talos-eggbert
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - talos-eggbert
 
 applicationSet:
-  nodeSelector:
-    kubernetes.io/hostname: talos-eggbert
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - talos-eggbert
 
 notifications:
-  nodeSelector:
-    kubernetes.io/hostname: talos-eggbert
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - talos-eggbert
