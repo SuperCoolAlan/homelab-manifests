@@ -2,7 +2,7 @@
 Kubernetes manifests and other mumbojumbo for my home lab.
 
 ## Kubernetes Host
-Talos on a mini PC with a i7-4510U in it w/ 8Gb RAM.
+Talos on a mini PC with a i7-4510U in it w/ 8Gb RAM. A few Raspberry Pi 4b to make up a 3-node cluster.
 
 ## Storage
 I repurposed my old gaming PC from high school and am running TrueNAS Scale. `democratic-csi` is used to connect to NFS hosted by TrueNAS while `longhorn` is used for on-cluster storage.
