@@ -26,12 +26,35 @@ application:
 # Use specific UID/GID that matches TrueNAS NFS user
 deployment:
   serviceAccountName: media-apps
+  volumes:
+    config:
+      persistentVolumeClaim:
+        claimName: 'prowlarr-config'
+    downloads:
+      persistentVolumeClaim:
+        claimName: 'media-downloads'
+    media-library:
+      persistentVolumeClaim:
+        claimName: 'media-library'
   container:
+    image:
+      tag: '2.1.5.5216-ls131'
     env:
       - name: PUID
         value: "1000"
       - name: PGID
         value: "3001"
+    volumeMounts:
+      - name: 'config'
+        mountPath: '/config'
+      - name: 'downloads'
+        mountPath: '/downloads'
+      - name: 'media-library'
+        mountPath: '/media/film'
+        subPath: 'film'
+      - name: 'media-library'
+        mountPath: '/media/tv'
+        subPath: 'tv'
 
 ingress:
   enabled: true
