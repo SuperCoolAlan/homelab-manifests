@@ -26,7 +26,7 @@ deployment:
     downloads:
       persistentVolumeClaim:
         claimName: 'media-downloads'
-    tv:
+    media-library:
       persistentVolumeClaim:
         claimName: 'media-library'
   # Use specific UID/GID that matches TrueNAS NFS user
@@ -36,3 +36,11 @@ deployment:
         value: "1000"
       - name: PGID
         value: "3001"
+    volumeMounts:
+      - name: 'config'
+        mountPath: '/config'
+      - name: 'downloads'
+        mountPath: '/downloads'
+      - name: 'media-library'
+        mountPath: '/media/tv'
+        subPath: 'tv'
