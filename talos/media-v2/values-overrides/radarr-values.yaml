@@ -15,9 +15,6 @@ ingress:
   path: /
   pathType: Prefix
 
-# Override image version at top level
-imageTag: "5.28.0"
-
 # Configure deployment with volumes and API key sync sidecar
 deployment:
   serviceAccountName: media-apps
@@ -29,6 +26,18 @@ deployment:
     downloads:
       persistentVolumeClaim:
         claimName: 'media-downloads'
-    film:
+    media-library:
       persistentVolumeClaim:
         claimName: 'media-library'
+  # Configure volume mounts with subPath
+  container:
+    image:
+      tag: '5.28.0.10274-ls286'
+    volumeMounts:
+      - name: 'config'
+        mountPath: '/config'
+      - name: 'downloads'
+        mountPath: '/downloads'
+      - name: 'media-library'
+        mountPath: '/media/film'
+        subPath: 'film'
