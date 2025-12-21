@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  namespace: argo-cd
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: argocd.asandov.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: talos-argo-argocd-server
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
