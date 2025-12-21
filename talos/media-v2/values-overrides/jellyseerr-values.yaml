@@ -20,6 +20,7 @@ deployment:
     image:
       repository: 'fallenbagel/jellyseerr'
       tag: '2.7.3'
+      pullPolicy: IfNotPresent
     env:
       - name: PUID
         value: "1000"
