@@ -1,15 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-helmGlobals:
-  chartHome: helm
+resources:
+  - resources/ingress.yaml
 
 helmCharts:
   - name: argo-cd
+    repo: https://argoproj.github.io/argo-helm
+    version: 9.0.5
     releaseName: talos-argo
-    namespace: argo-cd
+    namespace: argocd
     valuesFile: values-override.yaml
-
-# generators:
-#   - secrets-generator.yaml
-# Secrets applied manually
