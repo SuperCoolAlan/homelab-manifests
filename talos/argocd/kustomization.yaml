@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - resources/ingress.yaml
+  - resources/applicationset.yaml
 
 helmCharts:
   - name: argo-cd

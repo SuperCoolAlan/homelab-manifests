@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: talos-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
+        revision: HEAD
+        directories:
+          # Cluster services
+          - path: talos/cluster-services/*
+          # Monitoring sub-apps
+          - path: talos/monitoring/*
+          # Exclude cluster-services/monitoring (conflicts with talos/monitoring/*)
+          - path: talos/cluster-services/monitoring
+            exclude: true
+  template:
+    metadata:
+      name: '{{.path.basename}}'
+      namespace: argocd
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
+        targetRevision: HEAD
+        path: '{{.path.path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.path.basename}}'
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
