@@ -25,7 +25,7 @@ volumeSnapshotClasses:
 
 controller:
   externalResizer:
-    enabled: false
+    enabled: true
 
 driver:
   existingConfigSecret: nfs-csi-democratic-csi-driver-config
