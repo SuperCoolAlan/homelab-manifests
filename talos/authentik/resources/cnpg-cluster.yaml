@@ -3,7 +3,7 @@ kind: Cluster
 metadata:
   name: authentik-postgres
 spec:
-  instances: 1
+  instances: 2
 
   bootstrap:
     initdb:
