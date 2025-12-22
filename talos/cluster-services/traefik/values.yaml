@@ -1,0 +1,32 @@
+service:
+  type: LoadBalancer
+
+ingressClass:
+  enabled: true
+  isDefaultClass: false
+  name: traefik
+
+# Enable Kubernetes Ingress provider (needed for forward-auth middleware)
+providers:
+  kubernetesIngress:
+    enabled: true
+    allowExternalNameServices: true
+  kubernetesCRD:
+    enabled: true
+    allowExternalNameServices: true
+
+# Ports configuration
+ports:
+  web:
+    port: 8000
+    exposedPort: 80
+    protocol: TCP
+  websecure:
+    port: 8443
+    exposedPort: 443
+    protocol: TCP
+
+# Enable dashboard for debugging (internal only)
+ingressRoute:
+  dashboard:
+    enabled: false
