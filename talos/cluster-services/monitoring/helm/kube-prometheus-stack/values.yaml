@@ -4027,7 +4027,8 @@ prometheus:
 
     ## External labels to add to any time series or alerts when communicating with external systems
     ##
-    externalLabels: {}
+    externalLabels:
+      cluster: kingel
 
     ## enable --web.enable-remote-write-receiver flag on prometheus-server
     ##
