@@ -17,6 +17,24 @@ spec:
     - nfsvers=4
     - noatime
 ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: authentik-postgres-pv-2
+spec:
+  capacity:
+    storage: 11Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: authentik-cnpg
+  nfs:
+    server: truenas.asandov.local
+    path: "/mnt/Test Stripe/authentik-cnpg2"
+  mountOptions:
+    - nfsvers=4
+    - noatime
+---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
