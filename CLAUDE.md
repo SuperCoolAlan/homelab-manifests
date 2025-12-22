@@ -5,9 +5,9 @@
 ### Secrets Management
 1. **NEVER commit unencrypted secrets to this repository**
 2. **ALWAYS encrypt secrets using SOPS** before committing
-   - Use GPG key: `29FE211C0F0BF17C10EFEB150ECC79FC3C76B242`
+   - Use GPG key: `9D032060B05603F790D340F98B60D1C1CF8E1A50`
    - Save encrypted files with `.enc.yaml` extension
-   - Command: `sops --encrypt --pgp 29FE211C0F0BF17C10EFEB150ECC79FC3C76B242 secret.yaml > secret.enc.yaml`
+   - Command: `sops --encrypt --pgp 9D032060B05603F790D340F98B60D1C1CF8E1A50 secret.yaml > secret.enc.yaml`
 
 ### Before Committing
 - Check that no plaintext secrets are being committed
