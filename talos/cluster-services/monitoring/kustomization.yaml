@@ -6,6 +6,7 @@ helmGlobals:
 
 helmCharts:
   - name: kube-prometheus-stack
-    releaseName: monitoring
+    releaseName: kube-prometheus-stack
     namespace: monitoring
+    valuesFile: helm/kube-prometheus-stack/values.yaml
 
