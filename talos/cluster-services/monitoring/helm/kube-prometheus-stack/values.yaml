@@ -4290,7 +4290,10 @@ prometheus:
 
     ## The remote_write spec configuration for Prometheus.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#remotewritespec
-    remoteWrite: []
+    remoteWrite:
+      - url: http://10.0.1.14:9090/api/v1/write
+        name: truenas
+        remoteTimeout: 30s
     # - url: http://remote1/push
     ## additionalRemoteWrite is appended to remoteWrite
     additionalRemoteWrite: []
