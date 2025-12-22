@@ -15,9 +15,6 @@ spec:
           - path: talos/cluster-services/*
           # Monitoring sub-apps
           - path: talos/monitoring/*
-          # Exclude cluster-services/monitoring (conflicts with talos/monitoring/*)
-          - path: talos/cluster-services/monitoring
-            exclude: true
   template:
     metadata:
       name: '{{.path.basename}}'
