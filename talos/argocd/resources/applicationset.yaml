@@ -17,6 +17,8 @@ spec:
           - path: talos/monitoring/*
           # Authentik
           - path: talos/authentik
+          # Media apps
+          - path: talos/media-v2
   template:
     metadata:
       name: '{{.path.basename}}'
