@@ -7,6 +7,7 @@ resources:
   - namespace.yaml
   - resources/cnpg-storage.yaml
   - resources/cnpg-cluster.yaml
+  - resources/traefik-middleware.yaml
 
 generators:
   - secrets-generator.yaml
