@@ -1,0 +1,42 @@
+authentik:
+  # Secret key loaded from secret via envFrom
+  secret_key: ""
+  error_reporting:
+    enabled: false
+
+  postgresql:
+    host: "authentik-postgres-rw"
+    port: 5432
+    name: "authentik"
+    user: "authentik"
+    password: ""  # loaded via envFrom
+
+  email:
+    host: "smtp.zoho.com"
+    port: 587
+    use_tls: true
+    use_ssl: false
+    timeout: 30
+    from: "authentik@asandov.com"  # set your from address
+    # username/password loaded via envFrom
+
+global:
+  envFrom:
+    - secretRef:
+        name: authentik-secrets
+
+# Disable bundled PostgreSQL - using CNPG
+postgresql:
+  enabled: false
+
+# Enable bundled Redis
+redis:
+  enabled: true
+
+server:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - authentik.asandov.local  # change to your domain
+    tls: []
