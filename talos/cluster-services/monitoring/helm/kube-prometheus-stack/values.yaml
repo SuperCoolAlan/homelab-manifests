@@ -2584,18 +2584,14 @@ prometheus-node-exporter:
       ## RelabelConfigs to apply to samples before scraping
       ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#relabelconfig
       ##
-      relabelings: []
-      # - sourceLabels: [__meta_kubernetes_pod_node_name]
-      #   separator: ;
-      #   regex: ^(.*)$
-      #   targetLabel: nodename
-      #   replacement: $1
-      #   action: replace
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
 
       ## Attach node metadata to discovered targets. Requires Prometheus v2.35.0 and above.
       ##
-      # attachMetadata:
-      #   node: false
+      attachMetadata:
+        node: true
 
   rbac:
     ## If true, create PSPs for node-exporter
