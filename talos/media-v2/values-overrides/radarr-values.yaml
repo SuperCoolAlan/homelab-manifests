@@ -14,6 +14,8 @@ ingress:
   host: radarr.asandov.local
   path: /
   pathType: Prefix
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
 
 # Configure deployment with volumes and API key sync sidecar
 deployment:
