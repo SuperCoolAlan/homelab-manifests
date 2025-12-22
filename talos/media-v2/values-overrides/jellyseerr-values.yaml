@@ -35,7 +35,7 @@ application:
 
 ingress:
   enabled: true
-  className: nginx
+  className: traefik
   host: jellyseerr.asandov.local
   path: /
   pathType: Prefix
