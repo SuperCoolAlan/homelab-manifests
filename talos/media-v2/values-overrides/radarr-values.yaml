@@ -10,7 +10,7 @@ application:
 
 ingress:
   enabled: true
-  className: nginx
+  className: traefik
   host: radarr.asandov.local
   path: /
   pathType: Prefix
