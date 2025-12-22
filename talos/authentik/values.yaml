@@ -34,9 +34,23 @@ redis:
   enabled: true
 
 server:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
   ingress:
     enabled: true
     ingressClassName: nginx
     hosts:
       - authentik.asandov.local  # change to your domain
     tls: []
+
+worker:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
