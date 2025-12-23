@@ -9,7 +9,7 @@
 3. Configure:
    - **Name**: `jellyseerr`
    - **Authorization flow**: `default-provider-authorization-explicit-consent`
-   - **Redirect URI**: `https://jellyseerr.asandov.local/api/v1/auth/oidc-callback`
+   - **Redirect URI**: `http://jellyseerr.asandov.local/login?provider=authentik&callback=true`
    - **Signing Key**: Select an available key
 4. Save and note the **Client ID** and **Client Secret**
 
@@ -24,15 +24,19 @@
 
 ## Jellyseerr Configuration
 
-1. Navigate to `https://jellyseerr.asandov.local`
+**Note**: Requires `preview-OIDC` Docker tag (OIDC not in stable release yet).
+
+1. Navigate to `http://jellyseerr.asandov.local`
 2. Go to **Settings → Users**
-3. Enable **"Enable OIDC Sign-In"**
-4. Click **"Add OIDC Provider"** and configure:
-   - **Provider Name**: `Authentik`
-   - **Issuer URL**: `https://authentik.asandov.local/application/o/jellyseerr/`
+3. Enable **OpenID Connect** and add provider:
+   - **Provider Name**: `authentik`
+   - **Logo**: `http://authentik.asandov.local/static/dist/assets/icons/icon.svg`
+   - **Issuer URL**: `http://authentik.asandov.local/application/o/jellyseerr/`
    - **Client ID**: *(paste from Authentik)*
    - **Client Secret**: *(paste from Authentik)*
-5. Save changes
+   - **Scopes**: `openid profile email groups`
+   - **Allow New Users**: Enabled
+4. Save changes
 
 ## Verification
 

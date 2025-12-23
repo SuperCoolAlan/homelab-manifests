@@ -19,8 +19,8 @@ deployment:
   container:
     image:
       repository: 'fallenbagel/jellyseerr'
-      tag: '2.7.3'
-      pullPolicy: IfNotPresent
+      tag: 'preview-OIDC'
+      pullPolicy: Always
     env:
       - name: PUID
         value: "1000"
