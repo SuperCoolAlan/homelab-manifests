@@ -4,9 +4,10 @@ metadata:
   name: jellyfin
   namespace: media-v2
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: jellyfin.asandov.local
+    external-dns.alpha.kubernetes.io/target: 10.0.1.28
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 spec:
-  ingressClassName: traefik
+  ingressClassName: nginx
   rules:
   - host: jellyfin.asandov.local
     http:
