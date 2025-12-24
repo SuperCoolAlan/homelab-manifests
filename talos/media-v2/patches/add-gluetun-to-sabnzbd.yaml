@@ -26,9 +26,15 @@
     - name: VPN_SERVICE_PROVIDER
       value: custom
     - name: VPN_TYPE
-      value: openvpn
-    - name: OPENVPN_CUSTOM_CONFIG
-      value: /gluetun/custom/dallas.conf
+      value: wireguard
+    - name: WIREGUARD_ADDRESSES
+      value: "100.109.241.211/32"
+    - name: WIREGUARD_PUBLIC_KEY
+      value: "47tLjymDPpTIBerb+wn02/XNFABF4YDAGwOnijSoZmQ="
+    - name: VPN_ENDPOINT_IP
+      value: "23.95.42.212"
+    - name: VPN_ENDPOINT_PORT
+      value: "443"
     - name: HEALTH_VPN_DURATION_INITIAL
       value: "10s"
     - name: HEALTH_VPN_DURATION_ADDITION
@@ -45,7 +51,7 @@
       value: "on"
     envFrom:
     - secretRef:
-        name: windscribe-openvpn-creds
+        name: windscribe-wireguard-creds
     securityContext:
       capabilities:
         add:
@@ -58,13 +64,3 @@
       limits:
         memory: "1Gi"
         cpu: "1500m"
-    volumeMounts:
-    - name: openvpn-config
-      mountPath: /gluetun/custom
-      readOnly: true
-- op: add
-  path: /spec/template/spec/volumes/-
-  value:
-    name: openvpn-config
-    configMap:
-      name: windscribe-openvpn-config
