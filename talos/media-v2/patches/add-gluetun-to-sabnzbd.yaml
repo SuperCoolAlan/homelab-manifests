@@ -57,7 +57,7 @@
         cpu: "100m"
       limits:
         memory: "1Gi"
-        cpu: "2500m"
+        cpu: "1500m"
     volumeMounts:
     - name: openvpn-config
       mountPath: /gluetun/custom
