@@ -8,6 +8,7 @@ resources:
   - resources/cnpg-storage.yaml
   - resources/cnpg-cluster.yaml
   - resources/traefik-middleware.yaml
+  - resources/cloudflare-ingress.yaml
 
 generators:
   - secrets-generator.yaml
