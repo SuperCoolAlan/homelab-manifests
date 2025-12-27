@@ -1,11 +1,161 @@
 # homelab-manifests
-Kubernetes manifests and other mumbojumbo for my home lab.
 
-## Kubernetes Host
-Talos on a mini PC with a i7-4510U in it w/ 8Gb RAM. A few Raspberry Pi 4b to make up a 3-node cluster.
+Kubernetes manifests for my home lab running on Talos Linux.
 
-## Storage
-I repurposed my old gaming PC from high school and am running TrueNAS Scale. `democratic-csi` is used to connect to NFS hosted by TrueNAS while `longhorn` is used for on-cluster storage.
+## Architecture
 
-## Network
-OPNsense and a dumb switch
+```mermaid
+flowchart TB
+    subgraph Internet
+        CF[Cloudflare Tunnel]
+    end
+
+    subgraph Public["Public Access (*.asandov.com)"]
+        auth_pub[auth.asandov.com]
+        jf_pub[jellyfin.asandov.com]
+        js_pub[jellyseerr.asandov.com]
+    end
+
+    subgraph Local["Local Access (*.asandov.local)"]
+        auth_loc[authentik.asandov.local]
+        jf_loc[jellyfin.asandov.local]
+        js_loc[jellyseerr.asandov.local]
+        sonarr_loc[sonarr.asandov.local]
+        radarr_loc[radarr.asandov.local]
+        prowlarr_loc[prowlarr.asandov.local]
+        sabnzbd_loc[sabnzbd.asandov.local]
+        bazarr_loc[bazarr.asandov.local]
+        grafana_loc[grafana.asandov.local]
+    end
+
+    subgraph Ingress["Ingress Controllers"]
+        traefik[Traefik]
+        nginx[NGINX]
+        cftunnel[Cloudflare Tunnel Controller]
+    end
+
+    subgraph Cluster["Talos Kubernetes Cluster"]
+        subgraph Nodes
+            dell[talos-dell<br/>10.0.1.28<br/>control-plane]
+            eggbert[talos-eggbert<br/>10.0.1.37<br/>control-plane]
+            ratty[talos-rattypatty<br/>10.0.1.36<br/>control-plane]
+        end
+
+        subgraph Auth["Authentication"]
+            authentik[Authentik]
+            ldap[LDAP Outpost]
+        end
+
+        subgraph Media["Media Stack"]
+            jellyseerr[Jellyseerr]
+            sonarr[Sonarr]
+            radarr[Radarr]
+            prowlarr[Prowlarr]
+            sabnzbd[SABnzbd]
+            bazarr[Bazarr]
+            gluetun[Gluetun VPN]
+        end
+
+        subgraph Monitoring["Monitoring"]
+            prometheus[Prometheus]
+            grafana[Grafana]
+            alertmanager[Alertmanager]
+        end
+
+        subgraph ClusterSvcs["Cluster Services"]
+            argocd[ArgoCD]
+            metallb[MetalLB]
+            externaldns[ExternalDNS]
+            certmgr[Democratic-CSI]
+        end
+    end
+
+    subgraph External["External Services"]
+        truenas[TrueNAS<br/>Jellyfin + NFS Storage]
+        opnsense[OPNsense<br/>Router + DNS]
+        windscribe[Windscribe VPN]
+    end
+
+    CF --> cftunnel
+    cftunnel --> auth_pub & jf_pub & js_pub
+
+    auth_pub --> authentik
+    jf_pub --> truenas
+    js_pub --> jellyseerr
+
+    traefik --> auth_loc & js_loc & sonarr_loc & radarr_loc & prowlarr_loc & sabnzbd_loc & bazarr_loc
+    nginx --> jf_loc & grafana_loc
+
+    auth_loc --> authentik
+    jf_loc --> truenas
+    js_loc --> jellyseerr
+    sonarr_loc --> sonarr
+    radarr_loc --> radarr
+    prowlarr_loc --> prowlarr
+    sabnzbd_loc --> sabnzbd
+    bazarr_loc --> bazarr
+    grafana_loc --> grafana
+
+    authentik --> ldap
+    ldap -->|LDAP Auth| truenas
+
+    sabnzbd --> gluetun --> windscribe
+
+    Media --> truenas
+    externaldns --> opnsense
+    certmgr --> truenas
+```
+
+## Infrastructure
+
+### Kubernetes Cluster
+All services run on a 3-node Talos Linux cluster:
+
+| Node | IP | Role | Hardware |
+|------|-----|------|----------|
+| talos-dell | 10.0.1.28 | control-plane | Mini PC, i7-4510U |
+| talos-eggbert | 10.0.1.37 | control-plane | Mini PC |
+| talos-rattypatty | 10.0.1.36 | control-plane | Mini PC |
+
+- **OS**: Talos Linux v1.11.2
+- **Container Runtime**: containerd 2.1.4
+
+### Storage
+The cluster is diskless - all persistent storage is provided by a separate **TrueNAS Scale** server via NFS.
+
+- **Democratic-CSI** - Dynamic NFS provisioner for PVCs
+- **Jellyfin** also runs directly on TrueNAS (not in cluster)
+
+### Network
+- **OPNsense** - Router, firewall, DNS (Unbound)
+- **MetalLB** - Load balancer for bare metal
+- **ExternalDNS** - Automatic DNS record management to OPNsense
+
+## Applications
+
+| App | Local URL | Public URL | Auth |
+|-----|-----------|------------|------|
+| Authentik | authentik.asandov.local | auth.asandov.com | - |
+| Jellyfin | jellyfin.asandov.local | jellyfin.asandov.com | LDAP |
+| Jellyseerr | jellyseerr.asandov.local | jellyseerr.asandov.com | OIDC |
+| Sonarr | sonarr.asandov.local | - | Forward Auth |
+| Radarr | radarr.asandov.local | - | Forward Auth |
+| Prowlarr | prowlarr.asandov.local | - | Forward Auth |
+| SABnzbd | sabnzbd.asandov.local | - | Forward Auth |
+| Bazarr | bazarr.asandov.local | - | Forward Auth |
+| Grafana | grafana.asandov.local | - | - |
+| ArgoCD | argocd.asandov.local | - | - |
+
+## GitOps
+
+All deployments are managed via **ArgoCD** with manifests in this repository.
+
+```
+talos/
+├── argocd/           # ArgoCD self-management
+├── authentik/        # SSO provider
+├── cluster-services/ # Traefik, external-dns, democratic-csi
+├── kube-prom-stack/  # Prometheus, Grafana, Alertmanager
+├── media-v2/         # Jellyseerr, *arr stack, SABnzbd
+└── ...
+```
