@@ -113,7 +113,7 @@ deployment:
         cpu: "250m"
       limits:
         memory: "2Gi"
-        cpu: "1000m"
+        cpu: "4000m"
     env:
       - name: PUID
         value: "1000"
@@ -143,9 +143,10 @@ deployment:
 
 ingress:
   enabled: true
-  className: nginx
+  className: traefik
   host: sabnzbd.asandov.local
   path: /
   pathType: Prefix
   annotations:
     external-dns.alpha.kubernetes.io/hostname: sabnzbd.asandov.local
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd

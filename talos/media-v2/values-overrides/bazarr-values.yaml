@@ -42,7 +42,9 @@ deployment:
 
 ingress:
   enabled: true
-  className: nginx
+  className: traefik
   host: bazarr.asandov.local
   path: /
   pathType: Prefix
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd

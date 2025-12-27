@@ -1,0 +1,12 @@
+# DNS record for LDAP outpost - points to Traefik LoadBalancer
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: ldap-dns
+  namespace: authentik
+spec:
+  endpoints:
+    - dnsName: ldap.asandov.local
+      recordType: A
+      targets:
+        - 10.0.7.201

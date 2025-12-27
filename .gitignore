@@ -18,3 +18,4 @@ sops-gpg*
 
 # Kustomize helm chart cache - charts are referenced from remote repos
 **/charts/
+talos/cluster-services/traefik/helm/
