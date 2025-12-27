@@ -1,0 +1,14 @@
+# Expose Authentik LDAP outpost via Traefik for external clients (e.g., Jellyfin on TrueNAS)
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: authentik-ldap
+  namespace: authentik
+spec:
+  entryPoints:
+    - ldap
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: ak-outpost-jellyfin-ldap
+          port: 389
