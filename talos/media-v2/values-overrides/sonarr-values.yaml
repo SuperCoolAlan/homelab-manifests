@@ -10,10 +10,12 @@ application:
 
 ingress:
   enabled: true
-  className: nginx
+  className: traefik
   host: sonarr.asandov.local
   path: /
   pathType: Prefix
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
 
 # Configure deployment with volumes and API key sync sidecar
 deployment:

@@ -7,6 +7,8 @@ resources:
 - shared-pvcs.yaml
 - resources/external-truenas-svc.yaml
 - resources/jellyfin-ingress.yaml
+- resources/jellyfin-public-ingress.yaml
+- resources/jellyseerr-public-ingress.yaml
 - configs/setup-rbac.yaml
 - configs/api-key-sync-sidecar.yaml
 - configs/api-key-sync-rbac.yaml
