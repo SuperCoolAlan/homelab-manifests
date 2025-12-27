@@ -28,6 +28,8 @@ ports:
   ldap:
     port: 3890
     exposedPort: 389
+    expose:
+      default: true
     protocol: TCP
 
 # Enable dashboard for debugging (internal only)
