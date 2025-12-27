@@ -118,11 +118,11 @@ flowchart TB
 ### Kubernetes Cluster
 All services run on a 3-node Talos Linux cluster:
 
-| Node | IP | Role | Hardware |
-|------|-----|------|----------|
-| talos-dell | 10.0.1.28 | control-plane | Mini PC, i7-4510U |
-| talos-eggbert | 10.0.1.37 | control-plane | Mini PC |
-| talos-rattypatty | 10.0.1.36 | control-plane | Mini PC |
+| Node | IP | Role | Hardware | RAM |
+|------|-----|------|----------|-----|
+| talos-dell | 10.0.1.28 | control-plane | Mini PC, i7-4510U | 16GB |
+| talos-eggbert | 10.0.1.37 | control-plane | Raspberry Pi 4 | 4GB |
+| talos-rattypatty | 10.0.1.36 | control-plane | Raspberry Pi 4 | 2GB |
 
 - **OS**: Talos Linux v1.11.2
 - **Container Runtime**: containerd 2.1.4
