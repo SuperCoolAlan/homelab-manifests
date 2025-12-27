@@ -56,10 +56,10 @@ flowchart TB
             gluetun[Gluetun VPN]
         end
 
-        subgraph Monitoring["Monitoring"]
-            prometheus[Prometheus]
-            grafana[Grafana]
-            alertmanager[Alertmanager]
+        subgraph Monitoring["Monitoring (exporters only)"]
+            prom_agent[Prometheus Agent]
+            node_exp[Node Exporters]
+            kube_state[kube-state-metrics]
         end
 
         subgraph ClusterSvcs["Cluster Services"]
@@ -71,7 +71,13 @@ flowchart TB
     end
 
     subgraph External["External Services"]
-        truenas[TrueNAS<br/>Jellyfin + NFS Storage]
+        truenas[TrueNAS Scale]
+        subgraph TrueNAS_Apps["TrueNAS Apps"]
+            jellyfin_tn[Jellyfin]
+            prometheus_tn[Prometheus]
+            grafana_tn[Grafana]
+        end
+        nfs[(NFS Storage)]
         opnsense[OPNsense<br/>Router + DNS]
         windscribe[Windscribe VPN]
     end
@@ -80,30 +86,31 @@ flowchart TB
     cftunnel --> auth_pub & jf_pub & js_pub
 
     auth_pub --> authentik
-    jf_pub --> truenas
+    jf_pub --> jellyfin_tn
     js_pub --> jellyseerr
 
     traefik --> auth_loc & js_loc & sonarr_loc & radarr_loc & prowlarr_loc & sabnzbd_loc & bazarr_loc
     nginx --> jf_loc & grafana_loc
 
     auth_loc --> authentik
-    jf_loc --> truenas
+    jf_loc --> jellyfin_tn
     js_loc --> jellyseerr
     sonarr_loc --> sonarr
     radarr_loc --> radarr
     prowlarr_loc --> prowlarr
     sabnzbd_loc --> sabnzbd
     bazarr_loc --> bazarr
-    grafana_loc --> grafana
+    grafana_loc --> grafana_tn
 
     authentik --> ldap
-    ldap -->|LDAP Auth| truenas
+    ldap -->|LDAP Auth| jellyfin_tn
 
     sabnzbd --> gluetun --> windscribe
 
-    Media --> truenas
+    prom_agent -->|remote write| prometheus_tn
+    Media --> nfs
     externaldns --> opnsense
-    certmgr --> truenas
+    certmgr --> nfs
 ```
 
 ## Infrastructure
@@ -133,18 +140,19 @@ The cluster is diskless - all persistent storage is provided by a separate **Tru
 
 ## Applications
 
-| App | Local URL | Public URL | Auth |
-|-----|-----------|------------|------|
-| Authentik | authentik.asandov.local | auth.asandov.com | - |
-| Jellyfin | jellyfin.asandov.local | jellyfin.asandov.com | LDAP |
-| Jellyseerr | jellyseerr.asandov.local | jellyseerr.asandov.com | OIDC |
-| Sonarr | sonarr.asandov.local | - | Forward Auth |
-| Radarr | radarr.asandov.local | - | Forward Auth |
-| Prowlarr | prowlarr.asandov.local | - | Forward Auth |
-| SABnzbd | sabnzbd.asandov.local | - | Forward Auth |
-| Bazarr | bazarr.asandov.local | - | Forward Auth |
-| Grafana | grafana.asandov.local | - | - |
-| ArgoCD | argocd.asandov.local | - | - |
+| App | Local URL | Public URL | Auth | Runs On |
+|-----|-----------|------------|------|---------|
+| Authentik | authentik.asandov.local | auth.asandov.com | - | Cluster |
+| Jellyfin | jellyfin.asandov.local | jellyfin.asandov.com | LDAP | TrueNAS |
+| Jellyseerr | jellyseerr.asandov.local | jellyseerr.asandov.com | OIDC | Cluster |
+| Sonarr | sonarr.asandov.local | - | Forward Auth | Cluster |
+| Radarr | radarr.asandov.local | - | Forward Auth | Cluster |
+| Prowlarr | prowlarr.asandov.local | - | Forward Auth | Cluster |
+| SABnzbd | sabnzbd.asandov.local | - | Forward Auth | Cluster |
+| Bazarr | bazarr.asandov.local | - | Forward Auth | Cluster |
+| Grafana | grafana.asandov.local | - | - | TrueNAS |
+| Prometheus | - | - | - | TrueNAS |
+| ArgoCD | argocd.asandov.local | - | - | Cluster |
 
 ## GitOps
 
