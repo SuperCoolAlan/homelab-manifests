@@ -19,6 +19,8 @@ spec:
           - path: talos/authentik
           # Media apps
           - path: talos/media-v2
+          # Tracearr
+          - path: talos/tracearr
   template:
     metadata:
       name: '{{.path.basename}}'
