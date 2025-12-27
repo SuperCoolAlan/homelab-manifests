@@ -25,6 +25,10 @@ ports:
     port: 8443
     exposedPort: 443
     protocol: TCP
+  ldap:
+    port: 3890
+    exposedPort: 389
+    protocol: TCP
 
 # Enable dashboard for debugging (internal only)
 ingressRoute:

@@ -9,6 +9,7 @@ resources:
   - resources/cnpg-cluster.yaml
   - resources/traefik-middleware.yaml
   - resources/cloudflare-ingress.yaml
+  - resources/ldap-ingressroute.yaml
 
 generators:
   - secrets-generator.yaml
