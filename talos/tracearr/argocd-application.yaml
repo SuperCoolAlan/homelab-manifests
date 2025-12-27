@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tracearr
+  namespace: argo-cd
+spec:
+  destination:
+    namespace: tracearr
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: talos/tracearr
+    repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
+    targetRevision: HEAD
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
