@@ -21,6 +21,9 @@ helmCharts:
       serviceMonitor:
         enabled: true
       config:
+        storage:
+          type: sqlite
+          path: /data/gatus.db
         ui:
           title: "asandov.com Status"
           header: "Service Status"
