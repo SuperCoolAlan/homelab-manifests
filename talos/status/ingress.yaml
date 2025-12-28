@@ -1,0 +1,42 @@
+# Public ingress for status.asandov.com via Cloudflare Tunnel
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gatus-cloudflare
+  namespace: status
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+  - host: status.asandov.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: gatus
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+---
+# Local ingress for gatus.asandov.local via Traefik
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gatus-local
+  namespace: status
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: gatus.asandov.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: gatus
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
