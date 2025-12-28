@@ -38,9 +38,19 @@ prometheus:
     #         requests:
     #           storage: 20Gi
 
-# Disable components we don't need
 alertmanager:
-  enabled: false
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+    hosts:
+      - alerts.asandov.local
+    paths:
+      - /
+    pathType: Prefix
 
 grafana:
   enabled: false
