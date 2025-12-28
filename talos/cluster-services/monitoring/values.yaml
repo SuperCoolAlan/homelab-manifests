@@ -1,8 +1,7 @@
 # kube-prometheus-stack values
-# Remote write to TrueNAS prometheus aggregator
+# Non-default values only
 
 prometheus:
-  # Ingress configuration
   ingress:
     enabled: true
     ingressClassName: traefik
@@ -14,32 +13,15 @@ prometheus:
     paths:
       - /
     pathType: Prefix
-
   prometheusSpec:
-    # Remote write to TrueNAS prometheus
     remoteWrite:
-    - url: http://truenas.asandov.local:9090/api/v1/write
-
-    # Retention
-    retention: 48h
-
-    # Search all namespaces for ServiceMonitors, PrometheusRules, and PodMonitors
-    serviceMonitorSelectorNilUsesHelmValues: false
-    ruleSelectorNilUsesHelmValues: false
-    podMonitorSelectorNilUsesHelmValues: false
-
-    # Storage - disabled for now until storage class is configured
-    # storageSpec:
-    #   volumeClaimTemplate:
-    #     spec:
-    #       storageClassName: nfs
-    #       accessModes: ["ReadWriteOnce"]
-    #       resources:
-    #         requests:
-    #           storage: 20Gi
+      - url: http://truenas.asandov.local:9090/api/v1/write
+    retention: 48h  # default: 10d
+    serviceMonitorSelectorNilUsesHelmValues: false  # default: true
+    ruleSelectorNilUsesHelmValues: false  # default: true
+    podMonitorSelectorNilUsesHelmValues: false  # default: true
 
 alertmanager:
-  enabled: true
   ingress:
     enabled: true
     ingressClassName: traefik
@@ -53,4 +35,4 @@ alertmanager:
     pathType: Prefix
 
 grafana:
-  enabled: false
+  enabled: false  # default: true
