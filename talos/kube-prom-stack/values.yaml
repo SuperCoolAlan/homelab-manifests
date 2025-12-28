@@ -5,11 +5,12 @@ prometheus:
   # Ingress configuration
   ingress:
     enabled: true
-    ingressClassName: nginx
+    ingressClassName: traefik
     annotations:
-      external-dns.alpha.kubernetes.io/target: 10.0.1.28
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
     hosts:
-      - prometheus.talos.asandov.local
+      - prometheus.asandov.local
     paths:
       - /
     pathType: Prefix
