@@ -1,0 +1,77 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: status
+
+resources:
+  - namespace.yaml
+  - ingress.yaml
+
+helmCharts:
+  - name: gatus
+    repo: https://twin.github.io/helm-charts
+    version: 1.4.4
+    releaseName: gatus
+    namespace: status
+    valuesInline:
+      persistence:
+        enabled: true
+        size: 1Gi
+        storageClassName: nfs
+      serviceMonitor:
+        enabled: true
+      config:
+        ui:
+          title: "asandov.com Status"
+          header: "Service Status"
+        endpoints:
+          # Public services
+          - name: Authentik
+            group: Public
+            url: https://auth.asandov.com
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
+          - name: Jellyfin
+            group: Public
+            url: https://jellyfin.asandov.com
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
+          - name: Jellyseerr
+            group: Public
+            url: https://jellyseerr.asandov.com
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
+          # Media stack (internal)
+          - name: Sonarr
+            group: Media
+            url: http://sonarr.media-v2.svc.cluster.local:8989/ping
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
+          - name: Radarr
+            group: Media
+            url: http://radarr.media-v2.svc.cluster.local:7878/ping
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
+          - name: Prowlarr
+            group: Media
+            url: http://prowlarr.media-v2.svc.cluster.local:9696/ping
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
+          - name: SABnzbd
+            group: Media
+            url: http://sabnzbd.media-v2.svc.cluster.local:8080
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
+          - name: Bazarr
+            group: Media
+            url: http://bazarr.media-v2.svc.cluster.local:6767
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
