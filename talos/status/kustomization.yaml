@@ -78,3 +78,50 @@ helmCharts:
             interval: 60s
             conditions:
               - "[STATUS] == 200"
+          # Infrastructure
+          - name: NFS
+            group: Infrastructure
+            url: tcp://truenas.asandov.local:2049
+            interval: 30s
+            conditions:
+              - "[CONNECTED] == true"
+          - name: TrueNAS
+            group: Infrastructure
+            url: https://truenas.asandov.local
+            interval: 60s
+            client:
+              insecure: true
+            conditions:
+              - "[STATUS] == 200"
+          - name: Kubernetes API
+            group: Infrastructure
+            url: https://kubernetes.default.svc.cluster.local:443
+            interval: 30s
+            client:
+              insecure: true
+            conditions:
+              - "[STATUS] == any(200, 401, 403)"
+          - name: Prometheus
+            group: Infrastructure
+            url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/-/healthy
+            interval: 30s
+            conditions:
+              - "[STATUS] == 200"
+          - name: Lab DNS
+            group: Infrastructure
+            url: 10.0.1.1
+            interval: 30s
+            dns:
+              query-name: truenas.asandov.local
+              query-type: A
+            conditions:
+              - "[DNS_RCODE] == NOERROR"
+          - name: Cloudflare DNS
+            group: Infrastructure
+            url: 1.1.1.1
+            interval: 30s
+            dns:
+              query-name: cloudflare.com
+              query-type: A
+            conditions:
+              - "[DNS_RCODE] == NOERROR"
