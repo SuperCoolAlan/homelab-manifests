@@ -18,3 +18,15 @@ spec:
 
   monitoring:
     enablePodMonitor: true
+
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://authentik-cnpg-backup/
+      s3Credentials:
+        accessKeyId:
+          name: aws-s3-creds
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: aws-s3-creds
+          key: SECRET_ACCESS_KEY
+    retentionPolicy: "30d"
