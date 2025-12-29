@@ -23,6 +23,8 @@ spec:
           - path: talos/tracearr
           # Status page
           - path: talos/status
+          # Jellyfin
+          - path: talos/jellyfin
   template:
     metadata:
       name: '{{.path.basename}}'
