@@ -1,4 +1,24 @@
 # Shared PVCs for media services
+
+# Static PV for media-library on dedicated pool1
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-library-pool1
+spec:
+  capacity:
+    storage: 5Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  nfs:
+    server: truenas.asandov.local
+    path: /mnt/ST6000NM0095-pool1/media
+  mountOptions:
+    - noatime
+    - nfsvers=4
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -7,7 +27,8 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: nfs
+  storageClassName: ""
+  volumeName: media-library-pool1
   resources:
     requests:
       storage: 5Ti
