@@ -1,12 +1,113 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: tracearr-local
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: tracearr-postgres-pv
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: tracearr-local
+  local:
+    path: /var/mnt/local-storage/tracearr/postgres
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-dell
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: tracearr-redis-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: tracearr-local
+  local:
+    path: /var/mnt/local-storage/tracearr/redis
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-dell
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: tracearr-config-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: tracearr-local
+  local:
+    path: /var/mnt/local-storage/tracearr/config
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-dell
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: tracearr-data
+  name: tracearr-postgres
   namespace: tracearr
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: nfs
+  storageClassName: tracearr-local
   resources:
     requests:
-      storage: 10Gi
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tracearr-redis
+  namespace: tracearr
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: tracearr-local
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tracearr-config
+  namespace: tracearr
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: tracearr-local
+  resources:
+    requests:
+      storage: 5Gi

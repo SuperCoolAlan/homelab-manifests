@@ -32,9 +32,19 @@ spec:
               memory: "4Gi"
               cpu: "2000m"
           volumeMounts:
-            - name: data
-              mountPath: /data
+            - name: postgres
+              mountPath: /data/postgres
+            - name: redis
+              mountPath: /data/redis
+            - name: config
+              mountPath: /data/tracearr
       volumes:
-        - name: data
+        - name: postgres
           persistentVolumeClaim:
-            claimName: tracearr-data
+            claimName: tracearr-postgres
+        - name: redis
+          persistentVolumeClaim:
+            claimName: tracearr-redis
+        - name: config
+          persistentVolumeClaim:
+            claimName: tracearr-config
