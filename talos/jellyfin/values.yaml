@@ -1,0 +1,47 @@
+image:
+  tag: "10.10.3"
+
+nodeSelector:
+  kubernetes.io/hostname: talos-dell
+
+persistence:
+  config:
+    enabled: true
+    storageClass: nfs
+    size: 10Gi
+  media:
+    enabled: false  # We'll use extraVolumes for NFS
+
+volumes:
+  - name: media
+    nfs:
+      server: truenas.asandov.local
+      path: /mnt/ST6000NM0095-pool1/media
+      readOnly: true
+  - name: dri
+    hostPath:
+      path: /dev/dri
+      type: Directory
+
+volumeMounts:
+  - name: media
+    mountPath: /media
+    readOnly: true
+  - name: dri
+    mountPath: /dev/dri
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "500m"
+  limits:
+    memory: "4Gi"
+    cpu: "4000m"
+
+ingress:
+  enabled: false  # We'll manage ingress separately
+
+jellyfin:
+  env:
+    - name: JELLYFIN_PublishedServerUrl
+      value: "https://jellyfin.asandov.com"

@@ -1,0 +1,41 @@
+# Local ingress via Traefik
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin-local
+  namespace: jellyfin
+  annotations:
+    external-dns.alpha.kubernetes.io/target: 10.0.1.28
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: jellyfin.asandov.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096
+---
+# Public ingress via Cloudflare Tunnel
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin-public
+  namespace: jellyfin
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: jellyfin.asandov.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096
