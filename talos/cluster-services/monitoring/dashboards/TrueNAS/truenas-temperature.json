@@ -30,7 +30,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "de90t313qnhtse"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -108,7 +108,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "de90t313qnhtse"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "cpu_temperature{instance=~\"$instance\", cpu=~\"$cpu\"}",
@@ -123,7 +123,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "de90t313qnhtse"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -201,7 +201,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "de90t313qnhtse"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "disk_temperature{instance=~\"$instance\", serial=~\"$disk\"}",
@@ -216,7 +216,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "de90t313qnhtse"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -271,7 +271,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "de90t313qnhtse"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "max(cpu_temperature{instance=~\"$instance\"} or disk_temperature{instance=~\"$instance\"})",
@@ -292,9 +292,23 @@
     "list": [
       {
         "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "de90t313qnhtse"
+          "uid": "$datasource"
         },
         "definition": "label_values(cpu_temperature, instance)",
         "hide": 0,
@@ -317,7 +331,7 @@
         "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "de90t313qnhtse"
+          "uid": "$datasource"
         },
         "definition": "label_values(cpu_temperature{instance=~\"$instance\"}, cpu)",
         "hide": 0,
@@ -340,7 +354,7 @@
         "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "de90t313qnhtse"
+          "uid": "$datasource"
         },
         "definition": "label_values(disk_temperature{instance=~\"$instance\"}, serial)",
         "hide": 0,
