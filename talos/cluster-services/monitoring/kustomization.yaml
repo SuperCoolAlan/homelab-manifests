@@ -13,3 +13,42 @@ helmCharts:
 
 patches:
   - path: patches/admission-role-patch.yaml
+
+configMapGenerator:
+  # TrueNAS dashboards
+  - name: dashboard-truenas-overview
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/TrueNAS/truenas-overview.json
+  - name: dashboard-truenas-app-health
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/TrueNAS/app-health-overview.json
+  - name: dashboard-truenas-disk-insight
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/TrueNAS/truenas-disk-insight.json
+  - name: dashboard-truenas-temperature
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/TrueNAS/truenas-temperature.json
+  - name: dashboard-nvidia-dcgm
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/TrueNAS/nvidia-dcgm.json
+  - name: dashboard-ups-status
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/TrueNAS/ups-status.json
