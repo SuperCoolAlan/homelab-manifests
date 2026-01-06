@@ -20,6 +20,12 @@ prometheus:
     serviceMonitorSelectorNilUsesHelmValues: false  # default: true
     ruleSelectorNilUsesHelmValues: false  # default: true
     podMonitorSelectorNilUsesHelmValues: false  # default: true
+    additionalScrapeConfigs:
+      - job_name: "truenas-gpu"
+        static_configs:
+          - targets: ["truenas.asandov.local:9835"]
+            labels:
+              instance: "truenas"
 
 alertmanager:
   ingress:
@@ -64,9 +70,9 @@ grafana:
       mountPath: /etc/grafana/provisioning/dashboards/truenas/truenas-temperature
       configMap: dashboard-truenas-temperature
       readOnly: true
-    - name: dashboard-nvidia-dcgm
-      mountPath: /etc/grafana/provisioning/dashboards/truenas/nvidia-dcgm
-      configMap: dashboard-nvidia-dcgm
+    - name: dashboard-nvidia-gpu
+      mountPath: /etc/grafana/provisioning/dashboards/truenas/nvidia-gpu
+      configMap: dashboard-nvidia-gpu
       readOnly: true
     - name: dashboard-ups-status
       mountPath: /etc/grafana/provisioning/dashboards/truenas/ups-status
