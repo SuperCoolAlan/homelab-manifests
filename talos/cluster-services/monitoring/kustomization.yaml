@@ -40,12 +40,12 @@ configMapGenerator:
       disableNameSuffixHash: true
     files:
       - dashboards/TrueNAS/truenas-temperature.json
-  - name: dashboard-nvidia-dcgm
+  - name: dashboard-nvidia-gpu
     namespace: monitoring
     options:
       disableNameSuffixHash: true
     files:
-      - dashboards/TrueNAS/nvidia-dcgm.json
+      - dashboards/TrueNAS/nvidia-gpu.json
   - name: dashboard-ups-status
     namespace: monitoring
     options:
