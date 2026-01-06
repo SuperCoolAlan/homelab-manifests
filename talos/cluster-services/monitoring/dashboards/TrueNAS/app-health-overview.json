@@ -1,0 +1,675 @@
+{
+  "panels": [
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "targets": [
+        {
+          "expr": "count(kube_pod_status_phase{namespace=~\"$namespace\", pod=~\"$pod\", phase=\"Running\"} == 1)",
+          "legendFormat": "Running"
+        }
+      ],
+      "title": "Pods Running",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "targets": [
+        {
+          "expr": "count(kube_pod_status_phase{namespace=~\"$namespace\", pod=~\"$pod\", phase=~\"Pending|Failed|Unknown\"} == 1) or vector(0)",
+          "legendFormat": "Not Ready"
+        }
+      ],
+      "title": "Pods Not Ready",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"$pod\"}[24h])) or vector(0)",
+          "legendFormat": "Restarts"
+        }
+      ],
+      "title": "Container Restarts (24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 60
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "max(node_hwmon_temp_celsius) by (instance)",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "title": "Node Temperatures",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none"
+            }
+          },
+          "unit": "cores"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", pod=~\"$pod\", container!=\"\", container!=\"POD\"}[5m])) by (namespace, pod, container)",
+          "legendFormat": "{{namespace}}/{{pod}}/{{container}}"
+        }
+      ],
+      "title": "CPU Usage by Container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 1
+          },
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(container_memory_working_set_bytes{namespace=~\"$namespace\", pod=~\"$pod\", container!=\"\", container!=\"POD\"}) by (namespace, pod, container)",
+          "legendFormat": "{{namespace}}/{{pod}}/{{container}}"
+        }
+      ],
+      "title": "Memory Usage by Container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "description": "Uses irate with 1m window for near real-time throttling visibility. Resets on pod restart.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 1
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 25
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(irate(container_cpu_cfs_throttled_periods_total{namespace=~\"$namespace\", pod=~\"$pod\", container!=\"\"}[1m])) by (namespace, pod, container) / sum(irate(container_cpu_cfs_periods_total{namespace=~\"$namespace\", pod=~\"$pod\", container!=\"\"}[1m])) by (namespace, pod, container) * 100",
+          "legendFormat": "{{namespace}}/{{pod}}/{{container}}"
+        }
+      ],
+      "title": "CPU Throttling % (1m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "description": "Absolute count of throttled periods since pod start. Resets on pod restart.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 100
+              },
+              {
+                "color": "red",
+                "value": 500
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "expr": "sum(container_cpu_cfs_throttled_periods_total{namespace=~\"$namespace\", pod=~\"$pod\", container!=\"\"}) by (namespace, pod, container)",
+          "legendFormat": "{{container}}"
+        }
+      ],
+      "title": "Throttled Periods (absolute)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "min": 0,
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 80
+              },
+              {
+                "color": "red",
+                "value": 95
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", pod=~\"$pod\", container!=\"\", container!=\"POD\"}[5m])) by (namespace, pod, container) / sum(kube_pod_container_resource_limits{namespace=~\"$namespace\", pod=~\"$pod\", resource=\"cpu\", container!=\"\"}) by (namespace, pod, container) * 100",
+          "legendFormat": "{{namespace}}/{{pod}}/{{container}}"
+        }
+      ],
+      "title": "CPU vs Limits",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "min": 0,
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 80
+              },
+              {
+                "color": "red",
+                "value": 95
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(container_memory_working_set_bytes{namespace=~\"$namespace\", pod=~\"$pod\", container!=\"\", container!=\"POD\"}) by (namespace, pod, container) / sum(kube_pod_container_resource_limits{namespace=~\"$namespace\", pod=~\"$pod\", resource=\"memory\", container!=\"\"}) by (namespace, pod, container) * 100",
+          "legendFormat": "{{namespace}}/{{pod}}/{{container}}"
+        }
+      ],
+      "title": "Memory vs Limits",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 60
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(node_hwmon_temp_celsius) by (instance)",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "title": "Node Temperatures Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Restarts (24h)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 5
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 11,
+      "targets": [
+        {
+          "expr": "sort_desc(sum(increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"$pod\"}[24h])) by (namespace, pod, container)) > 0",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{namespace}}/{{pod}}/{{container}}"
+        }
+      ],
+      "title": "Recent Container Restarts",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "Restarts (24h)"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "kubernetes",
+    "apps",
+    "health"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "truenas-prometheus",
+          "value": "de90t313qnhtse"
+        },
+        "hide": 0,
+        "name": "datasource",
+        "query": "prometheus",
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "uid": "${datasource}"
+        },
+        "includeAll": true,
+        "multi": true,
+        "name": "namespace",
+        "query": "label_values(kube_pod_info, namespace)",
+        "refresh": 2,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "uid": "${datasource}"
+        },
+        "includeAll": true,
+        "multi": true,
+        "name": "pod",
+        "query": "label_values(kube_pod_info{namespace=~\"$namespace\"}, pod)",
+        "refresh": 2,
+        "type": "query"
+      }
+    ]
+  },
+  "timezone": "browser",
+  "title": "App Health Overview",
+  "uid": "app-health-overview",
+  "version": 4
+}

@@ -35,4 +35,53 @@ alertmanager:
     pathType: Prefix
 
 grafana:
-  enabled: false  # default: true
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      external-dns.alpha.kubernetes.io/target: 10.0.7.201
+    hosts:
+      - grafana.asandov.local
+    path: /
+  # TrueNAS dashboard provisioning
+  extraConfigmapMounts:
+    - name: dashboard-truenas-overview
+      mountPath: /etc/grafana/provisioning/dashboards/truenas/truenas-overview
+      configMap: dashboard-truenas-overview
+      readOnly: true
+    - name: dashboard-truenas-app-health
+      mountPath: /etc/grafana/provisioning/dashboards/truenas/app-health-overview
+      configMap: dashboard-truenas-app-health
+      readOnly: true
+    - name: dashboard-truenas-disk-insight
+      mountPath: /etc/grafana/provisioning/dashboards/truenas/truenas-disk-insight
+      configMap: dashboard-truenas-disk-insight
+      readOnly: true
+    - name: dashboard-truenas-temperature
+      mountPath: /etc/grafana/provisioning/dashboards/truenas/truenas-temperature
+      configMap: dashboard-truenas-temperature
+      readOnly: true
+    - name: dashboard-nvidia-dcgm
+      mountPath: /etc/grafana/provisioning/dashboards/truenas/nvidia-dcgm
+      configMap: dashboard-nvidia-dcgm
+      readOnly: true
+    - name: dashboard-ups-status
+      mountPath: /etc/grafana/provisioning/dashboards/truenas/ups-status
+      configMap: dashboard-ups-status
+      readOnly: true
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: "truenas"
+          orgId: 1
+          folder: "TrueNAS"
+          type: file
+          disableDeletion: false
+          editable: true
+          allowUiUpdates: true
+          options:
+            path: /etc/grafana/provisioning/dashboards/truenas
