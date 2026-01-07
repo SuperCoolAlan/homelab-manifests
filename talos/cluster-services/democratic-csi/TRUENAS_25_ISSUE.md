@@ -28,32 +28,41 @@ failed to provision volume with StorageClass "nfs": rpc error: code = Internal d
 
 ## Workaround
 
-Set `datasetEnableQuotas: false` in driver config, or downgrade to TrueNAS 24.10.x.
+Downgrade to TrueNAS 24.10.x.
 
-## Root Cause (suspected)
+## Root Cause
 
-TrueNAS 25.x introduced stricter Pydantic validation for API inputs. The refquota value being sent by democratic-csi may be a string instead of an integer, or in an unexpected format.
+TrueNAS 25.x introduced stricter Pydantic validation for API inputs. In `src/driver/freenas/api.js`, the CreateVolume method sets:
+
+```javascript
+if (this.options.zfs.datasetEnableQuotas) {
+  setProps = true;
+  properties.refquota = capacity_bytes;
+}
+```
+
+Where `capacity_bytes` comes from:
+
+```javascript
+let capacity_bytes =
+  call.request.capacity_range.required_bytes ||
+  call.request.capacity_range.limit_bytes;
+```
+
+The CSI GRPC uses protobuf int64 values which may be represented as strings or BigInt in JavaScript. TrueNAS 25.x now strictly validates that `refquota` is an integer.
 
 ## Suggested Fix
 
-Ensure `refquota` is cast to an integer before sending to the TrueNAS API.
+In `src/driver/freenas/api.js`, explicitly convert to Number before setting refquota:
 
 ```javascript
-// In src/driver/freenas/http/api.js (or similar)
-// Before:
-data.refquota = requiredBytes;
-
-// After:
-data.refquota = parseInt(requiredBytes, 10);
-```
-
-Or if the value might be a string from config:
-
-```javascript
-if (data.refquota) {
-  data.refquota = Number(data.refquota);
+if (this.options.zfs.datasetEnableQuotas) {
+  setProps = true;
+  properties.refquota = Number(capacity_bytes);
 }
 ```
+
+The same fix should apply to `refreservation` if `datasetEnableReservation` is used.
 
 ## Related Issues
 
