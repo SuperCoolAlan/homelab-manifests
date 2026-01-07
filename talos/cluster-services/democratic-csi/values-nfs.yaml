@@ -27,9 +27,11 @@ controller:
   externalResizer:
     enabled: true
 
+# NOTE: Driver config is stored in secrets/driver-config.enc.yaml (SOPS encrypted)
+# The existingConfigSecret below overrides the config section - changes here have no effect
 driver:
   existingConfigSecret: nfs-csi-democratic-csi-driver-config
-  config:
+  config:  # NOT USED - kept for reference only
     driver: freenas-api-nfs
     instance_id:
     httpConnection:
@@ -42,7 +44,7 @@ driver:
     zfs:
       datasetParentName: ST6000NM0095-pool0/media/nfs/v
       detachedSnapshotsDatasetParentName: ST6000NM0095-pool0/media/nfs/s
-      datasetEnableQuotas: false  # Disabled due to TrueNAS 24.10 API changes breaking refquota
+      datasetEnableQuotas: true
       datasetEnableReservation: false
       datasetPermissionsMode: "0775"
       datasetPermissionsUser: 1000
