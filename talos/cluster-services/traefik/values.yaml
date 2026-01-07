@@ -21,6 +21,11 @@ ports:
     port: 8000
     exposedPort: 80
     protocol: TCP
+    redirections:
+      entryPoint:
+        to: websecure
+        scheme: https
+        permanent: true
   websecure:
     port: 8443
     exposedPort: 443
