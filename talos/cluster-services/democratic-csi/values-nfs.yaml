@@ -26,16 +26,16 @@ volumeSnapshotClasses:
 controller:
   driver:
     image:
-      registry: ghcr.io/supercoolalan/democratic-csi
-      tag: truenas-25-fix
+      tag: next
+    imagePullPolicy: Always
   externalResizer:
     enabled: true
 
 node:
   driver:
     image:
-      registry: ghcr.io/supercoolalan/democratic-csi
-      tag: truenas-25-fix
+      tag: next
+    imagePullPolicy: Always
 
 # NOTE: Driver config is stored in secrets/driver-config.enc.yaml (SOPS encrypted)
 # The existingConfigSecret below overrides the config section - changes here have no effect
