@@ -12,8 +12,6 @@ resources:
 - configs/setup-rbac.yaml
 - configs/api-key-sync-sidecar.yaml
 - configs/api-key-sync-rbac.yaml
-# Applied separately via: sops -d windscribe-openvpn-creds.enc.yaml | kubectl apply -f -
-#- windscribe-openvpn-creds.enc.yaml
 - windscribe-openvpn-configmap.yaml
 # Disabled - config jobs suck and don't work
 #- configs/prowlarr-complete-setup-job.yaml
@@ -24,9 +22,8 @@ resources:
 #- configs/jellyseerr-config-job.yaml
 #- configs/download-client-setup-job.yaml
 
-# generators:
-# - secrets-generator.yaml
-# Secrets applied manually
+generators:
+- secrets-generator.yaml
 
 # VPN sidecar for SABnzbd and password substitution
 patches:
