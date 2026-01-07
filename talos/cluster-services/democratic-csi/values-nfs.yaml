@@ -27,7 +27,7 @@ controller:
   driver:
     image:
       tag: next
-    imagePullPolicy: Always
+      pullPolicy: Always
   externalResizer:
     enabled: true
 
@@ -35,7 +35,7 @@ node:
   driver:
     image:
       tag: next
-    imagePullPolicy: Always
+      pullPolicy: Always
 
 # NOTE: Driver config is stored in secrets/driver-config.enc.yaml (SOPS encrypted)
 # The existingConfigSecret below overrides the config section - changes here have no effect
