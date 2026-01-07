@@ -42,7 +42,7 @@ driver:
     zfs:
       datasetParentName: ST6000NM0095-pool0/media/nfs/v
       detachedSnapshotsDatasetParentName: ST6000NM0095-pool0/media/nfs/s
-      datasetEnableQuotas: true
+      datasetEnableQuotas: false  # Disabled due to TrueNAS 24.10 API changes breaking refquota
       datasetEnableReservation: false
       datasetPermissionsMode: "0775"
       datasetPermissionsUser: 1000
