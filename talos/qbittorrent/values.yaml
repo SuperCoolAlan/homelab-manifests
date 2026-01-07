@@ -1,5 +1,8 @@
 # qBittorrent Helm chart values
 
+podSecurityContext:
+  fsGroup: 3001
+
 image:
   repository: linuxserver/qbittorrent
   tag: "5.1.4"
