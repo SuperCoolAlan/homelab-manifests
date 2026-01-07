@@ -10,8 +10,6 @@ resources:
 - resources/jellyfin-public-ingress.yaml
 - resources/jellyseerr-public-ingress.yaml
 - configs/setup-rbac.yaml
-- configs/api-key-sync-sidecar.yaml
-- configs/api-key-sync-rbac.yaml
 - windscribe-openvpn-configmap.yaml
 # Disabled - config jobs suck and don't work
 #- configs/prowlarr-complete-setup-job.yaml
