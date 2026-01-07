@@ -24,6 +24,8 @@ spec:
           - path: talos/tracearr
           # Status page
           - path: talos/status
+          # Twingate
+          - path: talos/twingate
   template:
     metadata:
       name: '{{.path.basename}}'
