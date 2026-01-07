@@ -38,6 +38,13 @@ deployment:
         value: "1000"
       - name: PGID
         value: "3001"
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
     volumeMounts:
       - name: 'config'
         mountPath: '/config'

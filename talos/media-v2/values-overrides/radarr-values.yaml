@@ -35,6 +35,13 @@ deployment:
   container:
     image:
       tag: '5.28.0.10274-ls286'
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
     volumeMounts:
       - name: 'config'
         mountPath: '/config'
