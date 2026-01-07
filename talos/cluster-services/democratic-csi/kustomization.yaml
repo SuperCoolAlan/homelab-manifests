@@ -17,7 +17,6 @@ helmCharts:
   #   releaseName: iscsi-csi
   #   namespace: iscsi-csi
 
-# generators:
-#   - secrets-generator.yaml
-# Secret already applied manually
+generators:
+  - secrets-generator.yaml
 
