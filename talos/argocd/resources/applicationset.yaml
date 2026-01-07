@@ -19,6 +19,7 @@ spec:
           - path: talos/authentik
           # Media apps
           - path: talos/media-v2
+          - path: talos/qbittorrent
           # Tracearr
           - path: talos/tracearr
           # Status page
