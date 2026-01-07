@@ -9,6 +9,16 @@ speaker:
   - effect: NoSchedule
     key: node-role.kubernetes.io/control-plane
     operator: Exists
+  # Exclude low-memory node that causes OOM/flapping
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: NotIn
+            values:
+            - talos-rattypatty
 
 # Prometheus metrics
 prometheus:
