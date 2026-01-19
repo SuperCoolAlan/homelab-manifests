@@ -9,7 +9,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
-        revision: torrents
+        revision: HEAD
         directories:
           # Cluster services
           - path: talos/cluster-services/*
@@ -34,7 +34,7 @@ spec:
       project: default
       source:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
-        targetRevision: torrents
+        targetRevision: HEAD
         path: '{{.path.path}}'
       destination:
         server: https://kubernetes.default.svc
