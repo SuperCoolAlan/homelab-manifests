@@ -132,14 +132,14 @@ deployment:
     volumeMounts:
       - name: downloads
         mountPath: /downloads
-  # Configure volumes to use shared PVCs
+  # Configure volumes - use local storage for downloads (faster than NFS)
   volumes:
     config:
       persistentVolumeClaim:
         claimName: 'sabnzbd-config'
     downloads:
       persistentVolumeClaim:
-        claimName: 'media-downloads'
+        claimName: 'sabnzbd-downloads'
 
 ingress:
   enabled: true

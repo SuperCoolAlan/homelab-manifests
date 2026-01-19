@@ -5,6 +5,7 @@ namespace: media-v2
 
 resources:
 - shared-pvcs.yaml
+- local-storage.yaml
 - resources/external-truenas-svc.yaml
 - resources/jellyfin-ingress.yaml
 - resources/jellyfin-public-ingress.yaml

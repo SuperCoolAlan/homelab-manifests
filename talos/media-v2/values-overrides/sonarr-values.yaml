@@ -28,6 +28,9 @@ deployment:
     downloads:
       persistentVolumeClaim:
         claimName: 'media-downloads'
+    sabnzbd-downloads:
+      persistentVolumeClaim:
+        claimName: 'sabnzbd-downloads'
     media-library:
       persistentVolumeClaim:
         claimName: 'media-library'
@@ -50,6 +53,8 @@ deployment:
         mountPath: '/config'
       - name: 'downloads'
         mountPath: '/downloads'
+      - name: 'sabnzbd-downloads'
+        mountPath: '/downloads-usenet'
       - name: 'media-library'
         mountPath: '/media/tv'
         subPath: 'tv'
