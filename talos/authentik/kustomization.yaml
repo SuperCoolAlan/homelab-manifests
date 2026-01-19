@@ -6,7 +6,6 @@ namespace: authentik
 resources:
   - namespace.yaml
   - resources/cnpg-storage.yaml
-  - resources/cnpg-cluster.yaml
   - resources/traefik-middleware.yaml
   - resources/cloudflare-ingress.yaml
   - resources/ldap-ingressroute.yaml

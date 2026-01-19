@@ -9,7 +9,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
-        revision: HEAD
+        revision: torrents
         directories:
           # Cluster services
           - path: talos/cluster-services/*
@@ -19,10 +19,13 @@ spec:
           - path: talos/authentik
           # Media apps
           - path: talos/media-v2
+          - path: talos/qbittorrent
           # Tracearr
           - path: talos/tracearr
           # Status page
           - path: talos/status
+          # Twingate
+          - path: talos/twingate
   template:
     metadata:
       name: '{{.path.basename}}'
@@ -31,10 +34,16 @@ spec:
       project: default
       source:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
-        targetRevision: HEAD
+        targetRevision: torrents
         path: '{{.path.path}}'
       destination:
         server: https://kubernetes.default.svc
       syncPolicy:
         syncOptions:
           - ServerSideApply=true
+      ignoreDifferences:
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          jsonPointers:
+            - /status
+            - /spec/conversion/webhook/clientConfig/caBundle
