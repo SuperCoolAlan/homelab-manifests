@@ -1,0 +1,45 @@
+# Storage class for media-v2 local storage
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: media-local
+provisioner: kubernetes.io/no-provisioner
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+---
+# Local PV for SABnzbd downloads on talos-dell
+# This provides fast local disk for usenet downloads before arr apps move them to NFS
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sabnzbd-downloads-pv
+spec:
+  capacity:
+    storage: 300Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: media-local
+  local:
+    path: /var/mnt/local-storage/sabnzbd/downloads
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - talos-dell
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sabnzbd-downloads
+  namespace: media-v2
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: media-local
+  resources:
+    requests:
+      storage: 300Gi
