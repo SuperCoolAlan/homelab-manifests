@@ -14,7 +14,7 @@ application:
 deployment:
   serviceAccountName: media-apps
   nodeSelector:
-    kubernetes.io/hostname: talos-eggbert
+    kubernetes.io/hostname: talos-flyer
   # Configure volumes to use shared PVCs
   volumes:
     config:

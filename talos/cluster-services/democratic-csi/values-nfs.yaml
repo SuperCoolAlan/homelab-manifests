@@ -24,12 +24,24 @@ volumeSnapshotClasses:
     detachedSnapshots: "true"
 
 controller:
+  driver:
+    image:
+      tag: next
+      pullPolicy: Always
   externalResizer:
     enabled: true
 
+node:
+  driver:
+    image:
+      tag: next
+      pullPolicy: Always
+
+# NOTE: Driver config is stored in secrets/driver-config.enc.yaml (SOPS encrypted)
+# The existingConfigSecret below overrides the config section - changes here have no effect
 driver:
   existingConfigSecret: nfs-csi-democratic-csi-driver-config
-  config:
+  config:  # NOT USED - kept for reference only
     driver: freenas-api-nfs
     instance_id:
     httpConnection:

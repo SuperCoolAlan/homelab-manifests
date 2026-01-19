@@ -1,0 +1,88 @@
+# qBittorrent Helm chart values
+
+podSecurityContext:
+  fsGroup: 3001
+
+image:
+  repository: linuxserver/qbittorrent
+  tag: "5.1.4"
+
+env:
+  PUID: "1000"
+  PGID: "3001"
+  TZ: "America/Chicago"
+
+# Use chart's built-in gluetun, patch adds envFrom for secrets
+gluetun:
+  enabled: true
+  image:
+    tag: "v3.41.0"
+  env:
+    DOT: "off"
+    BLOCK_MALICIOUS: "off"
+    BLOCK_SURVEILLANCE: "off"
+    BLOCK_ADS: "off"
+    TZ: "America/Chicago"
+    VPN_SERVICE_PROVIDER: "custom"
+    VPN_TYPE: "wireguard"
+    WIREGUARD_ADDRESSES: "100.113.251.197/32"
+    WIREGUARD_PUBLIC_KEY: "47tLjymDPpTIBerb+wn02/XNFABF4YDAGwOnijSoZmQ="
+    VPN_ENDPOINT_IP: "23.95.42.212"
+    VPN_ENDPOINT_PORT: "65142"
+    HEALTH_VPN_DURATION_INITIAL: "10s"
+    HEALTH_VPN_DURATION_ADDITION: "5s"
+    FIREWALL: "off"
+    FIREWALL_OUTBOUND_SUBNETS: "10.0.0.0/8"
+    FIREWALL_INPUT_PORTS: "8080,6881"
+
+# Persistence
+persistence:
+  enabled: true
+  storageClass: nfs
+  size: 5Gi
+  accessMode: ReadWriteOnce
+  # Mount downloads and media library
+  additionalVolumes:
+    - name: downloads
+      persistentVolumeClaim:
+        claimName: qbittorrent-downloads
+    - name: media-library
+      persistentVolumeClaim:
+        claimName: media-library
+  additionalMounts:
+    - name: downloads
+      mountPath: /downloads
+    - name: media-library
+      mountPath: /media
+
+# Web UI Service
+webService:
+  type: ClusterIP
+  port: 80
+
+# BitTorrent Service
+btService:
+  type: ClusterIP
+  port: 6881
+
+# Ingress
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: torrent.asandov.local
+      paths:
+        - path: /
+          pathType: Prefix
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: torrent.asandov.local
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+
+# Resources
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "2Gi"
+    cpu: "2000m"

@@ -1,0 +1,65 @@
+# PV for media library (same NFS share as media-v2)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: qbittorrent-media-library
+spec:
+  capacity:
+    storage: 5Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  nfs:
+    server: truenas.asandov.local
+    path: /mnt/ST6000NM0095-pool1/media
+  mountOptions:
+    - noatime
+    - nfsvers=4
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-library
+  namespace: qbittorrent
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: qbittorrent-media-library
+  resources:
+    requests:
+      storage: 5Ti
+---
+# Downloads PV/PVC (shares same NFS path as media-v2 downloads)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: qbittorrent-downloads
+spec:
+  capacity:
+    storage: 200Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  nfs:
+    server: truenas.asandov.local
+    path: /mnt/ST6000NM0095-pool0/media/nfs/v/pvc-58505e09-9b30-4da7-8ff0-2ef8f6eeac9f
+  mountOptions:
+    - noatime
+    - nfsvers=4
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qbittorrent-downloads
+  namespace: qbittorrent
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: qbittorrent-downloads
+  resources:
+    requests:
+      storage: 200Gi
