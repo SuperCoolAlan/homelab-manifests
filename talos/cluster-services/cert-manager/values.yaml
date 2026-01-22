@@ -4,6 +4,11 @@
 crds:
   enabled: true
 
+# Use cert-manager namespace for leader election (avoids kube-system RBAC issues)
+global:
+  leaderElection:
+    namespace: cert-manager
+
 # Resource limits
 resources:
   requests:
