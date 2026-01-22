@@ -42,9 +42,12 @@ server:
       memory: 1Gi
   ingress:
     enabled: true
-    ingressClassName: nginx
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
     hosts:
-      - authentik.asandov.local  # change to your domain
+      - authentik.asandov.local
     tls: []
 
 worker:
