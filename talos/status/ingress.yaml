@@ -18,7 +18,7 @@ spec:
         path: /
         pathType: Prefix
 ---
-# Local ingress for gatus.asandov.local via Traefik
+# Local ingress for gatus.asandov.local via Traefik (legacy - keep during migration)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -40,3 +40,31 @@ spec:
               number: 80
         path: /
         pathType: Prefix
+---
+# New local ingress with Let's Encrypt TLS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gatus-local-asandov
+  namespace: status
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: gatus.local.asandov.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: gatus
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - gatus.local.asandov.com
+    secretName: gatus-local-tls
