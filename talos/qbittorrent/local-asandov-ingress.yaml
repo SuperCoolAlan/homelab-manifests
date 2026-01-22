@@ -17,7 +17,7 @@ spec:
       paths:
       - backend:
           service:
-            name: qbittorrent
+            name: qbittorrent-webui
             port:
               number: 80
         path: /
