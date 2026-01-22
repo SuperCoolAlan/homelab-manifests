@@ -5,7 +5,7 @@ authentik:
     enabled: false
 
   postgresql:
-    host: "authentik-postgres-rw"
+    host: "truenas.asandov.local"
     port: 5432
     name: "authentik"
     user: "authentik"
