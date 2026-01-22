@@ -76,6 +76,8 @@ ingress:
           pathType: Prefix
   annotations:
     external-dns.alpha.kubernetes.io/hostname: torrent.asandov.local
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
 
 # Resources
