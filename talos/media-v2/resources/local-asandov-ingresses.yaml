@@ -1,0 +1,196 @@
+# New local.asandov.com ingresses with Let's Encrypt TLS
+# Legacy .asandov.local ingresses remain in helm values during migration
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: radarr-local-asandov
+  namespace: media-v2
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: radarr.local.asandov.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: radarr
+            port:
+              number: 7878
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - radarr.local.asandov.com
+    secretName: radarr-local-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sonarr-local-asandov
+  namespace: media-v2
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: sonarr.local.asandov.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: sonarr
+            port:
+              number: 8989
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - sonarr.local.asandov.com
+    secretName: sonarr-local-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prowlarr-local-asandov
+  namespace: media-v2
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: prowlarr.local.asandov.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: prowlarr
+            port:
+              number: 9696
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - prowlarr.local.asandov.com
+    secretName: prowlarr-local-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bazarr-local-asandov
+  namespace: media-v2
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: bazarr.local.asandov.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: bazarr
+            port:
+              number: 6767
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - bazarr.local.asandov.com
+    secretName: bazarr-local-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sabnzbd-local-asandov
+  namespace: media-v2
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: sabnzbd.local.asandov.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: sabnzbd
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - sabnzbd.local.asandov.com
+    secretName: sabnzbd-local-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyseerr-local-asandov
+  namespace: media-v2
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: jellyseerr.local.asandov.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: jellyseerr
+            port:
+              number: 5055
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - jellyseerr.local.asandov.com
+    secretName: jellyseerr-local-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin-local-asandov
+  namespace: media-v2
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: jellyfin.local.asandov.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: jellyfin-external
+            port:
+              number: 8096
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - jellyfin.local.asandov.com
+    secretName: jellyfin-local-tls

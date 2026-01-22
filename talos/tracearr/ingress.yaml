@@ -1,3 +1,4 @@
+# Legacy ingress - keep during migration
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -19,3 +20,31 @@ spec:
                 name: tracearr
                 port:
                   number: 80
+---
+# New local.asandov.com ingress with Let's Encrypt TLS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tracearr-local-asandov
+  namespace: tracearr
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: tracearr.local.asandov.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tracearr
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - tracearr.local.asandov.com
+      secretName: tracearr-local-tls
