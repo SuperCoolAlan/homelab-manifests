@@ -38,6 +38,8 @@ deployment:
         claimName: 'media-library'
   # Use specific UID/GID that matches TrueNAS NFS user
   container:
+    image:
+      tag: '4.0.16.2944-ls301'
     env:
       - name: PUID
         value: "1000"

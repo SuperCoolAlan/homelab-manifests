@@ -39,7 +39,7 @@ deployment:
   # Configure volume mounts with subPath
   container:
     image:
-      tag: '5.28.0.10274-ls286'
+      tag: '6.0.4.10291-ls290'
     resources:
       requests:
         memory: "256Mi"
