@@ -18,7 +18,7 @@ application:
       nzb_key = abc123nzbkey456
       download_dir = /downloads/incomplete
       complete_dir = /downloads/complete
-      host_whitelist = sabnzbd,localhost,sabnzbd.media-v2.svc.cluster.local,radarr,sonarr,prowlarr
+      host_whitelist = sabnzbd,localhost,sabnzbd.media-v2.svc.cluster.local,radarr,sonarr,prowlarr,sabnzbd.local.asandov.com,sabnzbd.asandov.local
       auto_browser = 0
       par2_multicore = 1
       folder_rename = 1
