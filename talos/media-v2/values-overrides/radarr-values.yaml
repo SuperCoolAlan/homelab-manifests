@@ -15,6 +15,8 @@ ingress:
   path: /
   pathType: Prefix
   annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
 
 # Configure deployment with volumes and API key sync sidecar
