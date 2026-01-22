@@ -30,6 +30,9 @@ deployment:
     downloads:
       persistentVolumeClaim:
         claimName: 'media-downloads'
+    qbittorrent-downloads:
+      persistentVolumeClaim:
+        claimName: 'qbittorrent-downloads'
     sabnzbd-downloads:
       persistentVolumeClaim:
         claimName: 'sabnzbd-downloads'
@@ -52,6 +55,8 @@ deployment:
         mountPath: '/config'
       - name: 'downloads'
         mountPath: '/downloads'
+      - name: 'qbittorrent-downloads'
+        mountPath: '/downloads-torrent'
       - name: 'sabnzbd-downloads'
         mountPath: '/downloads-usenet'
       - name: 'media-library'
