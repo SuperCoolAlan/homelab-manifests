@@ -6,6 +6,7 @@ namespace: qbittorrent
 resources:
   - namespace.yaml
   - pvcs.yaml
+  - local-asandov-ingress.yaml
 
 generators:
   - secrets-generator.yaml

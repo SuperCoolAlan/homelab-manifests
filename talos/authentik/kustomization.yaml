@@ -10,6 +10,7 @@ resources:
   - resources/cloudflare-ingress.yaml
   - resources/ldap-ingressroute.yaml
   - resources/ldap-dns.yaml
+  - resources/local-asandov-ingress.yaml
 
 generators:
   - secrets-generator.yaml
