@@ -12,9 +12,9 @@ application:
 
 # Use specific UID/GID that matches TrueNAS NFS user
 deployment:
-  serviceAccountName: media-apps
   nodeSelector:
-    kubernetes.io/hostname: talos-flyer
+    kubernetes.io/hostname: talos-ramhaus
+  serviceAccountName: media-apps
   # Configure volumes to use shared PVCs
   volumes:
     config:
@@ -32,6 +32,13 @@ deployment:
         value: "1000"
       - name: PGID
         value: "3001"
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
     volumeMounts:
       - name: config
         mountPath: /config

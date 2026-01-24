@@ -102,6 +102,8 @@ application:
 
 # Configure deployment with volumes to use shared PVCs
 deployment:
+  nodeSelector:
+    kubernetes.io/hostname: talos-ramhaus
   securityContext:
     fsGroup: 3001
   container:
@@ -109,11 +111,11 @@ deployment:
       tag: "4.5.4"
     resources:
       requests:
-        memory: "512Mi"
-        cpu: "250m"
+        memory: "1Gi"
+        cpu: "500m"
       limits:
-        memory: "2Gi"
-        cpu: "4000m"
+        memory: "8Gi"
+        cpu: "8000m"
     env:
       - name: PUID
         value: "1000"
