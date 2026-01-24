@@ -25,6 +25,8 @@ application:
 
 # Use specific UID/GID that matches TrueNAS NFS user
 deployment:
+  nodeSelector:
+    kubernetes.io/hostname: talos-ramhaus
   serviceAccountName: media-apps
   volumes:
     config:
@@ -49,8 +51,8 @@ deployment:
         memory: "256Mi"
         cpu: "100m"
       limits:
-        memory: "512Mi"
-        cpu: "500m"
+        memory: "1Gi"
+        cpu: "1000m"
     volumeMounts:
       - name: 'config'
         mountPath: '/config'

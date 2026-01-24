@@ -7,8 +7,8 @@ provisioner: kubernetes.io/no-provisioner
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer
 ---
-# Local PV for SABnzbd downloads on talos-dell
-# This provides fast local disk for usenet downloads before arr apps move them to NFS
+# Local PV for SABnzbd downloads on talos-ramhaus
+# This provides fast local NVMe disk for usenet downloads before arr apps move them to NFS
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -29,7 +29,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - talos-dell
+          - talos-ramhaus
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

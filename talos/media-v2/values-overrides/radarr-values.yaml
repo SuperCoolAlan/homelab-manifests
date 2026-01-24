@@ -21,6 +21,8 @@ ingress:
 
 # Configure deployment with volumes and API key sync sidecar
 deployment:
+  nodeSelector:
+    kubernetes.io/hostname: talos-ramhaus
   serviceAccountName: media-apps
   # Configure volumes to use shared PVCs
   volumes:
@@ -45,11 +47,11 @@ deployment:
       tag: '6.0.4.10291-ls290'
     resources:
       requests:
-        memory: "256Mi"
-        cpu: "100m"
+        memory: "512Mi"
+        cpu: "250m"
       limits:
-        memory: "1Gi"
-        cpu: "1000m"
+        memory: "4Gi"
+        cpu: "2000m"
     volumeMounts:
       - name: 'config'
         mountPath: '/config'
