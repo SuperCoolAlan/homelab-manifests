@@ -53,7 +53,7 @@ metadata:
   name: qbittorrent-downloads-media-v2
 spec:
   capacity:
-    storage: 500Gi
+    storage: 2Ti
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
@@ -77,4 +77,4 @@ spec:
   volumeName: qbittorrent-downloads-media-v2
   resources:
     requests:
-      storage: 500Gi
+      storage: 2Ti
