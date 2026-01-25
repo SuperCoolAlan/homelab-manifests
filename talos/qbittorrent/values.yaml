@@ -1,10 +1,8 @@
 # qBittorrent Helm chart values
 
-# Enable metrics
+# Disable metrics for now - exporter needs qbittorrent credentials
 metrics:
-  enabled: true
-  serviceMonitor:
-    enabled: true
+  enabled: false
 
 podSecurityContext:
   fsGroup: 3001
