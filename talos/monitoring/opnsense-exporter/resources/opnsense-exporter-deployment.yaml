@@ -24,6 +24,7 @@ spec:
         - args:
             - --opnsense.protocol=https
             - --opnsense.address=opnsense.asandov.local
+            - --opnsense.insecure=true
             - --exporter.instance-label=talos-kingdel
             - --web.listen-address=:8080
           envFrom:
