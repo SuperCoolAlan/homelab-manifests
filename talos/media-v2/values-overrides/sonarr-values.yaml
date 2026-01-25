@@ -1,7 +1,6 @@
-# Enable exportarr metrics (ServiceMonitor created automatically)
+# Disabled - exportarr needs secret "sonarr" with key "apiKey"
 metrics:
-  enabled: true
-  app: sonarr
+  enabled: false
 
 # Inherited from original media deployment
 persistentVolumeClaims:
