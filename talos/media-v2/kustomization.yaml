@@ -13,14 +13,6 @@ resources:
 - resources/local-asandov-ingresses.yaml
 - configs/setup-rbac.yaml
 - windscribe-openvpn-configmap.yaml
-# Disabled - config jobs suck and don't work
-#- configs/prowlarr-complete-setup-job.yaml
-#- configs/radarr-full-config-job.yaml
-#- configs/sonarr-full-config-job.yaml
-#- configs/bazarr-setup-job.yaml
-#- configs/jellyseerr-setup-job.yaml
-#- configs/jellyseerr-config-job.yaml
-#- configs/download-client-setup-job.yaml
 
 generators:
 - secrets-generator.yaml
@@ -35,9 +27,6 @@ patches:
     kind: Deployment
     name: sabnzbd
   path: patches/sabnzbd-envsubst-init.yaml
-
-# API sync sidecars - DISABLED
-#patches_disabled:
 
 helmCharts:
 - name: sonarr
