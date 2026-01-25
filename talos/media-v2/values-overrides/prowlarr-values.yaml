@@ -1,3 +1,10 @@
+# Enable exportarr metrics
+metrics:
+  enabled: true
+  app: prowlarr
+  serviceMonitor:
+    enabled: true
+
 # Inherited from original media deployment
 persistentVolumeClaims:
   prowlarr-config:

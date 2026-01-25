@@ -2,6 +2,8 @@
 global:
   image:
     tag: v3.2.2
+  # Enable Prometheus scrape annotations on all components
+  addPrometheusAnnotations: true
 
 configs:
   cm:
@@ -13,6 +15,10 @@ configs:
 
 # Install ksops in standard ArgoCD repo server
 repoServer:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
   env:
     - name: KUSTOMIZE_PLUGIN_HOME
       value: /home/argocd/.config/kustomize/plugin
@@ -125,6 +131,10 @@ repoServer:
             - talos-ramhaus
 
 controller:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -137,6 +147,10 @@ controller:
             - talos-ramhaus
 
 server:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -149,6 +163,10 @@ server:
             - talos-ramhaus
 
 dex:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -161,6 +179,10 @@ dex:
             - talos-ramhaus
 
 redis:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -173,6 +195,10 @@ redis:
             - talos-ramhaus
 
 applicationSet:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -185,6 +211,10 @@ applicationSet:
             - talos-ramhaus
 
 notifications:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:

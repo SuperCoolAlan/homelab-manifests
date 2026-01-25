@@ -108,6 +108,31 @@ grafana:
       mountPath: /etc/grafana/provisioning/dashboards/truenas/ups-status
       configMap: dashboard-ups-status
       readOnly: true
+    # ArgoCD dashboard
+    - name: dashboard-argocd
+      mountPath: /etc/grafana/provisioning/dashboards/argocd
+      configMap: dashboard-argocd
+      readOnly: true
+    # Traefik dashboard
+    - name: dashboard-traefik
+      mountPath: /etc/grafana/provisioning/dashboards/traefik
+      configMap: dashboard-traefik
+      readOnly: true
+    # Authentik dashboard
+    - name: dashboard-authentik
+      mountPath: /etc/grafana/provisioning/dashboards/authentik
+      configMap: dashboard-authentik
+      readOnly: true
+    # cert-manager dashboard
+    - name: dashboard-cert-manager
+      mountPath: /etc/grafana/provisioning/dashboards/cert-manager
+      configMap: dashboard-cert-manager
+      readOnly: true
+    # Media apps dashboard
+    - name: dashboard-exportarr
+      mountPath: /etc/grafana/provisioning/dashboards/media
+      configMap: dashboard-exportarr
+      readOnly: true
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -121,6 +146,51 @@ grafana:
           allowUiUpdates: true
           options:
             path: /etc/grafana/provisioning/dashboards/truenas
+        - name: "argocd"
+          orgId: 1
+          folder: "ArgoCD"
+          type: file
+          disableDeletion: false
+          editable: true
+          allowUiUpdates: true
+          options:
+            path: /etc/grafana/provisioning/dashboards/argocd
+        - name: "traefik"
+          orgId: 1
+          folder: "Traefik"
+          type: file
+          disableDeletion: false
+          editable: true
+          allowUiUpdates: true
+          options:
+            path: /etc/grafana/provisioning/dashboards/traefik
+        - name: "authentik"
+          orgId: 1
+          folder: "Authentik"
+          type: file
+          disableDeletion: false
+          editable: true
+          allowUiUpdates: true
+          options:
+            path: /etc/grafana/provisioning/dashboards/authentik
+        - name: "cert-manager"
+          orgId: 1
+          folder: "Cert-Manager"
+          type: file
+          disableDeletion: false
+          editable: true
+          allowUiUpdates: true
+          options:
+            path: /etc/grafana/provisioning/dashboards/cert-manager
+        - name: "media"
+          orgId: 1
+          folder: "Media Apps"
+          type: file
+          disableDeletion: false
+          editable: true
+          allowUiUpdates: true
+          options:
+            path: /etc/grafana/provisioning/dashboards/media
 
 # Move remaining components to ramhaus
 kube-state-metrics:

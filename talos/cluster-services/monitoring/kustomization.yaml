@@ -55,3 +55,38 @@ configMapGenerator:
       disableNameSuffixHash: true
     files:
       - dashboards/TrueNAS/ups-status.json
+  # ArgoCD dashboard
+  - name: dashboard-argocd
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/ArgoCD/argocd-overview.json
+  # Traefik dashboard
+  - name: dashboard-traefik
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/Traefik/traefik-official.json
+  # Authentik dashboard
+  - name: dashboard-authentik
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/Authentik/authentik.json
+  # cert-manager dashboard
+  - name: dashboard-cert-manager
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/CertManager/cert-manager.json
+  # Media apps (exportarr) dashboard
+  - name: dashboard-exportarr
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/MediaApps/exportarr.json

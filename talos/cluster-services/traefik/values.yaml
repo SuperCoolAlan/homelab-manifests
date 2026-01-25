@@ -1,6 +1,18 @@
 service:
   type: LoadBalancer
 
+# Enable metrics and ServiceMonitor
+metrics:
+  prometheus:
+    entryPoint: metrics
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+    service:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+
 ingressClass:
   enabled: true
   isDefaultClass: false
