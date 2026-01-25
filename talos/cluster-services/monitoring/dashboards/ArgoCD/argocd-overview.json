@@ -66,7 +66,7 @@
   "panels": [
     {
       "collapsed": false,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -83,7 +83,7 @@
       "type": "row"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "gridPos": {
         "h": 4,
         "w": 2,
@@ -102,7 +102,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -165,7 +165,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -231,7 +231,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -299,7 +299,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -365,7 +365,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -443,7 +443,7 @@
       "cacheTimeout": null,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "decimals": null,
       "fieldConfig": {
         "defaults": {
@@ -547,7 +547,7 @@
     },
     {
       "collapsed": true,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -573,7 +573,7 @@
           "cacheTimeout": null,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "decimals": null,
           "fill": 1,
           "fillGradient": 0,
@@ -684,7 +684,7 @@
           "cacheTimeout": null,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "decimals": null,
           "fill": 1,
           "fillGradient": 0,
@@ -786,7 +786,7 @@
     },
     {
       "collapsed": true,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -804,7 +804,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "decimals": null,
           "fill": 1,
           "fillGradient": 0,
@@ -905,7 +905,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "decimals": null,
           "fill": 1,
           "fillGradient": 0,
@@ -1005,7 +1005,7 @@
     },
     {
       "collapsed": true,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1023,7 +1023,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -1127,7 +1127,7 @@
             "mode": "spectrum"
           },
           "dataFormat": "tsbuckets",
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {
             "h": 7,
             "w": 24,
@@ -1186,7 +1186,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -1285,7 +1285,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -1379,7 +1379,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "decimals": null,
           "fill": 1,
           "fillGradient": 0,
@@ -1475,7 +1475,7 @@
     },
     {
       "collapsed": true,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1493,7 +1493,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -1588,7 +1588,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -1686,7 +1686,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -1784,7 +1784,7 @@
     },
     {
       "collapsed": true,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1802,7 +1802,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -1896,7 +1896,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -1991,7 +1991,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -2086,7 +2086,7 @@
     },
     {
       "collapsed": true,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -2104,7 +2104,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -2194,7 +2194,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -2292,7 +2292,7 @@
             "mode": "spectrum"
           },
           "dataFormat": "tsbuckets",
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {
             "h": 8,
             "w": 12,
@@ -2356,7 +2356,7 @@
             "mode": "spectrum"
           },
           "dataFormat": "tsbuckets",
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "gridPos": {
             "h": 8,
             "w": 12,
@@ -2412,7 +2412,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -2503,7 +2503,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -2595,7 +2595,7 @@
     },
     {
       "collapsed": true,
-      "datasource": "$datasource",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -2613,7 +2613,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "gridPos": {
             "h": 8,
@@ -2699,7 +2699,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "gridPos": {
             "h": 9,
@@ -2785,7 +2785,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "gridPos": {
             "h": 9,
@@ -2886,7 +2886,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "decimals": null,
           "fill": 1,
           "gridPos": {
@@ -2979,7 +2979,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "gridPos": {
             "h": 9,
@@ -3069,7 +3069,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "gridPos": {
             "h": 9,
@@ -3159,7 +3159,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "gridPos": {
             "h": 9,
@@ -3256,7 +3256,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "gridPos": {
             "h": 9,
@@ -3345,7 +3345,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "gridPos": {
             "h": 9,
@@ -3434,7 +3434,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "gridPos": {
             "h": 9,
@@ -3523,7 +3523,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
           "fill": 1,
           "gridPos": {
             "h": 9,
@@ -3746,7 +3746,7 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "$datasource",
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
         "definition": "label_values(kube_pod_info, namespace)",
         "description": null,
         "error": null,
@@ -3873,7 +3873,7 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "$datasource",
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
         "definition": "label_values(argocd_cluster_info, server)",
         "description": null,
         "error": null,
