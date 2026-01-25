@@ -14,6 +14,8 @@ helmCharts:
     releaseName: gatus
     namespace: status
     valuesInline:
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
       persistence:
         enabled: true
         size: 1Gi
