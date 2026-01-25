@@ -1,3 +1,10 @@
+# Enable exportarr metrics (bazarr uses sonarr/radarr-style metrics)
+metrics:
+  enabled: true
+  app: bazarr
+  serviceMonitor:
+    enabled: true
+
 # Inherited from original media deployment
 persistentVolumeClaims:
   bazarr-config:

@@ -1,3 +1,10 @@
+# Enable exportarr metrics
+metrics:
+  enabled: true
+  app: radarr
+  serviceMonitor:
+    enabled: true
+
 # Inherited from original media deployment
 persistentVolumeClaims:
   radarr-config:

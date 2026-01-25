@@ -4,6 +4,12 @@
 crds:
   enabled: true
 
+# Enable Prometheus monitoring
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: true
+
 # Use cert-manager namespace for leader election (avoids kube-system RBAC issues)
 global:
   leaderElection:
