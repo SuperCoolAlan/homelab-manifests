@@ -84,9 +84,32 @@ This ensures that if the Oracle VPS is compromised, the attacker cannot use the 
 ### TrueNAS (Home)
 
 **WireGuard IP:** 10.100.0.2
-**Jellyfin Port:** 30013
+**Jellyfin Port:** 30013 (DNAT to container port 8096)
 
 The WireGuard client on TrueNAS connects outbound to Oracle on port 51820.
+
+#### Firewall Rules (nftables)
+
+Rules added to Docker's DOCKER-USER chain to restrict WireGuard traffic:
+
+```bash
+# Note: Must use container port 8096 (post-DNAT), not external port 30013
+sudo nft add rule ip filter DOCKER-USER iifname "wg0" tcp dport 8096 accept
+sudo nft add rule ip filter DOCKER-USER iifname "wg0" ct state established,related accept
+sudo nft add rule ip filter DOCKER-USER iifname "wg0" counter drop
+```
+
+**Persistence:** Create `/usr/local/bin/wg-firewall.sh`:
+```bash
+#!/bin/bash
+# Wait for Docker to initialize the chain
+sleep 10
+nft add rule ip filter DOCKER-USER iifname "wg0" tcp dport 8096 accept
+nft add rule ip filter DOCKER-USER iifname "wg0" ct state established,related accept
+nft add rule ip filter DOCKER-USER iifname "wg0" counter drop
+```
+
+Then add to crontab: `@reboot /usr/local/bin/wg-firewall.sh`
 
 ## DNS
 
@@ -96,8 +119,9 @@ The WireGuard client on TrueNAS connects outbound to Oracle on port 51820.
 
 1. **Oracle VPS firewall:** Only allows outbound traffic to TrueNAS on port 30013 via WireGuard
 2. **WireGuard AllowedIPs:** Both sides use /32 to prevent routing to other IPs
-3. **TrueNAS firewall:** Should restrict incoming WireGuard traffic to only port 30013 (TODO)
+3. **TrueNAS firewall:** Restricts incoming WireGuard traffic to only Jellyfin (port 8096 post-DNAT)
 4. **No home IP exposure:** Home network's public IP is not exposed; Oracle VPS is the public endpoint
+5. **Defense in depth:** Both endpoints have firewall rules - if Oracle is compromised, TrueNAS blocks lateral movement
 
 ## Maintenance
 
