@@ -133,6 +133,11 @@ grafana:
       mountPath: /etc/grafana/provisioning/dashboards/media
       configMap: dashboard-exportarr
       readOnly: true
+    # Starlink dashboard
+    - name: dashboard-starlink
+      mountPath: /etc/grafana/provisioning/dashboards/starlink
+      configMap: dashboard-starlink
+      readOnly: true
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -191,6 +196,15 @@ grafana:
           allowUiUpdates: true
           options:
             path: /etc/grafana/provisioning/dashboards/media
+        - name: "starlink"
+          orgId: 1
+          folder: "Starlink"
+          type: file
+          disableDeletion: false
+          editable: true
+          allowUiUpdates: true
+          options:
+            path: /etc/grafana/provisioning/dashboards/starlink
 
 # Move remaining components to ramhaus
 kube-state-metrics:
