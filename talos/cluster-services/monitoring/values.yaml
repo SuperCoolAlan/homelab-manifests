@@ -71,6 +71,7 @@ alertmanager:
 grafana:
   enabled: true
   replicas: 2
+  revisionHistoryLimit: 5
   headlessService: true
   nodeSelector:
     kubernetes.io/hostname: talos-ramhaus
