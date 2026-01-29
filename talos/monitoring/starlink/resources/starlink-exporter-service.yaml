@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: starlink-exporter
+  labels:
+    app: starlink-exporter
+spec:
+  selector:
+    app: starlink-exporter
+  ports:
+    - name: metrics
+      port: 9451
+      targetPort: metrics
+      protocol: TCP
+  type: ClusterIP
