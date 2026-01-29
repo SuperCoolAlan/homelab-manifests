@@ -90,3 +90,10 @@ configMapGenerator:
       disableNameSuffixHash: true
     files:
       - dashboards/MediaApps/exportarr.json
+  # Starlink dashboard
+  - name: dashboard-starlink
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/Starlink/starlink.json
