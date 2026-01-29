@@ -70,6 +70,8 @@ alertmanager:
 
 grafana:
   enabled: true
+  replicas: 2
+  headlessService: true
   nodeSelector:
     kubernetes.io/hostname: talos-ramhaus
   plugins:
