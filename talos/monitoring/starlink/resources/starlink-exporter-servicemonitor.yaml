@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: starlink-exporter
+  labels:
+    app: starlink-exporter
+spec:
+  endpoints:
+    - port: metrics
+      path: /metrics
+      scheme: http
+      interval: 30s
+  selector:
+    matchLabels:
+      app: starlink-exporter
