@@ -88,7 +88,7 @@
   ],
   "panels": [
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -189,7 +189,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -248,7 +248,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -307,7 +307,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -365,7 +365,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -423,7 +423,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -489,7 +489,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -573,7 +573,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -693,7 +693,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -824,7 +824,7 @@
       }
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -893,7 +893,7 @@
       "type": "gauge"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -959,7 +959,7 @@
       "type": "gauge"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "",
       "fieldConfig": {
         "defaults": {},
@@ -1126,7 +1126,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "unit": "short"
@@ -1225,7 +1225,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "unit": "s"
@@ -1369,7 +1369,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -1503,7 +1503,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "Prometheus",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1617,7 +1617,7 @@
       {
         "allValue": "*",
         "current": {},
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "Prometheus",
         "definition": "label_values(starlink_dish_up, instance)",
         "description": null,
         "error": null,
