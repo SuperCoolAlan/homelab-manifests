@@ -9,7 +9,7 @@ spec:
     app: starlink-exporter
   ports:
     - name: metrics
-      port: 9451
+      port: 9817
       targetPort: metrics
       protocol: TCP
   type: ClusterIP
