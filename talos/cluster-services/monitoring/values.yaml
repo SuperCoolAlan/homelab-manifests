@@ -72,6 +72,8 @@ grafana:
   enabled: true
   nodeSelector:
     kubernetes.io/hostname: talos-ramhaus
+  plugins:
+    - ae3e-plotly-panel
   ingress:
     enabled: true
     ingressClassName: traefik
