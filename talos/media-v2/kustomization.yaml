@@ -8,8 +8,6 @@ resources:
 - local-storage.yaml
 - resources/external-truenas-svc.yaml
 - resources/jellyfin-ingress.yaml
-# Removed - now using Oracle WireGuard jumphost
-# - resources/jellyfin-public-ingress.yaml
 - resources/jellyseerr-public-ingress.yaml
 - resources/local-asandov-ingresses.yaml
 - configs/setup-rbac.yaml
