@@ -38,6 +38,11 @@ metadata:
     traefik.ingress.kubernetes.io/router.tls: "true"
     # Using Grafana native OAuth/SSO with Authentik instead of forward auth
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Sticky sessions for multi-replica session affinity
+    traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
+    traefik.ingress.kubernetes.io/service.sticky.cookie.name: grafana_session
+    traefik.ingress.kubernetes.io/service.sticky.cookie.httponly: "true"
+    traefik.ingress.kubernetes.io/service.sticky.cookie.secure: "true"
 spec:
   ingressClassName: traefik
   rules:
