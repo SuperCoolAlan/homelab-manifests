@@ -97,3 +97,16 @@ configMapGenerator:
       disableNameSuffixHash: true
     files:
       - dashboards/Starlink/starlink.json
+  # Security dashboards (Trivy + Falco)
+  - name: dashboard-trivy-operator
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/Security/trivy-operator.json
+  - name: dashboard-falco
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/Security/falco.json
