@@ -62,7 +62,7 @@ grafana:
 vmsingle:
   enabled: true
   spec:
-    retentionPeriod: "30d"
+    retentionPeriod: "90d"
     replicaCount: 1
     extraArgs:
       dedup.minScrapeInterval: 30s
