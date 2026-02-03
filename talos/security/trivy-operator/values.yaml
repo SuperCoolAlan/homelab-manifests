@@ -1,0 +1,21 @@
+# Trivy Operator values overrides for homelab
+# Ref: https://github.com/aquasecurity/trivy-operator/blob/main/deploy/helm/values.yaml
+
+trivy:
+  # Ignore vulnerabilities with no fix available
+  ignoreUnfixed: true
+
+operator:
+  # Limit concurrent scan jobs for single-node cluster
+  scanJobsConcurrentLimit: 2
+
+serviceMonitor:
+  # Enable Prometheus ServiceMonitor
+  enabled: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
