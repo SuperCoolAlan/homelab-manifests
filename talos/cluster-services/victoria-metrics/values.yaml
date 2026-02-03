@@ -42,9 +42,14 @@ grafana:
       traefik.ingress.kubernetes.io/router.entrypoints: websecure
       traefik.ingress.kubernetes.io/router.tls: "true"
       external-dns.alpha.kubernetes.io/target: 10.0.7.201
+      cert-manager.io/cluster-issuer: letsencrypt-prod
     hosts:
       - grafana.local.asandov.com
     path: /
+    tls:
+      - secretName: grafana-local-tls
+        hosts:
+          - grafana.local.asandov.com
   sidecar:
     dashboards:
       enabled: true
