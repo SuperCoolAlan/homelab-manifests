@@ -1,0 +1,33 @@
+# Falcosidekick values
+# Connects Falco to outputs including the UI
+
+# Enable the web UI
+webui:
+  enabled: true
+  replicaCount: 1
+  loglevel: info
+  # User credentials for the UI
+  user: "admin:admin"
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      external-dns.alpha.kubernetes.io/target: 10.0.7.201
+    hosts:
+      - host: falco.local.asandov.com
+        paths:
+          - path: /
+            pathType: Prefix
+
+# Redis for the UI (runs alongside)
+redis:
+  storageEnabled: false
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 128Mi

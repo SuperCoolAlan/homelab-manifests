@@ -14,3 +14,9 @@ helmCharts:
     namespace: falco
     valuesFile: values.yaml
     includeCRDs: true
+  - name: falcosidekick
+    repo: https://falcosecurity.github.io/charts
+    version: 0.12.1
+    releaseName: falcosidekick
+    namespace: falco
+    valuesFile: values-sidekick.yaml
