@@ -1,21 +1,48 @@
+# ClusterIP service with explicit endpoints for traefik compatibility
+apiVersion: v1
+kind: Service
+metadata:
+  name: adguard-opnsense
+  namespace: monitoring
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: adguard-opnsense
+  namespace: monitoring
+subsets:
+- addresses:
+  - ip: 10.0.1.1
+  ports:
+  - port: 3000
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: external-adguard
+  name: adguard-local-asandov
+  namespace: monitoring
   annotations:
-    external-dns.alpha.kubernetes.io/target: 10.0.1.28
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP" #important
-    nginx.ingress.kubernetes.io/disable-admission-webhook: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
+  ingressClassName: traefik
   rules:
-  - host: adguard.asandov.local # eg external-service.yourdomain.com
+  - host: adguard.local.asandov.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: external-opnsense
+            name: adguard-opnsense
             port:
               number: 3000
-
+  tls:
+  - hosts:
+    - adguard.local.asandov.com
+    secretName: adguard-local-tls
