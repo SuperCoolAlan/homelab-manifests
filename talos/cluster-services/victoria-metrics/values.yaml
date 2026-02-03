@@ -106,6 +106,16 @@ vmalert:
     nodeSelector:
       kubernetes.io/hostname: talos-ramhaus
 
+# Configure datasource name for dashboard compatibility
+defaultDatasources:
+  victoriametrics:
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        isDefault: true
+        url: http://vmsingle-victoria-metrics-victoria-metrics-k8s-stack.monitoring.svc.cluster.local.:8428
+
 # Alertmanager
 alertmanager:
   enabled: true
