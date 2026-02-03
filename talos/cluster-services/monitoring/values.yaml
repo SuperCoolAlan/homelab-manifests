@@ -70,7 +70,7 @@ alertmanager:
 
 grafana:
   enabled: true
-  replicas: 2
+  replicas: 1  # Single replica for session affinity with OAuth
   revisionHistoryLimit: 5
   headlessService: true
   nodeSelector:
@@ -81,6 +81,13 @@ grafana:
   grafana.ini:
     server:
       root_url: https://grafana.local.asandov.com
+      protocol: http
+      enforce_domain: false
+    session:
+      provider: file
+    security:
+      cookie_secure: true
+      cookie_samesite: lax
     auth.generic_oauth:
       enabled: true
       name: Authentik
