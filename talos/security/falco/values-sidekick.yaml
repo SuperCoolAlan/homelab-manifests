@@ -20,10 +20,9 @@ webui:
         paths:
           - path: /
             pathType: Prefix
-
-# Redis for the UI (runs alongside)
-redis:
-  storageEnabled: false
+  # Redis for the UI - no persistent storage
+  redis:
+    storageEnabled: false
 
 resources:
   requests:
