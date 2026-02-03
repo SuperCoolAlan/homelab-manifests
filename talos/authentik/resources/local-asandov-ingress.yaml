@@ -8,6 +8,12 @@ metadata:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Sticky sessions for WebSocket connections
+    traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
+    traefik.ingress.kubernetes.io/service.sticky.cookie.name: authentik_session
+    traefik.ingress.kubernetes.io/service.sticky.cookie.httponly: "true"
+    traefik.ingress.kubernetes.io/service.sticky.cookie.secure: "true"
+    traefik.ingress.kubernetes.io/service.sticky.cookie.samesite: lax
 spec:
   ingressClassName: traefik
   rules:
