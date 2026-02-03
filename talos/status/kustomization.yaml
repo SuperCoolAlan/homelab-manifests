@@ -37,12 +37,6 @@ helmCharts:
             interval: 60s
             conditions:
               - "[STATUS] == 200"
-          - name: Jellyfin
-            group: Public
-            url: https://jellyfin.asandov.com
-            interval: 60s
-            conditions:
-              - "[STATUS] == 200"
           - name: Jellyseerr
             group: Public
             url: https://jellyseerr.asandov.com
