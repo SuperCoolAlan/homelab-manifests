@@ -9,7 +9,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
-        revision: HEAD
+        revision: feature/security-scanning
         directories:
           # Cluster services
           - path: talos/cluster-services/*
@@ -26,6 +26,8 @@ spec:
           - path: talos/status
           # Twingate
           - path: talos/twingate
+          # Security scanning
+          - path: talos/security/*
   template:
     metadata:
       name: '{{.path.basename}}'
@@ -34,7 +36,7 @@ spec:
       project: default
       source:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
-        targetRevision: HEAD
+        targetRevision: feature/security-scanning
         path: '{{.path.path}}'
       destination:
         server: https://kubernetes.default.svc

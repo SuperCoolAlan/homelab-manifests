@@ -1,0 +1,23 @@
+# Falco values overrides for homelab
+# Ref: https://github.com/falcosecurity/charts/blob/master/charts/falco/values.yaml
+
+driver:
+  # Use modern eBPF driver - required for Talos (no kernel headers available)
+  kind: modern_ebpf
+
+falco:
+  grpc:
+    enabled: true
+  grpc_output:
+    enabled: true
+
+serviceMonitor:
+  # Enable Prometheus ServiceMonitor
+  enabled: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
