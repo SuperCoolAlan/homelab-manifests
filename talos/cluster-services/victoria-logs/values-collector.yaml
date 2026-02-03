@@ -1,0 +1,17 @@
+# VictoriaLogs Collector values
+# Collects logs from all Kubernetes pods
+
+# Send logs to VictoriaLogs
+remoteWrite:
+  - url: http://victoria-logs-server.monitoring.svc:9428/insert/jsonline
+
+# Run on all nodes
+tolerations:
+  - operator: Exists
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi
