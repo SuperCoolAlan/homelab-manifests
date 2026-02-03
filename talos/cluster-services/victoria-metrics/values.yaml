@@ -150,3 +150,17 @@ kube-state-metrics:
 # Kubelet metrics
 kubelet:
   enabled: true
+
+# Disable kubeControllerManager - name too long and Talos doesn't expose it standard way
+kubeControllerManager:
+  enabled: false
+
+# Disable kubeScheduler - same reason
+kubeScheduler:
+  enabled: false
+
+# Disable node-exporter-full dashboard - too large for ConfigMap annotation
+defaultDashboards:
+  dashboards:
+    node-exporter-full:
+      enabled: false
