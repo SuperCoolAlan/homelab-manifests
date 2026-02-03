@@ -25,3 +25,7 @@ resources:
     memory: 256Mi
   limits:
     memory: 512Mi
+
+# Only run on ramhaus (flyer has limited RAM)
+nodeSelector:
+  kubernetes.io/hostname: talos-ramhaus
