@@ -1,0 +1,136 @@
+# VictoriaMetrics K8s Stack values
+# Replaces kube-prometheus-stack with more efficient storage and queries
+
+# Grafana with SSO via Authentik
+grafana:
+  enabled: true
+  replicas: 1  # Single replica for session affinity with OAuth
+  revisionHistoryLimit: 5
+  headlessService: true
+  nodeSelector:
+    kubernetes.io/hostname: talos-ramhaus
+  plugins:
+    - ae3e-plotly-panel
+  grafana.ini:
+    server:
+      root_url: https://grafana.local.asandov.com
+      protocol: http
+      enforce_domain: false
+    session:
+      provider: file
+    security:
+      cookie_secure: true
+      cookie_samesite: lax
+    auth.generic_oauth:
+      enabled: true
+      name: Authentik
+      allow_sign_up: true
+      client_id: $__env{AUTHENTIK_CLIENT_ID}
+      client_secret: $__env{AUTHENTIK_CLIENT_SECRET}
+      scopes: openid profile email
+      auth_url: https://auth.local.asandov.com/application/o/authorize/
+      token_url: https://auth.local.asandov.com/application/o/token/
+      api_url: https://auth.local.asandov.com/application/o/userinfo/
+      role_attribute_path: contains(groups, 'Grafana Admins') && 'Admin' || contains(groups, 'Grafana Editors') && 'Editor' || 'Viewer'
+  envFromSecrets:
+    - name: grafana-authentik-oauth
+      optional: true
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      external-dns.alpha.kubernetes.io/target: 10.0.7.201
+    hosts:
+      - grafana.local.asandov.com
+    path: /
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      folderAnnotation: grafana_folder
+      provider:
+        foldersFromFilesStructure: true
+    datasources:
+      enabled: true
+      label: grafana_datasource
+      labelValue: "1"
+
+# VMSingle for homelab (simpler than VMCluster)
+vmsingle:
+  enabled: true
+  spec:
+    retentionPeriod: "30d"
+    replicaCount: 1
+    extraArgs:
+      dedup.minScrapeInterval: 30s
+    storage:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: vm-local
+      resources:
+        requests:
+          storage: 50Gi
+    nodeSelector:
+      kubernetes.io/hostname: talos-ramhaus
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 1Gi
+
+# VMAgent collects metrics and sends to VMSingle
+vmagent:
+  enabled: true
+  spec:
+    scrapeInterval: 30s
+    nodeSelector:
+      kubernetes.io/hostname: talos-ramhaus
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 512Mi
+    additionalScrapeConfigs:
+      name: vm-additional-scrape-configs
+      key: prometheus-additional.yaml
+
+# VMAlert for alerting rules
+vmalert:
+  enabled: true
+  spec:
+    nodeSelector:
+      kubernetes.io/hostname: talos-ramhaus
+
+# Alertmanager
+alertmanager:
+  enabled: true
+  spec:
+    nodeSelector:
+      kubernetes.io/hostname: talos-ramhaus
+
+# Operator settings - convert Prometheus ServiceMonitors
+victoria-metrics-operator:
+  enabled: true
+  operator:
+    disable_prometheus_converter: false
+  nodeSelector:
+    kubernetes.io/hostname: talos-ramhaus
+
+# Node exporter for host metrics
+prometheus-node-exporter:
+  enabled: true
+
+# Kube-state-metrics for k8s object metrics
+kube-state-metrics:
+  enabled: true
+  nodeSelector:
+    kubernetes.io/hostname: talos-ramhaus
+
+# Kubelet metrics
+kubelet:
+  enabled: true

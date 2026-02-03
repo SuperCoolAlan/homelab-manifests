@@ -1,0 +1,32 @@
+# Storage class for VictoriaMetrics local storage
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: vm-local
+provisioner: kubernetes.io/no-provisioner
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+---
+# Local PV on ramhaus nvme1n1 (shared with sabnzbd)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vmsingle-data-pv
+spec:
+  capacity:
+    storage: 50Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: vm-local
+  local:
+    path: /var/mnt/metrics-storage/vmsingle-data
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-ramhaus

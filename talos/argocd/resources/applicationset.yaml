@@ -9,10 +9,13 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
-        revision: feature/security-scanning
+        revision: HEAD
         directories:
           # Cluster services
           - path: talos/cluster-services/*
+          # Exclude kube-prometheus-stack (replaced by victoria-metrics)
+          - path: talos/cluster-services/monitoring
+            exclude: true
           # Monitoring sub-apps
           - path: talos/monitoring/*
           # Authentik
@@ -36,7 +39,7 @@ spec:
       project: default
       source:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
-        targetRevision: feature/security-scanning
+        targetRevision: HEAD
         path: '{{.path.path}}'
       destination:
         server: https://kubernetes.default.svc
