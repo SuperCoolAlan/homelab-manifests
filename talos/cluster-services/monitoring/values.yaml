@@ -70,13 +70,39 @@ alertmanager:
 
 grafana:
   enabled: true
-  replicas: 2
+  replicas: 1  # Single replica for session affinity with OAuth
   revisionHistoryLimit: 5
   headlessService: true
   nodeSelector:
     kubernetes.io/hostname: talos-ramhaus
   plugins:
     - ae3e-plotly-panel
+  # Fix redirect loop when behind TLS-terminating proxy
+  grafana.ini:
+    server:
+      root_url: https://grafana.local.asandov.com
+      protocol: http
+      enforce_domain: false
+    session:
+      provider: file
+    security:
+      cookie_secure: true
+      cookie_samesite: lax
+    auth.generic_oauth:
+      enabled: true
+      name: Authentik
+      allow_sign_up: true
+      client_id: $__env{AUTHENTIK_CLIENT_ID}
+      client_secret: $__env{AUTHENTIK_CLIENT_SECRET}
+      scopes: openid profile email
+      auth_url: https://auth.local.asandov.com/application/o/authorize/
+      token_url: https://auth.local.asandov.com/application/o/token/
+      api_url: https://auth.local.asandov.com/application/o/userinfo/
+      role_attribute_path: contains(groups, 'Grafana Admins') && 'Admin' || contains(groups, 'Grafana Editors') && 'Editor' || 'Viewer'
+  # Authentik OAuth credentials - create secret 'grafana-authentik-oauth' with AUTHENTIK_CLIENT_ID and AUTHENTIK_CLIENT_SECRET
+  envFromSecrets:
+    - name: grafana-authentik-oauth
+      optional: true
   ingress:
     enabled: true
     ingressClassName: traefik
@@ -142,6 +168,15 @@ grafana:
     - name: dashboard-starlink
       mountPath: /etc/grafana/provisioning/dashboards/starlink
       configMap: dashboard-starlink
+      readOnly: true
+    # Security dashboards
+    - name: dashboard-trivy-operator
+      mountPath: /etc/grafana/provisioning/dashboards/security/trivy
+      configMap: dashboard-trivy-operator
+      readOnly: true
+    - name: dashboard-falco
+      mountPath: /etc/grafana/provisioning/dashboards/security/falco
+      configMap: dashboard-falco
       readOnly: true
   dashboardProviders:
     dashboardproviders.yaml:
@@ -210,6 +245,15 @@ grafana:
           allowUiUpdates: true
           options:
             path: /etc/grafana/provisioning/dashboards/starlink
+        - name: "security"
+          orgId: 1
+          folder: "Security"
+          type: file
+          disableDeletion: false
+          editable: true
+          allowUiUpdates: true
+          options:
+            path: /etc/grafana/provisioning/dashboards/security
 
 # Move remaining components to ramhaus
 kube-state-metrics:

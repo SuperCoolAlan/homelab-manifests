@@ -185,9 +185,9 @@ spec:
       paths:
       - backend:
           service:
-            name: jellyfin-external
+            name: jellyfin-truenas
             port:
-              number: 8096
+              number: 30013
         path: /
         pathType: Prefix
   tls:

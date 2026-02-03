@@ -6,6 +6,9 @@ namespace: monitoring
 resources:
 - resources/local-asandov-ingresses.yaml
 
+generators:
+  - secrets-generator.yaml
+
 helmCharts:
   - name: kube-prometheus-stack
     repo: https://prometheus-community.github.io/helm-charts
@@ -97,3 +100,16 @@ configMapGenerator:
       disableNameSuffixHash: true
     files:
       - dashboards/Starlink/starlink.json
+  # Security dashboards (Trivy + Falco)
+  - name: dashboard-trivy-operator
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/Security/trivy-operator.json
+  - name: dashboard-falco
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+    files:
+      - dashboards/Security/falco.json
