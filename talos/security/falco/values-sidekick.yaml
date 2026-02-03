@@ -20,9 +20,11 @@ webui:
         paths:
           - path: /
             pathType: Prefix
-  # Redis for the UI - no persistent storage
+  # Redis for the UI - use emptyDir (no persistent storage)
   redis:
     storageEnabled: false
+    storageClass: ""
+    storageSize: ""
 
 resources:
   requests:
