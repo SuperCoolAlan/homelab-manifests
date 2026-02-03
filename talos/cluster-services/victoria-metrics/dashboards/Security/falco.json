@@ -59,7 +59,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": {"type": "prometheus"},
       "description": "",
       "fill": 1,
       "fillGradient": 0,
@@ -147,7 +147,7 @@
     },
     {
       "columns": [],
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": {"type": "prometheus"},
       "fontSize": "100%",
       "gridPos": {
         "h": 10,
