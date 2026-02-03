@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vm-additional-scrape-configs
+  namespace: monitoring
+type: Opaque
+stringData:
+  prometheus-additional.yaml: |
+    - job_name: "truenas-gpu"
+      static_configs:
+        - targets: ["truenas.asandov.local:9835"]
+          labels:
+            instance: "truenas"
+    - job_name: "truenas-graphite"
+      static_configs:
+        - targets: ["truenas.asandov.local:9108"]
+          labels:
+            instance: "truenas"
+    - job_name: "truenas-dcgm"
+      static_configs:
+        - targets: ["truenas.asandov.local:9400"]
+          labels:
+            instance: "truenas"
+    - job_name: "truenas-pdu"
+      static_configs:
+        - targets: ["truenas.asandov.local:8088"]
+          labels:
+            instance: "truenas"

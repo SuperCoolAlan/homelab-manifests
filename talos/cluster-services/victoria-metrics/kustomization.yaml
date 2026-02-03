@@ -1,0 +1,419 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: monitoring
+
+resources:
+  - resources/additional-scrape-configs.yaml
+  - resources/local-storage.yaml
+
+generators:
+  - secrets-generator.yaml
+
+helmCharts:
+  - name: victoria-metrics-k8s-stack
+    repo: https://victoriametrics.github.io/helm-charts
+    version: 0.69.0
+    releaseName: victoria-metrics
+    namespace: monitoring
+    valuesFile: values.yaml
+
+configMapGenerator:
+  # ArgoCD
+  - name: dashboard-argocd
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/ArgoCD/argocd-overview.json
+
+  # Authentik
+  - name: dashboard-authentik
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Authentik/authentik.json
+
+  # CertManager
+  - name: dashboard-cert-manager
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/CertManager/cert-manager.json
+
+  # General
+  - name: dashboard-alertmanager-overview
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/General/alertmanager-overview.json
+
+  - name: dashboard-coredns
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/General/coredns.json
+
+  - name: dashboard-etcd
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/General/etcd.json
+
+  - name: dashboard-grafana-overview
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/General/grafana-overview.json
+
+  - name: dashboard-prometheus-overview
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/General/prometheus-overview.json
+
+  # Kubernetes
+  - name: dashboard-k8s-api-server
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/api-server.json
+
+  - name: dashboard-k8s-compute-cluster
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/compute-resources-cluster.json
+
+  - name: dashboard-k8s-compute-multi-cluster
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/compute-resources-multi-cluster.json
+
+  - name: dashboard-k8s-compute-ns-pods
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/compute-resources-namespace-pods.json
+
+  - name: dashboard-k8s-compute-ns-workloads
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/compute-resources-namespace-workloads.json
+
+  - name: dashboard-k8s-compute-node-pods
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/compute-resources-node-pods.json
+
+  - name: dashboard-k8s-compute-pod
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/compute-resources-pod.json
+
+  - name: dashboard-k8s-compute-workload
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/compute-resources-workload.json
+
+  - name: dashboard-k8s-controller-manager
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/controller-manager.json
+
+  - name: dashboard-k8s-kubelet
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/kubelet.json
+
+  - name: dashboard-k8s-networking-cluster
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/networking-cluster.json
+
+  - name: dashboard-k8s-networking-ns-pods
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/networking-namespace-pods.json
+
+  - name: dashboard-k8s-networking-ns-workload
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/networking-namespace-workload.json
+
+  - name: dashboard-k8s-networking-pod
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/networking-pod.json
+
+  - name: dashboard-k8s-networking-workload
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/networking-workload.json
+
+  - name: dashboard-k8s-persistent-volumes
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/persistent-volumes.json
+
+  - name: dashboard-k8s-proxy
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/proxy.json
+
+  - name: dashboard-k8s-scheduler
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Kubernetes/scheduler.json
+
+  # MediaApps
+  - name: dashboard-exportarr
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/MediaApps/exportarr.json
+
+  # NodeExporter
+  - name: dashboard-node-exporter-aix
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/NodeExporter/aix.json
+
+  - name: dashboard-node-exporter-macos
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/NodeExporter/macos.json
+
+  - name: dashboard-node-exporter-nodes
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/NodeExporter/nodes.json
+
+  - name: dashboard-node-exporter-use-cluster
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/NodeExporter/use-method-cluster.json
+
+  - name: dashboard-node-exporter-use-node
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/NodeExporter/use-method-node.json
+
+  # OPNsense
+  - name: dashboard-opnsense
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/OPNsense/opnsense.json
+
+  # Security
+  - name: dashboard-falco
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Security/falco.json
+
+  - name: dashboard-trivy-operator
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Security/trivy-operator.json
+
+  # Starlink
+  - name: dashboard-starlink
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Starlink/starlink.json
+
+  # Traefik
+  - name: dashboard-traefik
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/Traefik/traefik-official.json
+
+  # TrueNAS
+  - name: dashboard-truenas-app-health
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/TrueNAS/app-health-overview.json
+
+  - name: dashboard-nvidia-gpu
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/TrueNAS/nvidia-gpu.json
+
+  - name: dashboard-truenas-disk-insight
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/TrueNAS/truenas-disk-insight.json
+
+  - name: dashboard-truenas-overview
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/TrueNAS/truenas-overview.json
+
+  - name: dashboard-truenas-temperature
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/TrueNAS/truenas-temperature.json
+
+  - name: dashboard-ups-status
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+    files:
+      - dashboards/TrueNAS/ups-status.json
