@@ -1,4 +1,5 @@
 # New local.asandov.com ingress with Let's Encrypt TLS
+# No Authentik middleware - qBittorrent has its own auth, and forwardAuth breaks file uploads
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -7,7 +8,6 @@ metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik

@@ -121,7 +121,7 @@ metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+    # No Authentik - sabnzbd has its own auth, forwardAuth breaks file uploads
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
