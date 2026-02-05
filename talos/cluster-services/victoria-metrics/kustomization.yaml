@@ -63,7 +63,7 @@ configMapGenerator:
       labels:
         grafana_dashboard: "1"
       annotations:
-        grafana_folder: "General"
+        grafana_folder: "Infrastructure"
     files:
       - dashboards/General/alertmanager-overview.json
 
@@ -74,7 +74,7 @@ configMapGenerator:
       labels:
         grafana_dashboard: "1"
       annotations:
-        grafana_folder: "General"
+        grafana_folder: "Infrastructure"
     files:
       - dashboards/General/coredns.json
 
@@ -85,7 +85,7 @@ configMapGenerator:
       labels:
         grafana_dashboard: "1"
       annotations:
-        grafana_folder: "General"
+        grafana_folder: "Infrastructure"
     files:
       - dashboards/General/etcd.json
 
@@ -96,7 +96,7 @@ configMapGenerator:
       labels:
         grafana_dashboard: "1"
       annotations:
-        grafana_folder: "General"
+        grafana_folder: "Infrastructure"
     files:
       - dashboards/General/grafana-overview.json
 
@@ -107,7 +107,7 @@ configMapGenerator:
       labels:
         grafana_dashboard: "1"
       annotations:
-        grafana_folder: "General"
+        grafana_folder: "Infrastructure"
     files:
       - dashboards/General/prometheus-overview.json
 

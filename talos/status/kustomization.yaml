@@ -97,9 +97,27 @@ helmCharts:
               insecure: true
             conditions:
               - "[STATUS] == any(200, 401, 403)"
-          - name: Prometheus
+          - name: Victoria Metrics
             group: Infrastructure
-            url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/-/healthy
+            url: http://vmsingle-victoria-metrics-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8428/health
+            interval: 30s
+            conditions:
+              - "[STATUS] == 200"
+          - name: VMAgent
+            group: Infrastructure
+            url: http://vmagent-victoria-metrics-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8429/health
+            interval: 30s
+            conditions:
+              - "[STATUS] == 200"
+          - name: VMAlert
+            group: Infrastructure
+            url: http://vmalert-victoria-metrics-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8080/health
+            interval: 30s
+            conditions:
+              - "[STATUS] == 200"
+          - name: Victoria Logs
+            group: Infrastructure
+            url: http://victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local:9428/health
             interval: 30s
             conditions:
               - "[STATUS] == 200"
