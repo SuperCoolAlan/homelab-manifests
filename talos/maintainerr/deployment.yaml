@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maintainerr
+  namespace: maintainerr
+  labels:
+    app: maintainerr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: maintainerr
+  template:
+    metadata:
+      labels:
+        app: maintainerr
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: maintainerr
+          image: ghcr.io/maintainerr/maintainerr:2.26.1
+          ports:
+            - containerPort: 6246
+              name: http
+          env:
+            - name: TZ
+              value: "America/Chicago"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: maintainerr-data

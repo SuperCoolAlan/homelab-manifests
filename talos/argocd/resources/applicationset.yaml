@@ -25,6 +25,8 @@ spec:
           - path: talos/qbittorrent
           # Tracearr
           - path: talos/tracearr
+          # Maintainerr
+          - path: talos/maintainerr
           # Status page
           - path: talos/status
           # Twingate
