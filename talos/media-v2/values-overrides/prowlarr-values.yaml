@@ -44,7 +44,7 @@ deployment:
         claimName: 'media-library'
   container:
     image:
-      tag: '2.1.5.5216-ls131'
+      tag: '2.3.0.5236-ls136'
     env:
       - name: PUID
         value: "1000"
