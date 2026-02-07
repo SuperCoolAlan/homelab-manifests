@@ -27,6 +27,8 @@ spec:
           - path: talos/tracearr
           # Maintainerr
           - path: talos/maintainerr
+          # Piper (TTS)
+          - path: talos/piper
           # Status page
           - path: talos/status
           # Twingate
