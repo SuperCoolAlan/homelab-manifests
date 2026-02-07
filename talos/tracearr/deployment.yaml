@@ -15,8 +15,6 @@ spec:
       labels:
         app: tracearr
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: talos-ramhaus
       containers:
         - name: tracearr
           image: ghcr.io/connorgallopo/tracearr:supervised
@@ -36,6 +34,12 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            - name: data
+              mountPath: /data/postgres
+              subPath: postgres
+            - name: data
+              mountPath: /data/tracearr
+              subPath: tracearr
       volumes:
         - name: data
           persistentVolumeClaim:
