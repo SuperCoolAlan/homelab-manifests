@@ -2,6 +2,9 @@ image:
   tag: "2.2.2"
   args: ["--voice", "en_US-lessac-medium"]
 
+service:
+  type: LoadBalancer
+
 nodeSelector:
   kubernetes.io/hostname: talos-ramhaus
 
