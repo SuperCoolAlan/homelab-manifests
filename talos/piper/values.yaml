@@ -14,6 +14,17 @@ persistence:
     storageClass: nfs
     size: 5Gi
 
+livenessProbe:
+  httpGet: null
+  tcpSocket:
+    port: http
+  initialDelaySeconds: 30
+
+readinessProbe:
+  httpGet: null
+  tcpSocket:
+    port: http
+
 resources:
   requests:
     cpu: 100m
