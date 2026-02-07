@@ -1,0 +1,20 @@
+image:
+  tag: "2.2.2"
+  args: ["--voice", "en_US-lessac-medium"]
+
+nodeSelector:
+  kubernetes.io/hostname: talos-ramhaus
+
+persistence:
+  data:
+    enabled: true
+    storageClass: nfs
+    size: 5Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: "2"
+    memory: 1Gi
