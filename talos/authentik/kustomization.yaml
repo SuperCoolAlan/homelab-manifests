@@ -18,7 +18,7 @@ generators:
 helmCharts:
   - name: authentik
     repo: https://charts.goauthentik.io
-    version: 2025.10.3
+    version: 2025.12.3
     releaseName: authentik
     namespace: authentik
     valuesFile: values.yaml
