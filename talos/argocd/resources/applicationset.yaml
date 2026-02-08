@@ -56,3 +56,17 @@ spec:
           jsonPointers:
             - /status
             - /spec/conversion/webhook/clientConfig/caBundle
+        - kind: Secret
+          name: victoria-metrics-grafana
+          jsonPointers:
+            - /data/admin-password
+        - kind: Secret
+          name: victoria-metrics-victoria-metrics-operator-validation
+          jsonPointers:
+            - /data
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: victoria-metrics-victoria-metrics-operator-admission
+          jsonPointers:
+            - /webhooks/0/clientConfig/caBundle
+            - /webhooks/1/clientConfig/caBundle
