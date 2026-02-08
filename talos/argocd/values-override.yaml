@@ -1,7 +1,7 @@
 # ArgoCD values override for Talos cluster
 global:
   image:
-    tag: v3.2.2
+    tag: v3.2.6
   # Enable Prometheus scrape annotations on all components
   addPrometheusAnnotations: true
 
@@ -100,7 +100,7 @@ repoServer:
         runAsUser: 999
         runAsGroup: 999
     - name: import-gpg
-      image: quay.io/argoproj/argocd:v3.2.2
+      image: quay.io/argoproj/argocd:v3.2.6
       command: ["/bin/sh", "-c"]
       args:
         - |
