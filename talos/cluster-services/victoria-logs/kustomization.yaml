@@ -9,13 +9,13 @@ resources:
 helmCharts:
   - name: victoria-logs-single
     repo: https://victoriametrics.github.io/helm-charts
-    version: 0.11.23
+    version: 0.11.26
     releaseName: victoria-logs
     namespace: monitoring
     valuesFile: values-logs.yaml
   - name: victoria-logs-collector
     repo: https://victoriametrics.github.io/helm-charts
-    version: 0.2.4
+    version: 0.2.9
     releaseName: victoria-logs-collector
     namespace: monitoring
     valuesFile: values-collector.yaml
