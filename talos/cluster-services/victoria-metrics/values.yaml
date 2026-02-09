@@ -66,6 +66,22 @@ grafana:
 # VMSingle for homelab (simpler than VMCluster)
 vmsingle:
   enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      external-dns.alpha.kubernetes.io/target: 10.0.7.201
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - vmsingle.local.asandov.com
+    path: /
+    pathType: Prefix
+    tls:
+      - secretName: vmsingle-local-tls
+        hosts:
+          - vmsingle.local.asandov.com
   spec:
     retentionPeriod: "90d"
     replicaCount: 1
