@@ -85,7 +85,7 @@ vmsingle:
         cpu: 100m
         memory: 256Mi
       limits:
-        memory: 4Gi
+        memory: 8Gi
 
 # VMAgent collects metrics and sends to VMSingle
 vmagent:
