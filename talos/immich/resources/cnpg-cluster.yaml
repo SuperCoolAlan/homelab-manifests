@@ -24,7 +24,7 @@ spec:
     storageClass: immich-cnpg
   backup:
     barmanObjectStore:
-      destinationPath: s3://asandov-immich/cnpg/
+      destinationPath: s3://immich-asandov/cnpg/
       endpointURL: https://s3.us-west-004.backblazeb2.com
       s3Credentials:
         accessKeyId:
