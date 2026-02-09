@@ -43,6 +43,9 @@ ports:
     port: 8443
     exposedPort: 443
     protocol: TCP
+    transport:
+      respondingTimeouts:
+        readTimeout: "600s"
   ldap:
     port: 3890
     exposedPort: 389
