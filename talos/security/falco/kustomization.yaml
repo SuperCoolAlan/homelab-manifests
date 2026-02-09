@@ -6,6 +6,9 @@ namespace: falco
 resources:
   - namespace.yaml
 
+generators:
+  - secrets-generator.yaml
+
 helmCharts:
   - name: falco
     repo: https://falcosecurity.github.io/charts

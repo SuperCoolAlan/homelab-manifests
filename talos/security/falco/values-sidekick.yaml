@@ -1,6 +1,16 @@
 # Falcosidekick values
 # Connects Falco to outputs including the UI
 
+config:
+  extraEnv:
+    - name: DISCORD_WEBHOOKURL
+      valueFrom:
+        secretKeyRef:
+          name: falcosidekick-discord
+          key: DISCORD_WEBHOOKURL
+  discord:
+    minimumpriority: warning
+
 # Enable the web UI
 webui:
   enabled: true
