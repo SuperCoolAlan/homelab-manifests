@@ -1,0 +1,32 @@
+# Static PV + PVC for Immich photo library on TrueNAS NFS
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: immich-library-pv
+spec:
+  capacity:
+    storage: 2Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  nfs:
+    server: truenas.asandov.local
+    path: /mnt/ST6000NM0095-pool0/immich-photos/v1
+  mountOptions:
+    - noatime
+    - nfsvers=4
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-library
+  namespace: immich
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: immich-library-pv
+  resources:
+    requests:
+      storage: 2Ti
