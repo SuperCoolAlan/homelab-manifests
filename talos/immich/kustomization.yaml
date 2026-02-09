@@ -8,7 +8,12 @@ resources:
   - resources/nfs-storage.yaml
   - resources/cnpg-storage.yaml
   - resources/cnpg-cluster.yaml
+  - resources/cnpg-scheduled-backup.yaml
   - resources/ingress.yaml
+  - resources/volsync-replication.yaml
+
+generators:
+  - secrets-generator.yaml
 
 helmCharts:
   - name: immich
