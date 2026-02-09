@@ -9,7 +9,6 @@ resources:
   - resources/cnpg-storage.yaml
   - resources/cnpg-cluster.yaml
   - resources/ingress.yaml
-  - resources/traefik-middleware.yaml
 
 helmCharts:
   - name: immich

@@ -7,8 +7,7 @@ metadata:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    # Allow large photo/video uploads (buffering middleware disables body size limit)
-    traefik.ingress.kubernetes.io/router.middlewares: immich-immich-body-size@kubernetescrd
+    # Large uploads handled by Traefik websecure readTimeout (600s)
 spec:
   ingressClassName: traefik
   rules:
