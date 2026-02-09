@@ -12,7 +12,9 @@ spec:
       owner: immich
       dataChecksums: true
       encoding: UTF8
-      postInitApplicationSQL:
+      postInitSQL:
+        - CREATE EXTENSION IF NOT EXISTS cube CASCADE;
+        - CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE;
         - CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
   postgresql:
     shared_preload_libraries:
