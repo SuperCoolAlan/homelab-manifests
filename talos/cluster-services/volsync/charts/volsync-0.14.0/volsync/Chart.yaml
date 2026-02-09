@@ -1,0 +1,54 @@
+annotations:
+  artifacthub.io/changes: |
+    - kind: changed
+      description: Updated release to build on golang 1.24
+    - kind: changed
+      description: Syncthing updated to v1.30.0
+    - kind: changed
+      description: Rclone updated to v1.71.2
+    - kind: added
+      description: Rclone --checksum, --transfers and --stats parameters can now be overridden by RCLONE_ env vars in the rclone config secret
+    - kind: added
+      description: addition of moverVolumes for advanced users to allow mounting of secrets or PVCs to their mover pod
+  artifacthub.io/crds: |
+    - kind: ReplicationDestination
+      version: v1alpha1
+      name: replicationdestination.volsync.backube
+      displayName: Replication destination
+      description: Defines the destination of a replicated volume
+    - kind: ReplicationSource
+      version: v1alpha1
+      name: replicationsource.volsync.backube
+      displayName: Replication source
+      description: Defines the source of a replicated volume
+  artifacthub.io/license: AGPL-3.0-or-later
+  artifacthub.io/operator: "true"
+  artifacthub.io/operatorCapabilities: Basic Install
+  artifacthub.io/signKey: |
+    fingerprint: 2C937ADACD4BEF921197F66EDC7556B1903A252B
+    url: https://keys.openpgp.org/vks/v1/by-fingerprint/2C937ADACD4BEF921197F66EDC7556B1903A252B
+apiVersion: v2
+appVersion: 0.14.0
+description: Asynchronous data replication for Kubernetes
+home: https://volsync.readthedocs.io/
+icon: https://raw.githubusercontent.com/backube/volsync/main/docs/media/volsync.svg?sanitize=true
+keywords:
+- backup
+- csi
+- data
+- disaster recovery
+- replication
+- storage
+kubeVersion: ^1.20.0-0
+maintainers:
+- email: jstrunk@redhat.com
+  name: John Strunk
+  url: https://github.com/JohnStrunk
+- email: tflower@redhat.com
+  name: Tesshu Flower
+  url: https://github.com/tesshuflower
+name: volsync
+sources:
+- https://github.com/backube/volsync
+type: application
+version: 0.14.0
