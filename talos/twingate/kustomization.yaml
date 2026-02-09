@@ -11,7 +11,7 @@ generators:
 helmCharts:
   - name: connector
     repo: https://twingate.github.io/helm-charts
-    version: 0.1.31
+    version: 0.1.32
     releaseName: twingate-op
     namespace: twingate
     valuesInline:
