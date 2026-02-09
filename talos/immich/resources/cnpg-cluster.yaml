@@ -22,5 +22,21 @@ spec:
   storage:
     size: 5Gi
     storageClass: immich-cnpg
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://asandov-immich/cnpg/
+      endpointURL: https://s3.us-west-004.backblazeb2.com
+      s3Credentials:
+        accessKeyId:
+          name: cnpg-b2-credentials
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cnpg-b2-credentials
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: "30d"
   nodeMaintenanceWindow:
     inProgress: false
