@@ -99,19 +99,19 @@ helmCharts:
               - "[STATUS] == any(200, 401, 403)"
           - name: Victoria Metrics
             group: Infrastructure
-            url: http://vmsingle-victoria-metrics-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8428/health
+            url: http://vmsingle-vm-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8428/health
             interval: 30s
             conditions:
               - "[STATUS] == 200"
           - name: VMAgent
             group: Infrastructure
-            url: http://vmagent-victoria-metrics-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8429/health
+            url: http://vmagent-vm-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8429/health
             interval: 30s
             conditions:
               - "[STATUS] == 200"
           - name: VMAlert
             group: Infrastructure
-            url: http://vmalert-victoria-metrics-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8080/health
+            url: http://vmalert-vm-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8080/health
             interval: 30s
             conditions:
               - "[STATUS] == 200"

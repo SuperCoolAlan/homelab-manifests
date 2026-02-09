@@ -120,7 +120,7 @@ defaultDatasources:
         uid: prometheus
         access: proxy
         isDefault: true
-        url: http://vmsingle-victoria-metrics-victoria-metrics-k8s-stack.monitoring.svc.cluster.local.:8428
+        url: http://vmsingle-vm-victoria-metrics-k8s-stack.monitoring.svc.cluster.local.:8428
 
 # Alertmanager
 alertmanager:
