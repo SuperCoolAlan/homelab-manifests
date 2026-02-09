@@ -33,6 +33,8 @@ spec:
           - path: talos/status
           # Twingate
           - path: talos/twingate
+          # Immich (photo management)
+          - path: talos/immich
           # Security scanning
           - path: talos/security/*
   template:

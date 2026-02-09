@@ -1,0 +1,31 @@
+# Storage class for Immich CNPG postgres on ramhaus local NVMe
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: immich-cnpg
+provisioner: kubernetes.io/no-provisioner
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: immich-postgres-pv
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: immich-cnpg
+  local:
+    path: /var/mnt/local-storage/immich-postgres
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-ramhaus

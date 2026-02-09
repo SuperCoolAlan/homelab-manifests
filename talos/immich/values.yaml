@@ -1,0 +1,46 @@
+# Immich Helm chart values override
+# Chart: https://github.com/immich-app/immich-charts
+# Only overriding what differs from chart defaults
+
+# DB connection to CNPG-managed postgres (immich-postgres cluster)
+controllers:
+  main:
+    containers:
+      main:
+        env:
+          DB_HOSTNAME: "immich-postgres-rw"
+          DB_USERNAME: "immich"
+          DB_DATABASE_NAME: "immich"
+          DB_PORT: "5432"
+          DB_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: immich-postgres-app
+                key: password
+
+immich:
+  persistence:
+    library:
+      existingClaim: immich-library
+
+# Enable built-in Valkey (Redis) - disabled by default in chart
+valkey:
+  enabled: true
+
+# Ingress managed via kustomize resource, not chart
+server:
+  enabled: true
+  ingress:
+    main:
+      enabled: false
+
+# Persist ML model cache across restarts (chart defaults to emptyDir)
+machine-learning:
+  enabled: true
+  persistence:
+    cache:
+      enabled: true
+      size: 10Gi
+      type: persistentVolumeClaim
+      accessMode: ReadWriteOnce
+      storageClass: nfs
