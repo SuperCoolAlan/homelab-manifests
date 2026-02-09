@@ -2,11 +2,14 @@
 # Chart: https://github.com/immich-app/immich-charts
 # Only overriding what differs from chart defaults
 
+# Pin to latest Immich (chart defaults to v2.0.0)
 # DB connection to CNPG-managed postgres (immich-postgres cluster)
 controllers:
   main:
     containers:
       main:
+        image:
+          tag: v2.5.5
         env:
           DB_HOSTNAME: "immich-postgres-rw"
           DB_USERNAME: "immich"
