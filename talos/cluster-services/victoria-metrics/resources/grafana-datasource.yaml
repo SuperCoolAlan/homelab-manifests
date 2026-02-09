@@ -13,7 +13,7 @@ data:
         type: prometheus
         uid: victoriametrics
         access: proxy
-        url: http://vmsingle-victoria-metrics.monitoring.svc:8428
+        url: http://vmsingle-vm-victoria-metrics-k8s-stack.monitoring.svc:8428
         isDefault: true
         jsonData:
           timeInterval: 30s
