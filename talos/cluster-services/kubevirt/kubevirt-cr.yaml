@@ -4,6 +4,10 @@ metadata:
   name: kubevirt
   namespace: kubevirt
 spec:
+  infra:
+    nodePlacement:
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
   configuration:
     developerConfiguration:
       useEmulation: false
