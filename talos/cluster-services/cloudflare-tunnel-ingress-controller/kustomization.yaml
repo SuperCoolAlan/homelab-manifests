@@ -15,6 +15,5 @@ helmCharts:
 resources:
   - namespace.yaml
 
-# generators:
-#   - secrets-generator.yaml
-# Secret applied manually
+generators:
+  - secrets-generator.yaml
