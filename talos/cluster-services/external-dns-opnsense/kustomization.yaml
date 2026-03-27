@@ -9,5 +9,6 @@ helmCharts:
     namespace: external-dns
     valuesFile: myvalues.yaml
 
-generators:
-  - secrets-generator.yaml
+# generators:
+#   - secrets-generator.yaml
+# Secret applied manually
