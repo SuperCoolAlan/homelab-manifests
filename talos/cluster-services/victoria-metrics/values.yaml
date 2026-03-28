@@ -115,7 +115,7 @@ vmagent:
         cpu: 50m
         memory: 128Mi
       limits:
-        memory: 512Mi
+        memory: 1Gi
     # additionalScrapeConfigs temporarily disabled
     # additionalScrapeConfigs:
     #   name: vm-additional-scrape-configs
