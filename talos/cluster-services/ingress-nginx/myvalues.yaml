@@ -1,7 +1,0 @@
-controller:
-  service:
-    type: LoadBalancer
-    # loadBalancerIP: dynamically assigned from MetalLB pool
-  ingressClassResource:
-    default: true
-
