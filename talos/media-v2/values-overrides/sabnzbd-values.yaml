@@ -28,6 +28,7 @@ application:
       direct_unpack = 1
       history_retention = 0
       enable_recursive = 1
+      ipv6_servers = 0
       
       [servers]
       [[news.eweka.nl]]
