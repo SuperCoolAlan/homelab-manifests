@@ -13,24 +13,12 @@
     image: qmcgaw/gluetun:latest
     imagePullPolicy: Always
     env:
-    - name: DOT
-      value: "off"
-    - name: BLOCK_MALICIOUS
-      value: "off"
-    - name: BLOCK_SURVEILLANCE
-      value: "off"
-    - name: BLOCK_ADS
-      value: "off"
     - name: TZ
       value: America/Chicago
     - name: VPN_SERVICE_PROVIDER
       value: custom
     - name: VPN_TYPE
       value: wireguard
-    - name: HEALTH_VPN_DURATION_INITIAL
-      value: "10s"
-    - name: HEALTH_VPN_DURATION_ADDITION
-      value: "5s"
     - name: FIREWALL
       value: "off"
     - name: FIREWALL_OUTBOUND_SUBNETS
@@ -40,6 +28,8 @@
     - name: HTTPPROXY
       value: "on"
     - name: HTTPPROXY_LOG
+      value: "on"
+    - name: DNS_KEEP_NAMESERVER
       value: "on"
     envFrom:
     - secretRef:
