@@ -40,4 +40,4 @@ extraArgs:
 policy: sync
 sources: ["ingress", "service", "crd"]
 registry: noop
-domainFilters: ["asandov.local"] # replace with your domain
+domainFilters: ["asandov.local", "local.asandov.com"]
