@@ -13,6 +13,12 @@
     image: qmcgaw/gluetun:latest
     imagePullPolicy: Always
     env:
+    - name: BLOCK_MALICIOUS
+      value: "on"
+    - name: BLOCK_SURVEILLANCE
+      value: "on"
+    - name: BLOCK_ADS
+      value: "on"
     - name: TZ
       value: America/Chicago
     - name: VPN_SERVICE_PROVIDER
