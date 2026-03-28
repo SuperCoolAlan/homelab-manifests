@@ -75,13 +75,13 @@ vmsingle:
       external-dns.alpha.kubernetes.io/target: 10.0.7.200
       cert-manager.io/cluster-issuer: letsencrypt-prod
     hosts:
-      - vmsingle.local.asandov.com
+      - vm.local.asandov.com
     path: /
     pathType: Prefix
     tls:
       - secretName: vmsingle-local-tls
         hosts:
-          - vmsingle.local.asandov.com
+          - vm.local.asandov.com
   spec:
     retentionPeriod: "90d"
     replicaCount: 1
