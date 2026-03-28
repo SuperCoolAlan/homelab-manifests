@@ -31,6 +31,12 @@ configs:
 
 # Install ksops in standard ArgoCD repo server
 repoServer:
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      memory: "1Gi"
   metrics:
     enabled: true
     serviceMonitor:
@@ -147,6 +153,16 @@ repoServer:
             - talos-ramhaus
 
 controller:
+  extraArgs:
+    - --status-processors=50
+    - --operation-processors=25
+    - --self-heal-timeout-seconds=5
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      memory: "2Gi"
   metrics:
     enabled: true
     serviceMonitor:
