@@ -29,8 +29,6 @@
       value: "on"
     - name: HTTPPROXY_LOG
       value: "on"
-    - name: DNS_KEEP_NAMESERVER
-      value: "on"
     envFrom:
     - secretRef:
         name: windscribe-wireguard-creds
