@@ -27,14 +27,6 @@
       value: custom
     - name: VPN_TYPE
       value: wireguard
-    - name: WIREGUARD_ADDRESSES
-      value: "100.109.241.211/32"
-    - name: WIREGUARD_PUBLIC_KEY
-      value: "47tLjymDPpTIBerb+wn02/XNFABF4YDAGwOnijSoZmQ="
-    - name: VPN_ENDPOINT_IP
-      value: "23.95.42.212"
-    - name: VPN_ENDPOINT_PORT
-      value: "443"
     - name: HEALTH_VPN_DURATION_INITIAL
       value: "10s"
     - name: HEALTH_VPN_DURATION_ADDITION
