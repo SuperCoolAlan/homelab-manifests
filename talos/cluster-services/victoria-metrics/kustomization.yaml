@@ -403,16 +403,20 @@ helmCharts:
 #     files:
 #       - dashboards/Security/falco.json
 # 
-#   - name: dashboard-trivy-operator
-#     namespace: monitoring
-#     options:
-#       disableNameSuffixHash: true
-#       labels:
-#         grafana_dashboard: "1"
-#       annotations:
-#         grafana_folder: "Security"
-#     files:
-#       - dashboards/Security/trivy-operator.json
+# Custom dashboards temporarily disabled
+# (trivy-operator re-enabled below)
+
+configMapGenerator:
+  - name: dashboard-trivy-operator
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Security"
+    files:
+      - dashboards/Security/trivy-operator.json
 # 
 #   # Starlink
 #   - name: dashboard-starlink
