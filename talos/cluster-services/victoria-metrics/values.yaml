@@ -148,6 +148,9 @@ alertmanager:
 # Operator settings - convert Prometheus ServiceMonitors
 victoria-metrics-operator:
   enabled: true
+  crds:
+    plain: false
+    enabled: true
   operator:
     disable_prometheus_converter: false
   nodeSelector:
