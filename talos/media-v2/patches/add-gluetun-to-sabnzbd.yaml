@@ -44,7 +44,7 @@
         command:
         - /bin/sh
         - -c
-        - nslookup news.eweka.nl 127.0.0.1 > /dev/null 2>&1
+        - nslookup news.newshosting.com 127.0.0.1 > /dev/null 2>&1 && nslookup news.eweka.nl 127.0.0.1 > /dev/null 2>&1
       initialDelaySeconds: 5
       periodSeconds: 3
       failureThreshold: 20
