@@ -1,4 +1,3 @@
 # CloudNativePG Operator values
-# CRDs disabled - managed separately via server-side apply
 crds:
-  create: false
+  create: true
