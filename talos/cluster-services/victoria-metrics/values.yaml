@@ -116,9 +116,10 @@ vmagent:
         memory: 128Mi
       limits:
         memory: 512Mi
-    additionalScrapeConfigs:
-      name: vm-additional-scrape-configs
-      key: prometheus-additional.yaml
+    # additionalScrapeConfigs temporarily disabled
+    # additionalScrapeConfigs:
+    #   name: vm-additional-scrape-configs
+    #   key: prometheus-additional.yaml
 
 # VMAlert for alerting rules
 vmalert:
