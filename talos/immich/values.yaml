@@ -37,13 +37,11 @@ server:
     main:
       enabled: false
 
-# Persist ML model cache across restarts (chart defaults to emptyDir)
+# ML model cache - using emptyDir (no dynamic PV provisioner available)
+# Models will re-download on pod restart but avoids PVC binding issues
 machine-learning:
   enabled: true
   persistence:
     cache:
       enabled: true
-      size: 10Gi
-      type: persistentVolumeClaim
-      accessMode: ReadWriteOnce
-      storageClass: nfs
+      type: emptyDir
