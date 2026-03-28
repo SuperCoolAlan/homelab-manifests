@@ -7,10 +7,11 @@
     nameservers:
       - 10.96.0.10
 - op: add
-  path: /spec/template/spec/containers/-
+  path: /spec/template/spec/initContainers/0
   value:
     name: gluetun
     image: qmcgaw/gluetun:latest
+    restartPolicy: Always
     imagePullPolicy: Always
     env:
     - name: BLOCK_MALICIOUS
@@ -38,6 +39,15 @@
     envFrom:
     - secretRef:
         name: windscribe-wireguard-creds
+    startupProbe:
+      exec:
+        command:
+        - /bin/sh
+        - -c
+        - nslookup news.eweka.nl 127.0.0.1 > /dev/null 2>&1
+      initialDelaySeconds: 5
+      periodSeconds: 3
+      failureThreshold: 20
     securityContext:
       capabilities:
         add:
