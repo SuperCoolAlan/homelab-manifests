@@ -1,5 +1,5 @@
 - op: replace
-  path: /spec/template/spec/initContainers/0/args/1
+  path: /spec/template/spec/initContainers/1/args/1
   value: |
     #!/bin/sh
     # Copy config template
@@ -16,7 +16,7 @@
 
     echo "Password substitution completed"
 - op: add
-  path: /spec/template/spec/initContainers/0/env
+  path: /spec/template/spec/initContainers/1/env
   value:
     - name: ewekaPassword
       valueFrom:
