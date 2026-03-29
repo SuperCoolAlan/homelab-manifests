@@ -1,0 +1,9 @@
+- op: add
+  path: /spec/template/spec/containers/0/lifecycle
+  value:
+    postStart:
+      exec:
+        command:
+        - /bin/sh
+        - -c
+        - apk add --no-cache unrar 7zip

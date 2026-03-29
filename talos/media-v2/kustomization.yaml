@@ -26,6 +26,10 @@ patches:
     kind: Deployment
     name: sabnzbd
   path: patches/sabnzbd-envsubst-init.yaml
+- target:
+    kind: Deployment
+    name: sonarr
+  path: patches/sonarr-install-unrar.yaml
 
 helmCharts:
 - name: sonarr
