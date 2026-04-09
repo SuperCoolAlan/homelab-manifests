@@ -33,7 +33,8 @@ gluetun:
     HEALTH_VPN_DURATION_ADDITION: "5s"
     FIREWALL: "off"
     FIREWALL_OUTBOUND_SUBNETS: "10.0.0.0/8"
-    FIREWALL_INPUT_PORTS: "8080,6881"
+    FIREWALL_INPUT_PORTS: "8080,12802"
+    FIREWALL_VPN_INPUT_PORTS: "12802"
 
 # Persistence
 persistence:
@@ -63,7 +64,7 @@ webService:
 # BitTorrent Service
 btService:
   type: ClusterIP
-  port: 6881
+  port: 12802
 
 # Ingress
 ingress:
