@@ -1,27 +1,4 @@
-# Legacy nginx ingress - keep during migration
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: argocd-server-ingress
-  namespace: argocd
-  annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: HTTP
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: argo.asandov.local
-    http:
-      paths:
-      - backend:
-          service:
-            name: talos-argo-argocd-server
-            port:
-              number: 80
-        path: /
-        pathType: Prefix
----
-# New local.asandov.com ingress with Let's Encrypt TLS
+# Traefik ingress with Let's Encrypt TLS
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
