@@ -1,7 +1,7 @@
 csiDriver:
   name: "nfs"
 storageClasses:
-- name: nfs
+- name: truenas-nfs
   defaultClass: false
   reclaimPolicy: Delete
   volumeBindingMode: Immediate
@@ -19,7 +19,7 @@ storageClasses:
     node-publish-secret:
     controller-expand-secret:
 volumeSnapshotClasses:
-- name: nfs
+- name: truenas-nfs
   parameters:
     detachedSnapshots: "true"
 
