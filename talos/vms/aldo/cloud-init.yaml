@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aldo-cloud-init
+  namespace: vms
+type: Opaque
+stringData:
+  userdata: |
+    #cloud-config
+    hostname: aldo-vm
+    fqdn: aldo-vm.vms.local
+
+    users:
+      - name: aldo
+        gecos: Aldo
+        shell: /bin/bash
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        lock_passwd: true
+        # Break-glass key for when Cloudflare Access is unavailable.
+        # Primary auth path is Cloudflare-issued short-lived SSH certs via TrustedUserCAKeys.
+        ssh_authorized_keys:
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJe4Lq/oaS8s/1cG+7AVYRkew1xodn1cNKZHoza39VRx asandov@asandov.com"
+
+    write_files:
+      - path: /etc/ssh/cloudflare_ca.pub
+        permissions: '0644'
+        owner: root:root
+        content: |
+          REPLACE_ME_WITH_CF_ACCESS_SSH_CA_PUBKEY
+      - path: /etc/ssh/sshd_config.d/10-cloudflare-access.conf
+        permissions: '0644'
+        owner: root:root
+        content: |
+          TrustedUserCAKeys /etc/ssh/cloudflare_ca.pub
+          PasswordAuthentication no
+          ChallengeResponseAuthentication no
+          PubkeyAuthentication yes
+
+    package_update: true
+    packages:
+      - qemu-guest-agent
+      - htop
+      - vim
+      - curl
+      - tmux
+
+    runcmd:
+      - systemctl enable --now qemu-guest-agent
+      - systemctl restart ssh
