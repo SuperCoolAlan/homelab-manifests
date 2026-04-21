@@ -1,0 +1,21 @@
+# Tunnel token is supplied via a SOPS-encrypted Secret (name: cloudflared-aldo-ssh, key: tunnelToken).
+# The chart's built-in secret template was removed so we can provide our own.
+cloudflare:
+  tunnel_token: ""
+
+# Pin to a specific cloudflared release.
+# https://github.com/cloudflare/cloudflared/releases
+image:
+  tag: "2026.1.1"
+
+fullnameOverride: cloudflared-aldo-ssh
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
