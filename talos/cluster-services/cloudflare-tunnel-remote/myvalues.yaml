@@ -1,4 +1,4 @@
-# Tunnel token is supplied via a SOPS-encrypted Secret (name: cloudflared-aldo-ssh, key: tunnelToken).
+# Tunnel token is supplied via a SOPS-encrypted Secret (name: cloudflare-tunnel-remote, key: tunnelToken).
 # The chart's built-in secret template was removed so we can provide our own.
 cloudflare:
   tunnel_token: ""
@@ -8,7 +8,7 @@ cloudflare:
 image:
   tag: "2026.1.1"
 
-fullnameOverride: cloudflared-aldo-ssh
+fullnameOverride: cloudflare-tunnel-remote
 
 replicaCount: 2
 
