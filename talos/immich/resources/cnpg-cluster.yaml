@@ -7,33 +7,21 @@ spec:
   instances: 1
   imageName: ghcr.io/tensorchord/cloudnative-vectorchord:17.7
   bootstrap:
-    recovery:
-      source: immich-postgres-b2
-  externalClusters:
-    - name: immich-postgres-b2
-      barmanObjectStore:
-        serverName: immich-postgres
-        destinationPath: s3://immich-asandov/cnpg/
-        endpointURL: https://s3.us-west-004.backblazeb2.com
-        s3Credentials:
-          accessKeyId:
-            name: cnpg-b2-credentials
-            key: ACCESS_KEY_ID
-          secretAccessKey:
-            name: cnpg-b2-credentials
-            key: ACCESS_SECRET_KEY
-        wal:
-          compression: gzip
-        data:
-          compression: gzip
+    initdb:
+      database: immich
+      owner: immich
+      dataChecksums: true
+      encoding: UTF8
+      postInitSQL:
+        - CREATE EXTENSION IF NOT EXISTS cube CASCADE;
+        - CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE;
+        - CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
   postgresql:
     shared_preload_libraries:
       - "vchord.so"
   storage:
     size: 5Gi
     storageClass: immich-cnpg
-  # Ongoing backup → new asandov-cnpg bucket. Old bucket (immich-asandov/cnpg/)
-  # remains read-only archive accessible via externalClusters for any future recovery.
   backup:
     barmanObjectStore:
       destinationPath: s3://asandov-cnpg/
