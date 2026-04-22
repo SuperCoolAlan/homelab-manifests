@@ -10,11 +10,12 @@ spec:
   pvc:
     accessModes:
       - ReadWriteOnce
-    # Block mode avoids NFS filesystem-permission issues (virt-launcher can't chown
-    # files on an NFS share with shareMaproot=truenas_admin). democratic-csi creates
-    # a sparse file on NFS and loopback-mounts it as a raw block device.
-    volumeMode: Block
+    volumeMode: Filesystem
     resources:
       requests:
         storage: 100Gi
-    storageClassName: truenas-nfs
+    # Static binding to the pre-provisioned NFS PV that has permissive
+    # root mapping (needed for virt-launcher to chown the disk file).
+    # Keeps permissive NFS settings scoped to this one share.
+    storageClassName: nfs
+    volumeName: aldo-rootdisk-pv
