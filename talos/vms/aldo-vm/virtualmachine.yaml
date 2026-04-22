@@ -13,6 +13,7 @@ spec:
         kubevirt.io/vm: aldo
         app: aldo-vm
     spec:
+      architecture: amd64
       nodeSelector:
         kubernetes.io/hostname: talos-ramhaus
       domain:

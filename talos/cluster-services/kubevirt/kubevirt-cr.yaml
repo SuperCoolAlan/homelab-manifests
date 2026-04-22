@@ -11,3 +11,7 @@ spec:
   configuration:
     developerConfiguration:
       useEmulation: false
+      featureGates:
+        # Required to pin a VM to a specific architecture when the cluster
+        # has mixed architectures (talos-blackbox arm64, talos-ramhaus amd64).
+        - MultiArchitecture
