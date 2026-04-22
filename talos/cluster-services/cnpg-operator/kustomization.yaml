@@ -5,6 +5,10 @@ namespace: cnpg-system
 
 resources:
   - namespace.yaml
+  # CNPG Barman Cloud plugin v0.12.0 — replaces the deprecated in-tree
+  # barmanObjectStore. Vendored locally because the cluster has IPv6
+  # reachability issues to GitHub release assets.
+  - charts/plugin-barman-cloud/v0.12.0/manifest.yaml
 
 helmCharts:
   - name: cloudnative-pg
