@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: aldo-rootdisk-pv
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  volumeMode: Filesystem
+  # Pre-bound to the VM's DataVolume-generated PVC so CDI uses this specific share.
+  claimRef:
+    namespace: vms
+    name: aldo-rootdisk
+  nfs:
+    server: truenas.asandov.local
+    path: /mnt/ST6000NM0095-pool0/media/nfs/vms/aldo-rootdisk
