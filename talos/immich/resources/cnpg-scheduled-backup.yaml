@@ -4,7 +4,10 @@ metadata:
   name: immich-postgres-daily
   namespace: immich
 spec:
-  schedule: "0 2 * * *"
+  # 6-field cron (sec min hour dom mon dow) — CNPG's parser expects 6 fields.
+  # A 5-field expression like "0 2 * * *" gets read as sec=0 min=2 hour=* …
+  # which fires hourly at HH:02. See docs/backup-and-recovery.md pitfalls.
+  schedule: "0 0 2 * * *"
   backupOwnerReference: self
   cluster:
     name: immich-postgres
