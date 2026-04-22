@@ -22,21 +22,13 @@ spec:
   storage:
     size: 5Gi
     storageClass: immich-cnpg
-  backup:
-    barmanObjectStore:
-      destinationPath: s3://asandov-cnpg/
-      endpointURL: https://s3.us-west-004.backblazeb2.com
-      s3Credentials:
-        accessKeyId:
-          name: cnpg-b2-asandov-credentials
-          key: ACCESS_KEY_ID
-        secretAccessKey:
-          name: cnpg-b2-asandov-credentials
-          key: ACCESS_SECRET_KEY
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
-    retentionPolicy: "30d"
+  # Backup via the barman-cloud CNPG plugin (replaces deprecated in-tree
+  # spec.backup.barmanObjectStore, which is removed in CNPG 1.29).
+  # Destination + credentials live in the ObjectStore CR `immich-postgres-store`.
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: immich-postgres-store
   nodeMaintenanceWindow:
     inProgress: false
