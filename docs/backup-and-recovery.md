@@ -61,10 +61,27 @@ file is the only way back.
 - [x] Delete k8s Secrets `cnpg-b2-credentials` and `volsync-restic-b2`
 - [x] Delete B2 bucket `immich-asandov` and its app key `...000000001`
 - [x] Wipe `/data/backups/*.sql.gz` on the `immich-library` PVC (≈ 414 MiB reclaimed; 14 pre-recovery dumps)
+- [x] Resolve the 2026-03-16 WAL archiver incident — origin precedes the full-cluster tear-down and redeploy (see "Incident timeline" below). No further forensics possible since the observability stack was rebuilt along with the cluster.
 
-### Still open
+### Nice-to-do (not blocking)
 
-- [ ] Investigate why WAL archiver broke around 2026-03-16 (root cause of the broken backup pipeline that preceded the Apr 10 DB wipe)
+- [ ] Delete the zombie `cnpg-controller-manager` deployment in `cnpg-system`. Two CNPG operators (`cnpg-cloudnative-pg` helm-managed + `cnpg-controller-manager` bare manifest) are reconciling the same Cluster CRs — split-brain risk. `cnpg-controller-manager` is the stray; leftover from the post-incident rebuild.
+
+## Incident timeline (2026-03-16 → 2026-04-22)
+
+| Date (UTC) | What | Source |
+|---|---|---|
+| 2026-03-06 02:00 | Last Immich in-app pg_dump lands in `/data/backups` | filesystem mtimes |
+| 2026-03-15 19:39 | Last successful Immich photo ingest (last new file in `/data/thumbs` + `/data/encoded-video`) | filesystem mtimes |
+| 2026-03-15 19:28 | Last VolSync Restic snapshot to B2 | restic snapshot list |
+| 2026-03-16 01:07 – 01:29 | **12 CNPG base backups in 22 minutes** (~2 min apart) — CNPG operator reconcile-storm or retry loop, origin never identified (logs gone) | B2 object timestamps (since deleted) |
+| 2026-03-16 01:40 | Last successful WAL archive (`000000010000000700000008`). Pipeline stops. | B2 object timestamps (since deleted) |
+| ~2026-03-22 | Full cluster tear-down and redeploy. CNPG operator recreated (helm, chart `cloudnative-pg-0.27.0`). Static NFS PVs hand-rebound to pre-existing TrueNAS paths. | deployment creationTimestamp |
+| 2026-03-27 | `monitoring` namespace recreated (Victoria Metrics/Logs rebuilt). Pre-incident log retention lost. | namespace creationTimestamp |
+| 2026-03-28 | Stray `cnpg-controller-manager` deployment appears (bare manifest install, not ArgoCD/Helm). Not cleaned up. | deployment creationTimestamp |
+| 2026-04-10 20:04 | `immich-postgres-1` pod recreated with empty data dir — DB wipe event. Immich boots into `select_database_restore` maintenance mode, starts crashlooping the startup probe. | pod creationTimestamp, maintenance-status API |
+| 2026-04-21 | Incident recovery: barman PITR from `immich-asandov/cnpg/` into new local PV; password reconciled; backup re-pointed at new `asandov-cnpg` bucket; TrueNAS cloud_backup stood up for photos. | this doc |
+| 2026-04-22 | Cleanup: ScheduledBackup cron fixed (6-field), stale secrets + VolSync retired, `immich-asandov` bucket deleted, old pg_dumps wiped. | this doc |
 
 ### Deferred (after this cleanup)
 
