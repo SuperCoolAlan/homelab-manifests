@@ -5,8 +5,10 @@ metadata:
   namespace: vms
 spec:
   source:
-    http:
-      url: https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img
+    # Pre-converted raw disk image from the kubevirt containerdisks project.
+    # Avoids CDI's http→qemu-img-convert path which was failing on NFS scratch.
+    registry:
+      url: "docker://quay.io/containerdisks/ubuntu:24.04"
   pvc:
     accessModes:
       - ReadWriteOnce
