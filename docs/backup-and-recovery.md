@@ -1,7 +1,7 @@
 # Backup & Recovery
 
-Backup layering, B2 buckets, retention, current state, and the running TODO
-list for cleanup after the 2026-04-21 Immich recovery.
+Backup layering, B2 buckets, retention, current state, and the TODO
+list for follow-up work after the 2026-04-21 Immich recovery.
 
 ## Layered model
 
@@ -24,7 +24,10 @@ application-aware backup (barman-cloud / pg_dump) for DBs.
 |---|---|---|---|---|
 | `asandov-cnpg` | CNPG barman destination | `004b93bd8d0e47d0000000003` | scoped write | `talos/immich/secrets/b2-asandov-cnpg-credentials.enc.yaml` |
 | `asandov-truenas` | TrueNAS cloud_backup + cloud_sync destination | `004b93bd8d0e47d0000000004` | scoped write + listAllBucketNames | TrueNAS cred id=2 (`b2-asandov-truenas-s3`, S3-compat type) |
-| `immich-asandov` | **legacy** — CNPG barman pre-2026-04-21 + VolSync Restic of photos | `004b93bd8d0e47d0000000001` | scoped write | `talos/immich/secrets/b2-credentials.enc.yaml` (still referenced by `externalClusters`) |
+
+The original `immich-asandov` bucket + its app key `004b93bd8d0e47d0000000001`
+were deleted on 2026-04-22 after the new buckets took over. No live
+references remain — don't recreate it.
 
 Restic repository password for the TrueNAS cloud_backup:
 `truenas/secrets/b2-restic-immich-pw.enc.yaml` (SOPS, project GPG key).
@@ -41,24 +44,27 @@ file is the only way back.
 | TrueNAS ZFS snapshot — `media/nfs/v` (task id=2, recursive + exclude `pvc-58505e09-…`) | TrueNAS `pool.snapshottask` | every 6h | 30d | pool-local only |
 | TrueNAS cloud_backup — `immich-photos/v1` (task id=1, restic, via S3-compat cred id=2) | TrueNAS `cloud_backup` | `0 3 * * *` (03:00 UTC) | `keep_last=30` | `s3://asandov-truenas/immich-photos/` |
 
-## TODOs (in-flight cleanup after the 2026-04-21 recovery)
+## TODOs
+
+### Done during the 2026-04-21 → 2026-04-22 recovery + cleanup
 
 - [x] Recover Immich DB from `immich-asandov/cnpg/` (barman PITR to ~2026-03-16 01:40 UTC, 3907 live assets)
 - [x] Reset admin password via `immich-admin reset-admin-password`
 - [x] Re-point ongoing CNPG backup to new `asandov-cnpg` bucket; manual base backup confirmed
-- [x] Create TrueNAS cloud_backup task + seed run (running at time of writing)
+- [x] Create TrueNAS cloud_backup task + seed run (finished successfully; 20.83 GiB in restic repo, 2 snapshots)
 - [x] Create TrueNAS periodic ZFS snapshot tasks (immich-photos + media/nfs/v)
 - [x] SOPS-encrypt restic password DR artifact
-- [x] Commit Immich manifest state to `main` (commit `0b3e115`)
 - [x] Disable Immich in-app nightly DB dumps (user handled in admin UI)
-- [ ] **Wait for seed cloud_backup run to complete** (≈21 GiB over WAN; ETA ≈2 h from start)
-- [ ] Verify restic snapshot exists and is restorable from B2
-- [ ] Delete VolSync `ReplicationSource immich-library-backup` (manifest + ArgoCD)
-- [ ] Delete old B2 prefix `s3://immich-asandov/photos-restic/` (≈11.8 GiB)
-- [ ] Keep `immich-asandov/cnpg/` as read-only archive OR delete entirely once we're confident in the new bucket (holds WAL up to 2026-03-16 + pre-recovery base backups)
-- [ ] Decide whether to keep the `externalClusters` pointer to `immich-asandov/cnpg/` long-term (valuable only if we want to roll further back than new-bucket history allows)
-- [ ] Optionally delete `/data/backups/*.sql.gz` on `immich-library` PVC once TrueNAS cloud_backup has indexed them
-- [ ] Investigate why `pg_dump` timeouts/WAL archiver broke around 2026-03-16 (root cause of the broken backup pipeline that preceded the Apr 10 DB wipe)
+- [x] Fix CNPG `ScheduledBackup` cron to 6-field form (`0 0 2 * * *`) — was firing hourly
+- [x] Delete VolSync `ReplicationSource immich-library-backup` + manifest + old secret
+- [x] Drop `externalClusters` block from `cnpg-cluster.yaml`; live cluster patched to match
+- [x] Delete k8s Secrets `cnpg-b2-credentials` and `volsync-restic-b2`
+- [x] Delete B2 bucket `immich-asandov` and its app key `...000000001`
+
+### Still open
+
+- [ ] Delete `/data/backups/*.sql.gz` on the `immich-library` PVC (≈ 414 MiB) — redundant with CNPG barman; covered by TrueNAS cloud_backup dedup for now but wastes storage
+- [ ] Investigate why WAL archiver broke around 2026-03-16 (root cause of the broken backup pipeline that preceded the Apr 10 DB wipe)
 
 ### Deferred (after this cleanup)
 
@@ -77,13 +83,14 @@ file is the only way back.
 3. `kubectl -n immich delete pvc -l cnpg.io/cluster=immich-postgres`
 4. `kubectl patch pv immich-postgres-pv --type=json -p='[{"op":"remove","path":"/spec/claimRef"}]'`
 5. Edit `talos/immich/resources/cnpg-cluster.yaml`:
-   - Replace `bootstrap.initdb` with `bootstrap.recovery.source: immich-postgres-b2` (reference the existing `externalClusters` block).
+   - Replace `bootstrap.initdb` with `bootstrap.recovery.source: immich-postgres-b2`.
+   - Add an `externalClusters` entry named `immich-postgres-b2` pointing at `s3://asandov-cnpg/` with `serverName: immich-postgres` and `cnpg-b2-asandov-credentials` as the secret ref.
    - **Comment out** the `backup:` block. CNPG refuses to start if the ongoing-backup destination already contains WAL from the cluster being recovered — see "Pitfalls" below.
 6. `kubectl apply -f talos/immich/resources/cnpg-cluster.yaml` (Argo paused).
 7. Wait for `status.phase` = `Cluster in healthy state` (≈90s).
-8. Re-enable and point the `backup:` block at the **new** `asandov-cnpg` bucket (with its own secret); `kubectl apply` again.
+8. Re-enable the `backup:` block (unchanged — it already points at `asandov-cnpg`); `kubectl apply` again. Then remove `bootstrap.recovery` and `externalClusters` by JSON patch (CNPG won't let `kubectl apply` replace them cleanly): `kubectl patch cluster immich-postgres --type=json -p='[{"op":"remove","path":"/spec/bootstrap/recovery"},{"op":"add","path":"/spec/bootstrap/initdb","value":{…}},{"op":"remove","path":"/spec/externalClusters"}]'`.
 9. `ALTER USER immich WITH PASSWORD '<secret>';` — CNPG restores the OLD password hash from barman; the k8s Secret was rotated post-init, so the two drift. Apply the current secret value into `pg_authid`.
-10. Scale immich-server back to 1; reset the Immich admin password if needed.
+10. Scale immich-server back to 1; reset the Immich admin password via `immich-admin reset-admin-password` if needed.
 11. Commit the final manifest state to `main`.
 
 ### TrueNAS ZFS rollback (same pool)
