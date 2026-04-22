@@ -10,7 +10,7 @@ double-coverage; each byte gets stored once per location.
 
 | Data type | Local tier | Offsite tier |
 |---|---|---|
-| Postgres DBs on CNPG (k8s) | *(none — PV is on local NVMe, not ZFS)* | CNPG `barman-cloud` → `asandov-cnpg` |
+| Postgres DBs on CNPG (k8s) | *(none — PV is on local NVMe, not ZFS)* | CNPG plugin `barman-cloud.cloudnative-pg.io` → `asandov-cnpg` |
 | Postgres DB on TrueNAS (Authentik, future) | `pg_dump` cron (local, short retention) | `pg_dump` pushed to `asandov-truenas` (separate prefix) |
 | NFS-backed files (photos, *arr configs, etc.) | TrueNAS periodic ZFS snapshots | TrueNAS `cloud_backup` (restic) → `asandov-truenas` |
 | Bulk/re-obtainable (downloads, media library) | none | none |
@@ -22,7 +22,7 @@ application-aware backup (barman-cloud / pg_dump) for DBs.
 
 | Bucket | Purpose | B2 keyID | Key capability | Where the secret lives |
 |---|---|---|---|---|
-| `asandov-cnpg` | CNPG barman destination | `004b93bd8d0e47d0000000003` | scoped write | `talos/immich/secrets/b2-asandov-cnpg-credentials.enc.yaml` |
+| `asandov-cnpg` | CNPG `ObjectStore` destination (plugin-barman-cloud) | `004b93bd8d0e47d0000000003` | scoped write | `talos/immich/secrets/b2-asandov-cnpg-credentials.enc.yaml` |
 | `asandov-truenas` | TrueNAS cloud_backup + cloud_sync destination | `004b93bd8d0e47d0000000004` | scoped write + listAllBucketNames | TrueNAS cred id=2 (`b2-asandov-truenas-s3`, S3-compat type) |
 
 The original `immich-asandov` bucket + its app key `004b93bd8d0e47d0000000001`
@@ -38,8 +38,8 @@ file is the only way back.
 
 | Task | Where | Cadence | Retention | Destination |
 |---|---|---|---|---|
-| CNPG WAL archiving (`immich-postgres`) | k8s (CNPG instance) | continuous, cap 5 min (`archive_timeout`) | 30d | `s3://asandov-cnpg/immich-postgres/wals/` |
-| CNPG daily base backup (`ScheduledBackup immich-postgres-daily`) | k8s | `0 2 * * *` (02:00 UTC) | 30d | `s3://asandov-cnpg/immich-postgres/base/` |
+| CNPG WAL archiving (via plugin sidecar in `immich-postgres-1`) | k8s (`plugin-barman-cloud` sidecar) | continuous, cap 5 min (`archive_timeout`) | 30d (ObjectStore `retentionPolicy`) | `s3://asandov-cnpg/immich-postgres/wals/` |
+| CNPG daily base backup (`ScheduledBackup immich-postgres-daily`, `method: plugin`) | k8s | `0 0 2 * * *` (02:00 UTC, 6-field cron) | 30d | `s3://asandov-cnpg/immich-postgres/base/` |
 | TrueNAS ZFS snapshot — `immich-photos` (task id=1, recursive) | TrueNAS `pool.snapshottask` | every 6h | 30d | pool-local only |
 | TrueNAS ZFS snapshot — `media/nfs/v` (task id=2, recursive + exclude `pvc-58505e09-…`) | TrueNAS `pool.snapshottask` | every 6h | 30d | pool-local only |
 | TrueNAS cloud_backup — `immich-photos/v1` (task id=1, restic, via S3-compat cred id=2) | TrueNAS `cloud_backup` | `0 3 * * *` (03:00 UTC) | `keep_last=30` | `s3://asandov-truenas/immich-photos/` |
@@ -63,6 +63,8 @@ file is the only way back.
 - [x] Wipe `/data/backups/*.sql.gz` on the `immich-library` PVC (≈ 414 MiB reclaimed; 14 pre-recovery dumps)
 - [x] Resolve the 2026-03-16 WAL archiver incident — origin precedes the full-cluster tear-down and redeploy (see "Incident timeline" below). No further forensics possible since the observability stack was rebuilt along with the cluster.
 - [x] Delete the zombie `cnpg-controller-manager` deployment in `cnpg-system` (plus its `cnpg-manager` SA, ClusterRole, and ClusterRoleBinding). Helm-managed `cnpg-cloudnative-pg` is now the sole operator.
+- [x] Migrate Immich CNPG from in-tree `spec.backup.barmanObjectStore` to plugin-barman-cloud v0.12.0. Plugin manifest vendored at `talos/cluster-services/cnpg-operator/charts/plugin-barman-cloud/v0.12.0/manifest.yaml`. New `ObjectStore immich-postgres-store` + `spec.plugins` wired up; ScheduledBackup switched to `method: plugin`. Verified with manual backup `20260422T202035`.
+- [x] Fix `immich-postgres-app` secret `username` field (`app` → `immich`) to match Cluster's `bootstrap.initdb.owner`. CNPG instance-manager was spamming reconciler errors rotating the password until the fields agreed.
 
 ## Incident timeline (2026-03-16 → 2026-04-22)
 
@@ -79,12 +81,12 @@ file is the only way back.
 | 2026-04-10 20:04 | `immich-postgres-1` pod recreated with empty data dir — DB wipe event. Immich boots into `select_database_restore` maintenance mode, starts crashlooping the startup probe. | pod creationTimestamp, maintenance-status API |
 | 2026-04-21 | Incident recovery: barman PITR from `immich-asandov/cnpg/` into new local PV; password reconciled; backup re-pointed at new `asandov-cnpg` bucket; TrueNAS cloud_backup stood up for photos. | this doc |
 | 2026-04-22 | Cleanup: ScheduledBackup cron fixed (6-field), stale secrets + VolSync retired, `immich-asandov` bucket deleted, old pg_dumps wiped. | this doc |
+| 2026-04-22 (later) | CNPG backup migrated to plugin-barman-cloud v0.12.0. `spec.backup.barmanObjectStore` removed; `ObjectStore` CR + `spec.plugins` in place. Primary restarted once to inject the sidecar. Manual backup `20260422T202035` confirmed the new path writes to `asandov-cnpg`. | this doc |
 
 ### Deferred (after this cleanup)
 
 - [ ] Set up Authentik OIDC for Immich login (waiting on Authentik stability)
 - [ ] Migrate Authentik postgres to its own dedicated TrueNAS dataset + pg_dump→B2 cron
-- [ ] Migrate CNPG `Cluster` spec away from native `barmanObjectStore` (deprecated in CNPG 1.29) to the Barman Cloud Plugin
 - [ ] Democratic-csi split: two helm releases with separate parent datasets (configs vs bulk) so new PVCs auto-partition
 - [ ] Keep ArgoCD auto-sync **off** for `immich` — per user policy, never auto-enable
 
@@ -92,20 +94,23 @@ file is the only way back.
 
 ### CNPG Postgres (PITR from B2)
 
+With the plugin now installed, recovery uses `externalClusters` that reference the ObjectStore indirectly via the plugin. Current manifest (`bootstrap.initdb` + `spec.plugins`) is the from-scratch-start shape; for PITR, the manifest needs a **temporary edit** to swap bootstrap + add an externalCluster that knows how to talk to the plugin.
+
 1. Scale immich-server to 0; pause ArgoCD sync on `immich`.
 2. `kubectl -n immich delete clusters.postgresql.cnpg.io immich-postgres`
 3. `kubectl -n immich delete pvc -l cnpg.io/cluster=immich-postgres`
 4. `kubectl patch pv immich-postgres-pv --type=json -p='[{"op":"remove","path":"/spec/claimRef"}]'`
 5. Edit `talos/immich/resources/cnpg-cluster.yaml`:
    - Replace `bootstrap.initdb` with `bootstrap.recovery.source: immich-postgres-b2`.
-   - Add an `externalClusters` entry named `immich-postgres-b2` pointing at `s3://asandov-cnpg/` with `serverName: immich-postgres` and `cnpg-b2-asandov-credentials` as the secret ref.
-   - **Comment out** the `backup:` block. CNPG refuses to start if the ongoing-backup destination already contains WAL from the cluster being recovered — see "Pitfalls" below.
+   - Add an `externalClusters` entry named `immich-postgres-b2` — same shape as the current `spec.plugins`, but under `externalClusters.*.plugin` with `parameters.barmanObjectName: immich-postgres-store` (the already-deployed ObjectStore CR). Ensure the ObjectStore is still in-cluster first; it doesn't need replacing.
+   - **Comment out** the `spec.plugins` block for the duration. CNPG refuses to start if the ongoing-archive destination already contains WAL from the cluster being recovered — see "Pitfalls" below. (Plugin semantics are the same as the old in-tree "Expected empty archive" check.)
 6. `kubectl apply -f talos/immich/resources/cnpg-cluster.yaml` (Argo paused).
-7. Wait for `status.phase` = `Cluster in healthy state` (≈90s).
-8. Re-enable the `backup:` block (unchanged — it already points at `asandov-cnpg`); `kubectl apply` again. Then remove `bootstrap.recovery` and `externalClusters` by JSON patch (CNPG won't let `kubectl apply` replace them cleanly): `kubectl patch cluster immich-postgres --type=json -p='[{"op":"remove","path":"/spec/bootstrap/recovery"},{"op":"add","path":"/spec/bootstrap/initdb","value":{…}},{"op":"remove","path":"/spec/externalClusters"}]'`.
-9. `ALTER USER immich WITH PASSWORD '<secret>';` — CNPG restores the OLD password hash from barman; the k8s Secret was rotated post-init, so the two drift. Apply the current secret value into `pg_authid`.
-10. Scale immich-server back to 1; reset the Immich admin password via `immich-admin reset-admin-password` if needed.
-11. Commit the final manifest state to `main`.
+7. Wait for `status.phase` = `Cluster in healthy state` (≈90s + plugin sidecar first-pull, see Pitfall #8 if the node hasn't pulled the sidecar image).
+8. Restore the `spec.plugins` block (unchanged from pre-recovery); `kubectl apply` again. Then remove `bootstrap.recovery` and `externalClusters` by JSON patch (CNPG won't let `kubectl apply` replace them cleanly): `kubectl patch cluster immich-postgres --type=json -p='[{"op":"remove","path":"/spec/bootstrap/recovery"},{"op":"add","path":"/spec/bootstrap/initdb","value":{…}},{"op":"remove","path":"/spec/externalClusters"}]'`.
+9. `ALTER USER immich WITH PASSWORD '<secret>';` — CNPG restores the OLD password hash from the backup; the k8s Secret was rotated post-init, so the two drift. Apply the current secret value into `pg_authid`.
+10. Also verify `immich-postgres-app` secret `username: immich` (see Pitfall #7).
+11. Scale immich-server back to 1; reset the Immich admin password via `immich-admin reset-admin-password` if needed.
+12. Commit the final manifest state to `main`.
 
 ### TrueNAS ZFS rollback (same pool)
 
@@ -134,3 +139,5 @@ zfs rollback -r <pool>/<dataset>@<snap-name>
 4. **TrueNAS cloud_backup and B2**: `cloud_backup` (restic-based) does *not* support the native B2 rclone backend (`NotImplementedError`). Use the **S3-compatible endpoint** (`https://s3.us-west-<region>.backblazeb2.com`) with provider type `S3` instead. Credential region: `us-west-004`.
 5. **Interactive `immich-admin` CLI**: `reset-admin-password` prompts for a new password. Piping a single word via `<<<'y'` sets the literal password to that word — pipe the real desired password or a strong random one.
 6. **CNPG `ScheduledBackup` uses 6-field cron** (`sec min hour dom mon dow`), not the 5-field standard. A 5-field `0 2 * * *` gets parsed as `sec=0 min=2 hour=*` → fires every hour at `HH:02`. Caught this 2026-04-22 after the 2026-04-21 recovery: 9 unnecessary base backups in 9 h. Same bug caused the "12 base backups in 22 min" on 2026-03-16 that we initially flagged as a crash loop. Use e.g. `"0 0 2 * * *"` for daily 02:00 UTC.
+7. **CNPG app secret `username` must match `bootstrap.initdb.owner`**. CNPG auto-generates `<cluster>-app` with `username: app` by default. If your Cluster spec sets a custom owner (e.g. `immich`), you MUST also set `stringData.username: immich` in the secret. Otherwise the instance-manager spams `"while updating database owner password: wrong username 'app' in secret, expected 'immich'"` every reconcile and cannot rotate the role password. Fix: `kubectl -n <ns> patch secret <cluster>-app -p '{"data":{"username":"<base64>"}}'`.
+8. **First plugin backup restart pulls a ~100 MB sidecar image**. Switching a Cluster to `spec.plugins.[].name=barman-cloud.cloudnative-pg.io` makes CNPG restart the primary to inject a `plugin-barman-cloud` sidecar (image `ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar:vX.Y.Z`, ~100 MiB). First-time pull added ~40s to the pod start in our case. Shows as "Primary instance is being restarted without a switchover" with the pod in `PodInitializing` — this is normal. Don't panic-delete the cluster.
