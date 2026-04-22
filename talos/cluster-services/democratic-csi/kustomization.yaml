@@ -6,6 +6,7 @@ kind: Kustomization
 # TODO: verify v8.2.0 is the current stable release before merging.
 # https://github.com/kubernetes-csi/external-snapshotter/releases
 resources:
+  - namespace.yaml
   - github.com/kubernetes-csi/external-snapshotter/client/config/crd?ref=v8.2.0
   - github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v8.2.0
 
