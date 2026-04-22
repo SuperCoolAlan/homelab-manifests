@@ -10,6 +10,10 @@ spec:
   pvc:
     accessModes:
       - ReadWriteOnce
+    # Block mode avoids NFS filesystem-permission issues (virt-launcher can't chown
+    # files on an NFS share with shareMaproot=truenas_admin). democratic-csi creates
+    # a sparse file on NFS and loopback-mounts it as a raw block device.
+    volumeMode: Block
     resources:
       requests:
         storage: 100Gi
