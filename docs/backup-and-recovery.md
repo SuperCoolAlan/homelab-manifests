@@ -60,10 +60,10 @@ file is the only way back.
 - [x] Drop `externalClusters` block from `cnpg-cluster.yaml`; live cluster patched to match
 - [x] Delete k8s Secrets `cnpg-b2-credentials` and `volsync-restic-b2`
 - [x] Delete B2 bucket `immich-asandov` and its app key `...000000001`
+- [x] Wipe `/data/backups/*.sql.gz` on the `immich-library` PVC (≈ 414 MiB reclaimed; 14 pre-recovery dumps)
 
 ### Still open
 
-- [ ] Delete `/data/backups/*.sql.gz` on the `immich-library` PVC (≈ 414 MiB) — redundant with CNPG barman; covered by TrueNAS cloud_backup dedup for now but wastes storage
 - [ ] Investigate why WAL archiver broke around 2026-03-16 (root cause of the broken backup pipeline that preceded the Apr 10 DB wipe)
 
 ### Deferred (after this cleanup)
