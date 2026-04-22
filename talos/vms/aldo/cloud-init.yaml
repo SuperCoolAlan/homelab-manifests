@@ -26,7 +26,7 @@ stringData:
         permissions: '0644'
         owner: root:root
         content: |
-          REPLACE_ME_WITH_CF_ACCESS_SSH_CA_PUBKEY
+          ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBFV7MhbvZG5RT9ioIaVKzdQL575h7fAL2dD6oW+LXVQ37J89p6gOef9K6zewfoFnPibqFfMY9Ci5J2yklHi8Ib0= open-ssh-ca@cloudflareaccess.org
       - path: /etc/ssh/sshd_config.d/10-cloudflare-access.conf
         permissions: '0644'
         owner: root:root
