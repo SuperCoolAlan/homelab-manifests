@@ -62,10 +62,7 @@ file is the only way back.
 - [x] Delete B2 bucket `immich-asandov` and its app key `...000000001`
 - [x] Wipe `/data/backups/*.sql.gz` on the `immich-library` PVC (≈ 414 MiB reclaimed; 14 pre-recovery dumps)
 - [x] Resolve the 2026-03-16 WAL archiver incident — origin precedes the full-cluster tear-down and redeploy (see "Incident timeline" below). No further forensics possible since the observability stack was rebuilt along with the cluster.
-
-### Nice-to-do (not blocking)
-
-- [ ] Delete the zombie `cnpg-controller-manager` deployment in `cnpg-system`. Two CNPG operators (`cnpg-cloudnative-pg` helm-managed + `cnpg-controller-manager` bare manifest) are reconciling the same Cluster CRs — split-brain risk. `cnpg-controller-manager` is the stray; leftover from the post-incident rebuild.
+- [x] Delete the zombie `cnpg-controller-manager` deployment in `cnpg-system` (plus its `cnpg-manager` SA, ClusterRole, and ClusterRoleBinding). Helm-managed `cnpg-cloudnative-pg` is now the sole operator.
 
 ## Incident timeline (2026-03-16 → 2026-04-22)
 
