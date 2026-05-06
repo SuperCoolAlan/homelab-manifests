@@ -11,6 +11,7 @@ resources:
   - resources/cnpg-cluster.yaml
   - resources/cnpg-scheduled-backup.yaml
   - resources/ingress.yaml
+  - resources/cloudflare-ingress.yaml
 
 generators:
   - secrets-generator.yaml
