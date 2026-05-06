@@ -20,6 +20,18 @@ controllers:
               secretKeyRef:
                 name: immich-postgres-app
                 key: password
+          IMMICH_CONFIG_FILE: /config/immich.json
+
+persistence:
+  oauth-config:
+    enabled: true
+    type: secret
+    name: immich-config
+    advancedMounts:
+      main:
+        main:
+          - path: /config
+            readOnly: true
 
 immich:
   persistence:
