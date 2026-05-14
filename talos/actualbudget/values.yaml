@@ -1,0 +1,39 @@
+strategy:
+  type: Recreate
+  rollingUpdate: null
+
+persistence:
+  enabled: true
+  storageClass: truenas-nfs
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+
+login:
+  method: openid
+  openid:
+    enforce: true
+    providerName: Authentik
+    discoveryUrl: https://authentik.asandov.local/application/o/actual/.well-known/openid-configuration
+    authMethod: openid
+    existingSecret:
+      name: actualbudget-oidc
+      clientIdKey: client-id
+      clientSecretKey: client-secret
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: budget.local.asandov.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: budget-local-tls
+      hosts:
+        - budget.local.asandov.com
