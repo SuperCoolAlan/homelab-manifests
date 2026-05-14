@@ -14,7 +14,7 @@ login:
   openid:
     enforce: true
     providerName: Authentik
-    discoveryUrl: https://authentik.asandov.local/application/o/actualbudget/.well-known/openid-configuration
+    discoveryUrl: https://auth.local.asandov.com/application/o/actualbudget/.well-known/openid-configuration
     authMethod: openid
     existingSecret:
       name: actualbudget-oidc
