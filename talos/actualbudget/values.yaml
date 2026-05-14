@@ -24,6 +24,9 @@ login:
       clientIdKey: client-id
       clientSecretKey: client-secret
 
+extraEnvVars:
+  debug: "*"
+
 ingress:
   enabled: true
   className: traefik
