@@ -2,6 +2,9 @@ strategy:
   type: Recreate
   rollingUpdate: null
 
+image:
+  tag: "26.5.2"
+
 persistence:
   enabled: true
   storageClass: truenas-nfs
