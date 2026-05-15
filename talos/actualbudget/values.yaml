@@ -15,7 +15,7 @@ persistence:
 login:
   method: openid
   openid:
-    enforce: true
+    enforce: false
     providerName: Authentik
     discoveryUrl: https://auth.local.asandov.com/application/o/actualbudget/.well-known/openid-configuration
     authMethod: openid
