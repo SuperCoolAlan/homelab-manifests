@@ -1,4 +1,5 @@
-talos/config
+talos/config/*
+!talos/config/*.enc.yaml
 .decrypted*
 **/.env
 config.yaml
