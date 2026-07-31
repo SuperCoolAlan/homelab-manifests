@@ -62,7 +62,7 @@ helmCharts:
 
 - name: bazarr
   repo: https://media-servarr.shw.al/charts
-  version: 0.9.1
+  version: 0.15.1
   releaseName: bazarr
   namespace: media-v2
   valuesFile: values-overrides/bazarr-values.yaml
