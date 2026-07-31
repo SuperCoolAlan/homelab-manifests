@@ -9,3 +9,8 @@ helmCharts:
   namespace: traefik
   valuesFile: values.yaml
   includeCRDs: true
+  # Chart's servicemonitor.yaml hard-fails unless this capability is
+  # advertised; ArgoCD supplies it via --helm-api-versions, plain
+  # kustomize (CI, local builds) needs it declared here.
+  apiVersions:
+    - monitoring.coreos.com/v1
