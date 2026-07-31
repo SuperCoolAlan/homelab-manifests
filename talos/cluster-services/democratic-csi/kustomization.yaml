@@ -3,12 +3,15 @@ kind: Kustomization
 
 # democratic-csi's helm chart renders a VolumeSnapshotClass, which requires the
 # snapshot.storage.k8s.io CRDs + snapshot-controller. These live in kube-system.
-# TODO: verify v8.2.0 is the current stable release before merging.
+# Vendored (not remote refs): git fetches to GitHub's origin crawl at ~1Mbps
+# per flow on this network's Starlink transit, blowing kustomize's 27s remote
+# timeout on every ArgoCD render. To bump: copy client/config/crd and
+# deploy/kubernetes/snapshot-controller from the new tag into vendor/.
 # https://github.com/kubernetes-csi/external-snapshotter/releases
 resources:
   - namespace.yaml
-  - github.com/kubernetes-csi/external-snapshotter/client/config/crd?ref=v8.2.0
-  - github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v8.2.0
+  - vendor/external-snapshotter-v8.2.0/crd
+  - vendor/external-snapshotter-v8.2.0/snapshot-controller
 
 helmGlobals:
   chartHome: helm
