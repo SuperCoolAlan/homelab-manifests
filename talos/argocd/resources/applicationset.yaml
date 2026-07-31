@@ -18,13 +18,13 @@ spec:
           - path: talos/argocd
           # Cluster services
           - path: talos/cluster-services/*
-          # Exclude kube-prometheus-stack (replaced by victoria-metrics)
-          - path: talos/cluster-services/monitoring
-            exclude: true
           # Monitoring sub-apps
           - path: talos/monitoring/*
           # Authentik
           - path: talos/authentik
+          # Actualbudget (previously a hand-made Application; adopted by
+          # the appset — see PR #18 bootstrap notes)
+          - path: talos/actualbudget
           # Media apps
           - path: talos/media-v2
           - path: talos/qbittorrent
