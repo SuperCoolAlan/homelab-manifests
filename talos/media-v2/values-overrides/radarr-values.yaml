@@ -44,8 +44,6 @@ deployment:
         claimName: 'media-library'
   # Configure volume mounts with subPath
   container:
-    image:
-      tag: '6.0.4.10291-ls290'
     resources:
       requests:
         memory: "512Mi"

@@ -41,7 +41,7 @@ helmCharts:
     
 - name: radarr
   repo: https://media-servarr.shw.al/charts
-  version: 0.18.0
+  version: 1.8.0
   releaseName: radarr
   namespace: media-v2
   valuesFile: values-overrides/radarr-values.yaml
