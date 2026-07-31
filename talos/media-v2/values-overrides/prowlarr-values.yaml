@@ -2,6 +2,13 @@
 metrics:
   enabled: false
 
+# Chart 0.26.0 requires either value or ref on each secret; an empty value
+# renders an empty secretKeyRef.name in the prepare-config init container.
+# ref points at the SOPS-managed secret (secrets/prowlarr-apikey.enc.yaml).
+secrets:
+  - name: 'apiKey'
+    ref: 'prowlarr-apikey'
+
 # Inherited from original media deployment
 persistentVolumeClaims:
   prowlarr-config:
