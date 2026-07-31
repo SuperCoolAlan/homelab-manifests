@@ -55,7 +55,7 @@ helmCharts:
 
 - name: sabnzbd
   repo: https://media-servarr.shw.al/charts
-  version: 0.7.0
+  version: 1.2.1
   releaseName: sabnzbd
   namespace: media-v2
   valuesFile: values-overrides/sabnzbd-values.yaml
