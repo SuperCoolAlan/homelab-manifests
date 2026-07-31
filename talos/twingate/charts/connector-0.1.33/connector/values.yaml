@@ -15,6 +15,11 @@ image:
 ##
 hostNetwork: false  # To enable hostnetwork for pod
 
+## Name of the service account to use
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+##
+serviceAccountName: ""
+
 ## Resource requests and limits
 ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
 ##
@@ -95,6 +100,16 @@ podSecurityContext: {}
   # seccompProfile:
   #   type: RuntimeDefault
 
+
+## Container ports to expose
+## This is useful for exposing metrics endpoints
+## Example for metrics on port 9999:
+## containerPorts:
+##   - name: metrics
+##     containerPort: 9999
+##     protocol: TCP
+##
+containerPorts: []
 
 ## Connector Arguments
 ##
