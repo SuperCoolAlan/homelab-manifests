@@ -12,7 +12,7 @@ generators:
 helmCharts:
   - name: falco
     repo: https://falcosecurity.github.io/charts
-    version: 8.0.0
+    version: 8.0.5
     releaseName: falco
     namespace: falco
     valuesFile: values.yaml
