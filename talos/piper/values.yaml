@@ -1,4 +1,5 @@
 image:
+  # renovate: datasource=docker depName=rhasspy/wyoming-piper
   tag: "2.2.2"
   args: ["--voice", "en_US-lessac-medium"]
 
