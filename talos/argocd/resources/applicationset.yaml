@@ -11,15 +11,20 @@ spec:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
         revision: HEAD
         directories:
+          # ArgoCD self-management: the argo-cd chart, this ApplicationSet,
+          # and the ingress sync from git like everything else. Bootstrap
+          # (and recovery if the app is ever deleted) is a manual
+          # `kubectl apply -f talos/argocd/resources/applicationset.yaml`.
+          - path: talos/argocd
           # Cluster services
           - path: talos/cluster-services/*
-          # Exclude kube-prometheus-stack (replaced by victoria-metrics)
-          - path: talos/cluster-services/monitoring
-            exclude: true
           # Monitoring sub-apps
           - path: talos/monitoring/*
           # Authentik
           - path: talos/authentik
+          # Actualbudget (previously a hand-made Application; adopted by
+          # the appset — see PR #18 bootstrap notes)
+          - path: talos/actualbudget
           # Media apps
           - path: talos/media-v2
           - path: talos/qbittorrent
@@ -52,6 +57,9 @@ spec:
       destination:
         server: https://kubernetes.default.svc
       syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
         syncOptions:
           - ServerSideApply=true
       ignoreDifferences:
