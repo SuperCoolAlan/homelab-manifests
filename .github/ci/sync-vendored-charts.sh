@@ -13,8 +13,13 @@ while IFS= read -r kfile; do
   dir=$(dirname "$kfile")
   while IFS=$'\t' read -r name version; do
     [[ -n "$name" && -n "$version" ]] || continue
-    # "|| true" guards the SIGPIPE head causes under pipefail
-    tracked=$(git ls-files -- "$dir/charts/$name-*" | head -1 || true)
+    # Look for tracked copies on the BASE branch, not this one: Renovate
+    # deletes the old vendored chart dir in its own commit, so the PR
+    # branch has nothing tracked by the time we run. (-m1 avoids SIGPIPE
+    # under pipefail.)
+    base_ref=${GITHUB_BASE_REF:-main}
+    tracked=$(git ls-tree -r --name-only "origin/$base_ref" -- "$dir/charts/" 2>/dev/null \
+      | grep -m1 "^$dir/charts/$name-" || true)
     [[ -n "$tracked" ]] || continue
 
     want="$dir/charts/$name-$version"
