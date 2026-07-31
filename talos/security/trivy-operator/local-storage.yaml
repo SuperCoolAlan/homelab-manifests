@@ -1,0 +1,32 @@
+# Storage class for the trivy server vuln-DB cache (local disk on ramhaus;
+# NFS-backed PVCs break kubelet's fsGroup chown under root-squash)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: trivy-local
+provisioner: kubernetes.io/no-provisioner
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: trivy-server-data-pv
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: trivy-local
+  local:
+    path: /var/mnt/local-storage/trivy-server
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-ramhaus
