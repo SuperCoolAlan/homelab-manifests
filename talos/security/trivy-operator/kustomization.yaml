@@ -14,3 +14,21 @@ helmCharts:
     namespace: trivy-system
     valuesFile: values.yaml
     includeCRDs: true
+
+# The trivy server doesn't listen until the initial vuln DB download
+# completes (~103MiB at <1MB/s here); the chart's hardcoded liveness
+# probe kills it after ~105s. Give it a 30min startup window instead.
+patches:
+  - target:
+      kind: StatefulSet
+      name: trivy-server
+    patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/startupProbe
+        value:
+          httpGet:
+            scheme: HTTP
+            path: /healthz
+            port: trivy-http
+          periodSeconds: 10
+          failureThreshold: 180
