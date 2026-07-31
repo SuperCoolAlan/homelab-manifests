@@ -52,8 +52,8 @@ driver:
       #apiKey: get your own key
       allowInsecure: true
     zfs:
-      datasetParentName: ST6000NM0095-pool0/media/nfs/v
-      detachedSnapshotsDatasetParentName: ST6000NM0095-pool0/media/nfs/s
+      datasetParentName: ST6000NM0095-pool1/media/nfs/v
+      detachedSnapshotsDatasetParentName: ST6000NM0095-pool1/media/nfs/s
       datasetEnableQuotas: true
       datasetEnableReservation: false
       datasetPermissionsMode: "0775"
