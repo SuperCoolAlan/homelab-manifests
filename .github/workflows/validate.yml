@@ -1,0 +1,101 @@
+name: Validate manifests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  KUSTOMIZE_VERSION: 5.7.1
+  KUBECONFORM_VERSION: 0.7.0
+  # kustomize --enable-helm still drives helm with v3 flags; pin v3 explicitly
+  HELM_VERSION: 3.19.0
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Install tools
+        run: |
+          set -euo pipefail
+          curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin kustomize
+          curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin kubeconform
+          curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin --strip-components=1 linux-amd64/helm
+          # yq is preinstalled on ubuntu runners
+          # Stub ksops both ways it gets invoked: KRM exec functions find it
+          # on PATH; legacy-style generators (cert-manager,
+          # cloudflare-tunnel-ingress-controller) use the XDG plugin dir.
+          sudo install -m 0755 .github/ci/ksops-stub.sh /usr/local/bin/ksops
+          install -D -m 0755 .github/ci/ksops-stub.sh \
+            "$HOME/.config/kustomize/plugin/viaduct.ai/v1/ksops/ksops"
+          kustomize version && kubeconform -v && helm version --short
+
+      - name: Render all kustomizations (pulls charts as needed)
+        run: .github/ci/render-all.sh /tmp/render-pr
+
+      - name: Re-vendor tracked charts (IPv6-unreachable repos)
+        run: .github/ci/sync-vendored-charts.sh
+
+      - name: Push vendored chart changes back to PR branch
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore: re-vendor helm charts for ${{ github.head_ref }}"
+            git push origin "HEAD:${{ github.head_ref }}"
+          else
+            echo "vendored charts already in sync"
+          fi
+
+      - name: Validate rendered manifests (kubeconform)
+        run: |
+          kubeconform -summary -strict \
+            -ignore-missing-schemas \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            -skip Secret \
+            /tmp/render-pr/*.yaml
+
+      - name: Render base branch for comparison
+        if: github.event_name == 'pull_request'
+        run: |
+          git worktree add /tmp/base-tree "origin/${{ github.base_ref }}"
+          cd /tmp/base-tree
+          $GITHUB_WORKSPACE/.github/ci/render-all.sh /tmp/render-base || true
+
+      - name: Diff rendered output against base
+        if: github.event_name == 'pull_request'
+        run: |
+          set +e
+          diff -ruN /tmp/render-base /tmp/render-pr > /tmp/render.diff
+          set -e
+          {
+            echo "## Rendered manifest diff vs ${{ github.base_ref }}"
+            if [[ -s /tmp/render.diff ]]; then
+              lines=$(wc -l < /tmp/render.diff)
+              echo ""
+              echo "\`\`\`diff"
+              head -c 60000 /tmp/render.diff
+              echo "\`\`\`"
+              echo ""
+              echo "_${lines} diff lines total (truncated at 60KB if longer)._"
+            else
+              echo ""
+              echo "No changes in rendered output."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

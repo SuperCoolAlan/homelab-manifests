@@ -1,0 +1,55 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+    ':dependencyDashboard',
+  ],
+
+  // Vendored helm chart caches (kustomize --enable-helm pulls into charts/).
+  // Never let Renovate touch these — CI re-vendors them on each PR.
+  ignorePaths: ['**/charts/**'],
+
+  // kustomize: bumps helmCharts[].version in kustomization.yaml files
+  // custom.regex: bumps image tags annotated with "# renovate:" comments
+  // github-actions: keeps CI workflow actions pinned & current
+  enabledManagers: ['kustomize', 'custom.regex', 'github-actions'],
+
+  prConcurrentLimit: 5,
+  prHourlyLimit: 0,
+  labels: ['dependencies'],
+
+  packageRules: [
+    {
+      matchManagers: ['kustomize'],
+      addLabels: ['helm-chart'],
+      commitMessageTopic: 'helm chart {{depName}}',
+    },
+    {
+      // Majors get their own PR and a loud label — read the release notes
+      // in the PR body before merging these.
+      matchUpdateTypes: ['major'],
+      addLabels: ['major'],
+    },
+    {
+      // The servarr charts all come from the same repo and rev together
+      matchManagers: ['kustomize'],
+      matchFileNames: ['talos/media-v2/**'],
+      groupName: 'media-servarr charts',
+      matchUpdateTypes: ['minor', 'patch'],
+    },
+  ],
+
+  customManagers: [
+    {
+      // Matches values files containing:
+      //   # renovate: datasource=docker depName=<org>/<image>
+      //   tag: "1.2.3"
+      customType: 'regex',
+      managerFilePatterns: ['/values.*\\.ya?ml$/'],
+      matchStrings: [
+        '# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s*\\n\\s*tag:\\s*"?(?<currentValue>[^"\\s]+)"?',
+      ],
+      versioningTemplate: '{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}',
+    },
+  ],
+}
