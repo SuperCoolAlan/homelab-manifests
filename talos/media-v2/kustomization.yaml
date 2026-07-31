@@ -34,7 +34,7 @@ patches:
 helmCharts:
 - name: sonarr
   repo: https://media-servarr.shw.al/charts
-  version: 0.9.0
+  version: 0.14.1
   releaseName: sonarr
   namespace: media-v2
   valuesFile: values-overrides/sonarr-values.yaml
