@@ -48,7 +48,7 @@ helmCharts:
 
 - name: prowlarr
   repo: https://media-servarr.shw.al/charts
-  version: 0.19.0
+  version: 0.26.0
   releaseName: prowlarr
   namespace: media-v2
   valuesFile: values-overrides/prowlarr-values.yaml
