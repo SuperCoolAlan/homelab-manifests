@@ -36,7 +36,12 @@ jobs:
           curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" \
             | sudo tar -xz -C /usr/local/bin --strip-components=1 linux-amd64/helm
           # yq is preinstalled on ubuntu runners
+          # Stub ksops both ways it gets invoked: KRM exec functions find it
+          # on PATH; legacy-style generators (cert-manager,
+          # cloudflare-tunnel-ingress-controller) use the XDG plugin dir.
           sudo install -m 0755 .github/ci/ksops-stub.sh /usr/local/bin/ksops
+          install -D -m 0755 .github/ci/ksops-stub.sh \
+            "$HOME/.config/kustomize/plugin/viaduct.ai/v1/ksops/ksops"
           kustomize version && kubeconform -v && helm version --short
 
       - name: Render all kustomizations (pulls charts as needed)
