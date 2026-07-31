@@ -2,6 +2,18 @@
 
 This document contains manual configuration steps that must be performed after deploying the media stack. These settings are stored in application databases and cannot be easily managed via GitOps.
 
+## Radarr + Sonarr — hardlink imports (after torrent-hardlink migration cutover)
+
+See `docs/torrent-hardlink-migration.md`. In **both** Radarr and Sonarr:
+
+1. Settings → Download Clients → Remote Path Mappings → Add:
+   - Host: the qBittorrent client host as configured in the download client entry
+   - Remote Path: `/downloads/`
+   - Local Path: `/media/torrents/`
+2. Settings → Media Management → Importing: **Use Hardlinks instead of Copy** = Yes (default, verify it wasn't disabled).
+3. Verify: import something from qbt, then confirm the inode matches on both sides:
+   `stat -c %i '/media/torrents/<file>' '/media/film/.../<file>'` (equal = hardlinked, zero extra space).
+
 ## Prowlarr
 
 ### Indexer Age Filtering

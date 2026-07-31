@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stage-dry-run
+  namespace: torrent-staging
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3001
+        fsGroup: 3001
+      containers:
+        - name: stage
+          image: python:3.12-alpine
+          # tee → .staging so results survive pod/job cleanup
+          command:
+            - sh
+            - -c
+            - python3 -u /scripts/stage.py --dry-run 2>&1 | tee "/media/.staging/stage-dry-run-$(date +%Y%m%d-%H%M%S).log"
+          volumeMounts:
+            - name: store
+              mountPath: /store
+              readOnly: true
+            - name: media
+              mountPath: /media
+            - name: script
+              mountPath: /scripts
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+      volumes:
+        - name: store
+          persistentVolumeClaim:
+            claimName: qbt-store
+            readOnly: true
+        - name: media
+          persistentVolumeClaim:
+            claimName: media
+        - name: script
+          configMap:
+            name: stage-script
