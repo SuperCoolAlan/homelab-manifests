@@ -1,4 +1,0 @@
-connector:
-  network: "acme"
-  accessToken: "access token"
-  refreshToken: "refresh token"
