@@ -13,7 +13,8 @@ while IFS= read -r kfile; do
   dir=$(dirname "$kfile")
   while IFS=$'\t' read -r name version; do
     [[ -n "$name" && -n "$version" ]] || continue
-    tracked=$(git ls-files -- "$dir/charts/$name-*" | head -1)
+    # "|| true" guards the SIGPIPE head causes under pipefail
+    tracked=$(git ls-files -- "$dir/charts/$name-*" | head -1 || true)
     [[ -n "$tracked" ]] || continue
 
     want="$dir/charts/$name-$version"
