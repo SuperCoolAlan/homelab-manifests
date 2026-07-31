@@ -1,8 +1,9 @@
-# Inherited from original media deployment
+# App state (queue db, history) — first dynamic PVC on pool1 via truenas-nfs
 persistentVolumeClaims:
-  sabnzbd-config:
+  sabnzbd-config: null  # chart default — superseded by sabnzbd-state
+  sabnzbd-state:
     requestStorage: '5Gi'
-    storageClassName: 'nfs'
+    storageClassName: 'truenas-nfs'
 
 # Application configuration with Eweka news server
 application:
@@ -139,7 +140,7 @@ deployment:
   volumes:
     config:
       persistentVolumeClaim:
-        claimName: 'sabnzbd-config'
+        claimName: 'sabnzbd-state'
     downloads:
       persistentVolumeClaim:
         claimName: 'sabnzbd-downloads'
