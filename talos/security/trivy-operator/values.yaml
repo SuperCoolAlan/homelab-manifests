@@ -8,6 +8,9 @@ trivy:
 operator:
   # Limit concurrent scan jobs for single-node cluster
   scanJobsConcurrentLimit: 2
+  # Run a central trivy server so scan pods don't each download the 103MiB
+  # vuln DB (sets trivy.mode=ClientServer and serverURL automatically)
+  builtInTrivyServer: true
 
 serviceMonitor:
   # Enable Prometheus ServiceMonitor
