@@ -11,6 +11,11 @@ spec:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
         revision: HEAD
         directories:
+          # ArgoCD self-management: the argo-cd chart, this ApplicationSet,
+          # and the ingress sync from git like everything else. Bootstrap
+          # (and recovery if the app is ever deleted) is a manual
+          # `kubectl apply -f talos/argocd/resources/applicationset.yaml`.
+          - path: talos/argocd
           # Cluster services
           - path: talos/cluster-services/*
           # Exclude kube-prometheus-stack (replaced by victoria-metrics)
