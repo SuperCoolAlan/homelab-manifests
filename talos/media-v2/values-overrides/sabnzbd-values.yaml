@@ -131,6 +131,8 @@ deployment:
             name: sabnzbd-passwords
             key: newshostingPassword
     volumeMounts:
+      - name: config
+        mountPath: /config
       - name: downloads
         mountPath: /downloads
   # Configure volumes - use local storage for downloads (faster than NFS)
