@@ -9,7 +9,7 @@ resources:
 helmCharts:
   - name: wyoming-piper
     repo: https://gitlab.com/api/v4/projects/62293226/packages/helm/stable
-    version: 0.1.3
+    version: 0.1.4
     releaseName: wyoming-piper
     namespace: piper
     valuesFile: values.yaml
