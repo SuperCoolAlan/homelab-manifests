@@ -13,7 +13,7 @@ generators:
 helmCharts:
   - name: victoria-metrics-k8s-stack
     repo: https://victoriametrics.github.io/helm-charts
-    version: 0.69.0
+    version: 0.87.0
     releaseName: vm
     namespace: monitoring
     valuesFile: values.yaml
