@@ -1,5 +1,9 @@
 # qBittorrent Helm chart values
 
+# CUTOVER IN PROGRESS: scaled to 0 for the final torrent-store staging pass.
+# Restored to 1 (with new media-dataset mounts) in the follow-up commit.
+replicaCount: 0
+
 # Disable metrics for now - exporter needs qbittorrent credentials
 metrics:
   enabled: false
