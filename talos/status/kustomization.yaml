@@ -10,7 +10,7 @@ resources:
 helmCharts:
   - name: gatus
     repo: https://twin.github.io/helm-charts
-    version: 1.4.4
+    version: 1.5.0
     releaseName: gatus
     namespace: status
     valuesInline:
