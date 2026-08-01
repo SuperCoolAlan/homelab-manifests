@@ -1,9 +1,5 @@
 # qBittorrent Helm chart values
 
-# CUTOVER IN PROGRESS: scaled to 0 for the final torrent-store staging pass.
-# Restored to 1 (with new media-dataset mounts) in the follow-up commit.
-replicaCount: 0
-
 # Disable metrics for now - exporter needs qbittorrent credentials
 metrics:
   enabled: false
@@ -46,17 +42,17 @@ persistence:
   storageClass: nfs
   size: 5Gi
   accessMode: ReadWriteOnce
-  # Mount downloads and media library
+  # Torrent store lives inside the media dataset (media/torrents) so
+  # radarr/sonarr can hardlink imports. Mounted at /downloads so qbt's
+  # SavePath and fastresume data stay valid (no recheck after cutover).
   additionalVolumes:
-    - name: downloads
-      persistentVolumeClaim:
-        claimName: qbittorrent-downloads
     - name: media-library
       persistentVolumeClaim:
         claimName: media-library
   additionalMounts:
-    - name: downloads
+    - name: media-library
       mountPath: /downloads
+      subPath: torrents
     - name: media-library
       mountPath: /media
 
