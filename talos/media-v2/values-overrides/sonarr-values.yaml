@@ -33,9 +33,6 @@ deployment:
     config:
       persistentVolumeClaim:
         claimName: 'sonarr-config'
-    qbittorrent-downloads:
-      persistentVolumeClaim:
-        claimName: 'qbittorrent-downloads'
     sabnzbd-downloads:
       persistentVolumeClaim:
         claimName: 'sabnzbd-downloads'
@@ -59,10 +56,10 @@ deployment:
     volumeMounts:
       - name: 'config'
         mountPath: '/config'
-      - name: 'qbittorrent-downloads'
-        mountPath: '/downloads-torrent'
       - name: 'sabnzbd-downloads'
         mountPath: '/downloads-usenet'
+      # Single full mount so imports from /media/torrents into /media/tv
+      # can hardlink (same filesystem AND same mount). Root folder path
+      # /media/tv is unchanged.
       - name: 'media-library'
-        mountPath: '/media/tv'
-        subPath: 'tv'
+        mountPath: '/media'
