@@ -33,9 +33,6 @@ deployment:
     config:
       persistentVolumeClaim:
         claimName: 'radarr-config'
-    qbittorrent-downloads:
-      persistentVolumeClaim:
-        claimName: 'qbittorrent-downloads'
     sabnzbd-downloads:
       persistentVolumeClaim:
         claimName: 'sabnzbd-downloads'
@@ -54,10 +51,10 @@ deployment:
     volumeMounts:
       - name: 'config'
         mountPath: '/config'
-      - name: 'qbittorrent-downloads'
-        mountPath: '/downloads-torrent'
       - name: 'sabnzbd-downloads'
         mountPath: '/downloads-usenet'
+      # Single full mount so imports from /media/torrents into /media/film
+      # can hardlink (same filesystem AND same mount). Root folder path
+      # /media/film is unchanged.
       - name: 'media-library'
-        mountPath: '/media/film'
-        subPath: 'film'
+        mountPath: '/media'
