@@ -6,8 +6,6 @@
 # DB connection to CNPG-managed postgres (immich-postgres cluster)
 controllers:
   main:
-    # TEMP: scaled down for the local-storage → metrics-storage move
-    replicas: 0
     containers:
       main:
         image:
@@ -55,10 +53,6 @@ server:
 # Models will re-download on pod restart but avoids PVC binding issues
 machine-learning:
   enabled: true
-  controllers:
-    main:
-      # TEMP: scaled down for the local-storage → metrics-storage move
-      replicas: 0
   persistence:
     cache:
       enabled: true
