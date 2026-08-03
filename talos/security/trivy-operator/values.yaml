@@ -7,9 +7,6 @@ trivy:
   # Local disk for the server's vuln-DB cache — the default truenas-nfs class
   # fails fsGroup chown on remount (root-squashed export denies kubelet)
   storageClassName: trivy-local
-  server:
-    # TEMP: scaled down for the local-storage → metrics-storage move
-    replicas: 0
 
 operator:
   # Limit concurrent scan jobs for single-node cluster

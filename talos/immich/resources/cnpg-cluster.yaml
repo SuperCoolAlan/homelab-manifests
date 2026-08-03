@@ -4,9 +4,7 @@ metadata:
   name: immich-postgres
   namespace: immich
   annotations:
-    # TEMP: shut down postgres cleanly for local-storage → metrics-storage move
-    # (Intel 750 becomes the Talos boot disk). Flip to "off" in the repoint commit.
-    cnpg.io/hibernation: "on"
+    cnpg.io/hibernation: "off"
 spec:
   instances: 1
   imageName: ghcr.io/tensorchord/cloudnative-vectorchord:17.7

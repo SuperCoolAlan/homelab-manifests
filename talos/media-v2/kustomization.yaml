@@ -26,15 +26,6 @@ patches:
     kind: Deployment
     name: sabnzbd
   path: patches/sabnzbd-envsubst-init.yaml
-# TEMP: scaled down for the local-storage → metrics-storage move (downloads
-# scratch is discarded; remove this patch in the repoint commit)
-- target:
-    kind: Deployment
-    name: sabnzbd
-  patch: |-
-    - op: add
-      path: /spec/replicas
-      value: 0
 - target:
     kind: Deployment
     name: sonarr
