@@ -20,7 +20,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: immich-cnpg
   local:
-    path: /var/mnt/local-storage/immich-postgres
+    path: /var/mnt/metrics-storage/immich-postgres
   nodeAffinity:
     required:
       nodeSelectorTerms:

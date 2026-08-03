@@ -21,7 +21,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: trivy-local
   local:
-    path: /var/mnt/local-storage/trivy-server
+    path: /var/mnt/metrics-storage/trivy-server
   nodeAffinity:
     required:
       nodeSelectorTerms:
