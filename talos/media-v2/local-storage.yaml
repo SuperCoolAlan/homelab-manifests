@@ -9,6 +9,8 @@ volumeBindingMode: WaitForFirstConsumer
 ---
 # Local PV for SABnzbd downloads on talos-ramhaus
 # This provides fast local NVMe disk for usenet downloads before arr apps move them to NFS
+# On the Samsung metrics NVMe (shared with victoria-metrics/logs) while the
+# Intel 750 serves as Talos boot disk; final home is the ssd zpool (PLAN.md §4)
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -21,7 +23,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: media-local
   local:
-    path: /var/mnt/local-storage/sabnzbd/downloads
+    path: /var/mnt/metrics-storage/sabnzbd/downloads
   nodeAffinity:
     required:
       nodeSelectorTerms:
