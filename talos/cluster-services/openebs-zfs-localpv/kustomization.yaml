@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: openebs-zfs
+
+resources:
+  - namespace.yaml
+  - storageclass.yaml
+
+# Chart vendored (same rationale as democratic-csi: remote helm refs blow
+# kustomize's render timeout on Starlink transit). To bump:
+#   helm pull zfs-localpv --repo https://openebs.github.io/zfs-localpv --untar -d helm/
+helmGlobals:
+  chartHome: helm
+helmCharts:
+  - name: zfs-localpv
+    valuesFile: values.yaml
+    releaseName: zfs-localpv
+    namespace: openebs-zfs
