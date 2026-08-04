@@ -81,6 +81,15 @@ ingress:
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
 
+# Chart 2.x bug: templates/deployment.yaml renders both .Values.rollout
+# (default: strategy Recreate) and a hardcoded strategy block from
+# deployment.strategy — duplicate "strategy" key breaks kustomize's strict
+# YAML parser. Null out the rollout copy; minReadySeconds keeps the map
+# non-empty so toYaml still emits valid YAML.
+rollout:
+  strategy: null
+  minReadySeconds: 0
+
 # Resources
 resources:
   requests:
