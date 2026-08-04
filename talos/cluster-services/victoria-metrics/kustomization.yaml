@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: monitoring
 
 resources:
+  - namespace.yaml
   # - resources/additional-scrape-configs.yaml  # temporarily disabled
   - resources/local-storage.yaml
 
