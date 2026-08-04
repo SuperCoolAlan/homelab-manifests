@@ -8,162 +8,136 @@ Kubernetes manifests for my home lab running on Talos Linux.
 flowchart TB
     subgraph Internet
         CF[Cloudflare Tunnel]
+        TG[Twingate]
     end
 
-    subgraph Public["Public Access (*.asandov.com)"]
-        auth_pub[auth.asandov.com]
-        jf_pub[jellyfin.asandov.com]
-        js_pub[jellyseerr.asandov.com]
-    end
-
-    subgraph Local["Local Access (*.asandov.local)"]
-        auth_loc[authentik.asandov.local]
-        jf_loc[jellyfin.asandov.local]
-        js_loc[jellyseerr.asandov.local]
-        sonarr_loc[sonarr.asandov.local]
-        radarr_loc[radarr.asandov.local]
-        prowlarr_loc[prowlarr.asandov.local]
-        sabnzbd_loc[sabnzbd.asandov.local]
-        bazarr_loc[bazarr.asandov.local]
-        grafana_loc[grafana.asandov.local]
-    end
-
-    subgraph Ingress["Ingress Controllers"]
-        traefik[Traefik]
-        nginx[NGINX]
-        cftunnel[Cloudflare Tunnel Controller]
+    subgraph Ingress["Ingress"]
+        traefik[Traefik<br/>*.asandov.local]
+        cftunnel[Cloudflare Tunnel Controller<br/>*.asandov.com]
     end
 
     subgraph Cluster["Talos Kubernetes Cluster"]
         subgraph Nodes
-            dell[talos-dell<br/>10.0.1.28<br/>control-plane]
-            eggbert[talos-eggbert<br/>10.0.1.37<br/>control-plane]
-            ratty[talos-rattypatty<br/>10.0.1.36<br/>control-plane]
+            blackbox[talos-blackbox<br/>10.0.1.47<br/>control-plane]
+            ramhaus[talos-ramhaus<br/>10.0.1.12<br/>worker + storage]
         end
 
         subgraph Auth["Authentication"]
             authentik[Authentik]
-            ldap[LDAP Outpost]
         end
 
-        subgraph Media["Media Stack"]
+        subgraph Media["Media Stack (media-v2)"]
             jellyseerr[Jellyseerr]
-            sonarr[Sonarr]
-            radarr[Radarr]
-            prowlarr[Prowlarr]
+            arr[Sonarr / Radarr / Prowlarr / Bazarr]
             sabnzbd[SABnzbd]
-            bazarr[Bazarr]
-            gluetun[Gluetun VPN]
+            qbit[qBittorrent]
+            gluetun[Gluetun VPN sidecars]
         end
 
-        subgraph Monitoring["Monitoring (exporters only)"]
-            prom_agent[Prometheus Agent]
-            node_exp[Node Exporters]
-            kube_state[kube-state-metrics]
+        subgraph Apps["Apps"]
+            immich[Immich + CNPG postgres]
+            actualbudget[Actual Budget]
+            aldovm[aldo-vm KubeVirt VM]
+        end
+
+        subgraph Monitoring["Monitoring"]
+            vm[VictoriaMetrics k8s stack]
+            vlogs[VictoriaLogs]
+            falco[Falco]
+            trivy[Trivy Operator]
+        end
+
+        subgraph Storage["Storage (on ramhaus)"]
+            zfs[(ZFS pool: ssd<br/>raidz2 SAS SSDs<br/>ssd-array SC via zfs-localpv)]
+            nvme[(Samsung NVMe<br/>metrics + interim local PVs)]
         end
 
         subgraph ClusterSvcs["Cluster Services"]
-            argocd[ArgoCD]
+            argocd[ArgoCD ApplicationSet]
             metallb[MetalLB]
-            externaldns[ExternalDNS]
-            certmgr[Democratic-CSI]
+            externaldns[ExternalDNS → OPNsense]
+            certmgr[cert-manager]
+            dcsi[Democratic-CSI - NFS, legacy]
         end
     end
 
     subgraph External["External Services"]
-        truenas[TrueNAS Scale]
-        subgraph TrueNAS_Apps["TrueNAS Apps"]
-            jellyfin_tn[Jellyfin]
-            prometheus_tn[Prometheus]
-            grafana_tn[Grafana]
-        end
-        nfs[(NFS Storage)]
+        truenas[TrueNAS Scale<br/>DECOMMISSIONING]
         opnsense[OPNsense<br/>Router + DNS]
         windscribe[Windscribe VPN]
     end
 
     CF --> cftunnel
-    cftunnel --> auth_pub & jf_pub & js_pub
-
-    auth_pub --> authentik
-    jf_pub --> jellyfin_tn
-    js_pub --> jellyseerr
-
-    traefik --> auth_loc & js_loc & sonarr_loc & radarr_loc & prowlarr_loc & sabnzbd_loc & bazarr_loc
-    nginx --> jf_loc & grafana_loc
-
-    auth_loc --> authentik
-    jf_loc --> jellyfin_tn
-    js_loc --> jellyseerr
-    sonarr_loc --> sonarr
-    radarr_loc --> radarr
-    prowlarr_loc --> prowlarr
-    sabnzbd_loc --> sabnzbd
-    bazarr_loc --> bazarr
-    grafana_loc --> grafana_tn
-
-    authentik --> ldap
-    ldap -->|LDAP Auth| jellyfin_tn
-
-    sabnzbd --> gluetun --> windscribe
-
-    prom_agent -->|remote write| prometheus_tn
-    Media --> nfs
+    traefik --> Auth & Media & Apps
+    cftunnel --> authentik & jellyseerr
+    sabnzbd & qbit --> gluetun --> windscribe
     externaldns --> opnsense
-    certmgr --> nfs
+    Media --> zfs
+    Apps --> zfs & nvme
+    Monitoring --> nvme
+    dcsi -.->|legacy NFS PVCs| truenas
+    truenas -.->|Jellyfin proxied<br/>media library NFS| Media
 ```
 
 ## Infrastructure
 
 ### Kubernetes Cluster
-All services run on a 3-node Talos Linux cluster:
 
-| Node | IP | Role | Hardware | RAM |
-|------|-----|------|----------|-----|
-| talos-dell | 10.0.1.28 | control-plane | Mini PC, i7-4510U | 16GB |
-| talos-eggbert | 10.0.1.37 | control-plane | Raspberry Pi 4 | 4GB |
-| talos-rattypatty | 10.0.1.36 | control-plane | Raspberry Pi 4 | 2GB |
+| Node | IP | Role | Hardware |
+|------|-----|------|----------|
+| talos-blackbox | 10.0.1.47 | control-plane | (gvisor runtime) |
+| talos-ramhaus | 10.0.1.12 | worker + all stateful storage | HP Z440, 128GB, LSI 9211-8i IT HBA |
 
-- **OS**: Talos Linux v1.11.2
-- **Container Runtime**: containerd 2.1.4
+- **OS**: Talos Linux v1.11.5 · **Kubernetes**: v1.33.4 · **Runtime**: containerd 2.1.5
+- ramhaus boots from an Intel 750 NVMe (factory image with `zfs` +
+  `nonfree-kmod-nvidia-production` + `nvidia-container-toolkit-production`
+  extensions); config in `talos/config/`
 
 ### Storage
-The cluster is diskless - all persistent storage is provided by a separate **TrueNAS Scale** server via NFS.
 
-- **Democratic-CSI** - Dynamic NFS provisioner for PVCs
-- **Jellyfin** also runs directly on TrueNAS (not in cluster)
+Storage is consolidating from a separate TrueNAS box onto **ramhaus-local ZFS**
+(TrueNAS decommission in progress):
+
+- **`ssd` pool** — raidz2 of 12G SAS SSDs on the 9211-8i (expanding to 6-wide)
+- **`ssd-array` StorageClass** — OpenEBS zfs-localpv, dynamic per-PVC datasets
+  on the `ssd` pool (`cluster-services/openebs-zfs-localpv/`)
+- **Samsung NVMe** (`/var/mnt/metrics-storage`) — VictoriaMetrics/Logs data plus
+  interim static local PVs (immich-postgres, sabnzbd scratch, trivy cache)
+- **Democratic-CSI `truenas-nfs`** — legacy dynamic NFS PVCs against TrueNAS;
+  being drained app-by-app onto `ssd-array`
+- **TrueNAS (retiring)** — still serves the media library NFS + Jellyfin
+  (proxied through cluster ingress) until cutover
 
 ### Network
-- **OPNsense** - Router, firewall, DNS (Unbound)
-- **MetalLB** - Load balancer for bare metal
-- **ExternalDNS** - Automatic DNS record management to OPNsense
-
-## Applications
-
-| App | Local URL | Public URL | Auth | Runs On |
-|-----|-----------|------------|------|---------|
-| Authentik | authentik.asandov.local | auth.asandov.com | - | Cluster |
-| Jellyfin | jellyfin.asandov.local | jellyfin.asandov.com | LDAP | TrueNAS |
-| Jellyseerr | jellyseerr.asandov.local | jellyseerr.asandov.com | OIDC | Cluster |
-| Sonarr | sonarr.asandov.local | - | Forward Auth | Cluster |
-| Radarr | radarr.asandov.local | - | Forward Auth | Cluster |
-| Prowlarr | prowlarr.asandov.local | - | Forward Auth | Cluster |
-| SABnzbd | sabnzbd.asandov.local | - | Forward Auth | Cluster |
-| Bazarr | bazarr.asandov.local | - | Forward Auth | Cluster |
-| Grafana | grafana.asandov.local | - | - | TrueNAS |
-| Prometheus | - | - | - | TrueNAS |
-| ArgoCD | argocd.asandov.local | - | - | Cluster |
+- **OPNsense** — router, firewall, DNS (Unbound); records managed by ExternalDNS
+- **MetalLB** — L2 load balancer
+- **Traefik** — local ingress (`*.asandov.local`); **Cloudflare Tunnel** for
+  public hostnames (`*.asandov.com`); **Twingate** for remote private access
 
 ## GitOps
 
-All deployments are managed via **ArgoCD** with manifests in this repository.
+Everything under `talos/` is deployed by **ArgoCD** via a single ApplicationSet
+(`talos/argocd/resources/applicationset.yaml`) — a git directory generator that
+auto-adopts new app directories (auto-sync, self-heal, prune). Helm charts are
+vendored into each app dir (slow transit link; remote chart refs blow the
+render timeout).
 
 ```
 talos/
-├── argocd/           # ArgoCD self-management
-├── authentik/        # SSO provider
-├── cluster-services/ # Traefik, external-dns, democratic-csi
-├── kube-prom-stack/  # Prometheus, Grafana, Alertmanager
-├── media-v2/         # Jellyseerr, *arr stack, SABnzbd
-└── ...
+├── argocd/           # ArgoCD self-management + the ApplicationSet
+├── authentik/        # SSO (OIDC / forward-auth / LDAP)
+├── cluster-services/ # traefik, metallb, cert-manager, external-dns,
+│                     # cnpg-operator, kubevirt+cdi, volsync, victoria-metrics,
+│                     # victoria-logs, democratic-csi (legacy NFS),
+│                     # openebs-zfs-localpv (ssd-array), cloudflare-tunnel
+├── config/           # Talos machine configs (secrets encrypted as *.enc.yaml)
+├── immich/           # Photos + CNPG postgres
+├── media-v2/         # *arr stack, SABnzbd, Jellyseerr (+ gluetun sidecars)
+├── qbittorrent/      # Torrents behind VPN
+├── monitoring/       # opnsense-exporter, starlink
+├── security/         # trivy-operator, falco
+├── vms/              # KubeVirt VMs (aldo-vm)
+└── ...               # actualbudget, maintainerr, tracearr, piper, status, twingate
 ```
+
+Renovate keeps chart/image versions fresh via PRs.
