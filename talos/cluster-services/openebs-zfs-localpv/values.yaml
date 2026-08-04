@@ -1,6 +1,11 @@
 # OpenEBS ZFS-LocalPV values overrides
 # Chart defaults: helm/zfs-localpv/values.yaml — only override what differs
 
+zfsNode:
+  # Default /home/keys can't exist on Talos (read-only root); only /var is
+  # writable. Dir is only used for ZFS encryption keys (none yet)
+  encrKeysDir: /var/openebs/keys
+
 analytics:
   # No phone-home
   enabled: false
