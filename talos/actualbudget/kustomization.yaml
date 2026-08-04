@@ -12,7 +12,7 @@ generators:
 helmCharts:
   - name: actualbudget
     repo: https://community-charts.github.io/helm-charts
-    version: 1.9.1
+    version: 1.9.2
     releaseName: actualbudget
     namespace: actualbudget
     valuesFile: values.yaml
