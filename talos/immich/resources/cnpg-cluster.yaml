@@ -23,7 +23,11 @@ spec:
       - "vchord.so"
   storage:
     size: 5Gi
-    storageClass: immich-cnpg
+    # Moved off the static local PV on the Samsung NVMe (immich-cnpg) to the
+    # redundant SAS zpool via zfs-localpv, so the only must-retain data on that
+    # disk is gone and it can be reformatted. storageClass is immutable on a
+    # CNPG cluster, so this change requires deleting and recreating the cluster.
+    storageClass: ssd-array
   # Backup via the barman-cloud CNPG plugin (replaces deprecated in-tree
   # spec.backup.barmanObjectStore, which is removed in CNPG 1.29).
   # Destination + credentials live in the ObjectStore CR `immich-postgres-store`.
