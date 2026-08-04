@@ -6,18 +6,17 @@ driver:
   kind: modern_ebpf
 
 falco:
-  grpc:
-    enabled: true
-  grpc_output:
-    enabled: true
   json_output: true
   http_output:
     enabled: true
     url: "http://falcosidekick.falco.svc:2801/"
 
+metrics:
+  enabled: true
+
 serviceMonitor:
   # Enable Prometheus ServiceMonitor
-  enabled: true
+  create: true
 
 resources:
   requests:
