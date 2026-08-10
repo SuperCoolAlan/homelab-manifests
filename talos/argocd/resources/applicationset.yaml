@@ -27,6 +27,11 @@ spec:
           - path: talos/actualbudget
           # Media apps
           - path: talos/jellyfin
+          # Home end of the WireGuard tunnel publishing jellyfin.asandov.com via
+          # the Oracle Cloud VPS. Kept out of talos/jellyfin because it needs a
+          # PodSecurity-privileged namespace for NET_ADMIN, and jellyfin itself
+          # should stay on baseline.
+          - path: talos/jellyfin-tunnel
           - path: talos/media-v2
           - path: talos/qbittorrent
           # Tracearr
