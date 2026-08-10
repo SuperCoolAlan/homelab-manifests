@@ -1,0 +1,23 @@
+# Dynamic per-PVC ZFS datasets on the ramhaus `fast` pool (4x 960G SM863a,
+# two mirror vdevs striped, ~1.73T). Created 2026-08-09.
+#
+# Use this rather than `ssd-array` for anything doing small random writes -
+# sqlite app configs, VM rootdisks, postgres, jellyfin transcode cache.
+# `ssd` is a single 4-wide raidz2 vdev and so has the random-write IOPS of one
+# disk; `fast` has two mirror vdevs and roughly double the write concurrency.
+#
+# Ref: https://github.com/openebs/zfs-localpv/blob/develop/docs/storageclasses.md
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-array
+provisioner: zfs.csi.openebs.io
+# WaitForFirstConsumer: PVCs bind when a pod schedules, pinning to the node
+# that actually has the pool (ramhaus is the only one)
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+parameters:
+  poolname: "fast"
+  # "zfs" = native dataset per PVC (no zvol/format); compression/atime etc.
+  # inherit from the pool (lz4)
+  fstype: "zfs"

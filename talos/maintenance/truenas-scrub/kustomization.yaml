@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: truenas-maintenance
+
+resources:
+  - namespace.yaml
+  - job.yaml
+
+# The `truenas-api` Secret is deliberately NOT in git. It is created
+# out-of-band so the API key never lands in the repo:
+#
+#   kubectl create secret generic truenas-api \
+#     -n truenas-maintenance --from-literal=api-key='<key>'
+#
+# If this becomes a recurring job, convert it to the ksops/SOPS pattern used
+# elsewhere in this repo (see talos/argocd/secrets-generator.yaml).
+
+configMapGenerator:
+  - name: truenas-scrub-script
+    files:
+      - scrub-monitor.py
+
+generatorOptions:
+  disableNameSuffixHash: true
