@@ -10,6 +10,9 @@ resources:
   - resources/cnpg-objectstore.yaml
   - resources/cnpg-cluster.yaml
   - resources/cnpg-scheduled-backup.yaml
+  # Photo-library backup via VolSync. Uncomment together with the restic secret
+  # above - without it the mover pod starts and fails on a missing Secret.
+  # - resources/volsync-photos.yaml
   - resources/ingress.yaml
   - resources/cloudflare-ingress.yaml
 
