@@ -408,6 +408,18 @@ helmCharts:
 # (trivy-operator re-enabled below)
 
 configMapGenerator:
+  # ArgoCD (re-enabled: argocd ServiceMonitors are converted and scraping)
+  - name: dashboard-argocd
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "ArgoCD"
+    files:
+      - dashboards/ArgoCD/argocd-overview.json
+
   - name: dashboard-trivy-operator
     namespace: monitoring
     options:
