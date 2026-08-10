@@ -5,6 +5,11 @@ namespace: authentik
 
 resources:
   - namespace.yaml
+  - resources/cnpg-cluster.yaml
+  # resources/cnpg-objectstore.yaml and resources/cnpg-scheduled-backup.yaml are
+  # committed but intentionally NOT listed here - they need the
+  # cnpg-b2-asandov-credentials secret in this namespace first. See the comment
+  # block in cnpg-cluster.yaml.
   - resources/traefik-middleware.yaml
   - resources/cloudflare-ingress.yaml
   - resources/ldap-ingressroute.yaml

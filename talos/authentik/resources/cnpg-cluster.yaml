@@ -1,0 +1,94 @@
+# authentik's Postgres, migrated off the TrueNAS box into the cluster.
+#
+# WHY: authentik.postgresql.host in values.yaml pointed at
+# truenas.asandov.local:5432, which made cluster SSO depend on a machine we are
+# decommissioning. Traefik middlewares across media-v2, maintainerr and others
+# route through authentik-authentik@kubernetescrd, so that host going away takes
+# authenticated access to most services with it.
+#
+# The source is PostgreSQL 18.1 (verified 2026-08-09), so the target must also be
+# 18.x - pg_dump refuses to dump from a server newer than itself, and
+# bootstrap.initdb.import runs pg_dump/pg_restore from the *target's* binaries.
+# Source database at time of drafting: 139 MB, 215 tables, only the plpgsql
+# extension - a clean logical import with nothing exotic to carry over.
+#
+# NOTE: this is a one-shot bootstrap. The import runs only at cluster creation.
+# If it fails, delete the Cluster and recreate rather than trying to re-run it.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: authentik-postgres
+  namespace: authentik
+  annotations:
+    cnpg.io/hibernation: "off"
+spec:
+  instances: 1
+  # Must match the source major version (18). Plain CNPG image - authentik needs
+  # no extensions beyond plpgsql, unlike immich which needs vectorchord.
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1
+
+  bootstrap:
+    initdb:
+      database: authentik
+      owner: authentik
+      dataChecksums: true
+      encoding: UTF8
+      # Reuse authentik's EXISTING credentials rather than letting CNPG generate
+      # new ones. This secret is kubernetes.io/basic-auth with username/password,
+      # which is exactly what CNPG expects here. Consequence: the only change
+      # authentik itself needs is the host - its password stays valid.
+      secret:
+        name: authentik-postgres-credentials
+      import:
+        # microservice = import exactly one database into this cluster's
+        # application database. monolith would carry roles and multiple DBs,
+        # which we do not want from a shared TrueNAS Postgres.
+        type: microservice
+        databases:
+          - authentik
+        source:
+          externalCluster: truenas-authentik
+
+  # Source of the import. Read-only - CNPG only ever pg_dumps from here.
+  externalClusters:
+    - name: truenas-authentik
+      connectionParameters:
+        host: truenas.asandov.local
+        port: "5432"
+        user: authentik
+        dbname: authentik
+        sslmode: prefer
+      password:
+        name: authentik-postgres-credentials
+        key: password
+
+  storage:
+    # 139 MB today. 10Gi leaves room without being silly; ssd-array supports
+    # expansion, and storageClass is immutable on a CNPG cluster so the class
+    # choice is the one thing worth getting right up front.
+    size: 10Gi
+    # raidz2 across 4x 480G SAS SSD. Same class immich-postgres already runs on.
+    storageClass: ssd-array
+
+  # BACKUPS ARE NOT WIRED UP YET - deliberately.
+  #
+  # The barman-cloud plugin needs the cnpg-b2-asandov-credentials secret, which
+  # currently exists only in the immich namespace. Secrets here are ksops/SOPS
+  # encrypted, so adding it needs the GPG key. With isWALArchiver: true and no
+  # credentials, WAL archiving would fail continuously and WAL would accumulate
+  # on the PVC - so the block is omitted rather than shipped broken.
+  #
+  # TO ENABLE, once talos/authentik/secrets/cnpg-b2-credentials.enc.yaml exists
+  # and is listed in secrets-generator.yaml:
+  #   1. add resources/cnpg-objectstore.yaml + resources/cnpg-scheduled-backup.yaml
+  #      to kustomization.yaml (both files are already committed, just unwired)
+  #   2. uncomment the block below
+  #
+  # plugins:
+  #   - name: barman-cloud.cloudnative-pg.io
+  #     isWALArchiver: true
+  #     parameters:
+  #       barmanObjectName: authentik-postgres-store
+
+  nodeMaintenanceWindow:
+    inProgress: false

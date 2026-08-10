@@ -1,0 +1,37 @@
+# Off-site backup target for authentik-postgres, mirroring immich's setup.
+#
+# Same B2 bucket as immich - barman writes under destinationPath/<serverName>,
+# and CNPG defaults serverName to the cluster name, so these land at
+# s3://asandov-cnpg/authentik-postgres/ with no collision against
+# s3://asandov-cnpg/immich-postgres/.
+#
+# PREREQUISITE: cnpg-b2-asandov-credentials does not yet exist in the authentik
+# namespace - it is currently only in immich. Secrets in this repo are
+# ksops/SOPS-encrypted, so add it the same way the others are:
+#   talos/authentik/secrets/cnpg-b2-credentials.enc.yaml
+#   + a files: entry in talos/authentik/secrets-generator.yaml
+# Apply this ObjectStore only once that secret exists.
+#
+# Worth noting this is a net gain in safety: the TrueNAS Postgres this replaces
+# has no backup story at all that we found.
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: authentik-postgres-store
+  namespace: authentik
+spec:
+  configuration:
+    destinationPath: s3://asandov-cnpg/
+    endpointURL: https://s3.us-west-004.backblazeb2.com
+    s3Credentials:
+      accessKeyId:
+        name: cnpg-b2-asandov-credentials
+        key: ACCESS_KEY_ID
+      secretAccessKey:
+        name: cnpg-b2-asandov-credentials
+        key: ACCESS_SECRET_KEY
+    wal:
+      compression: gzip
+    data:
+      compression: gzip
+  retentionPolicy: "30d"
