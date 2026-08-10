@@ -18,9 +18,14 @@ metadata:
   annotations:
     metallb.io/loadBalancerIPs: 10.0.7.202
     # external-dns has `sources: [ingress, service, crd]`, so it would also
-    # publish from this Service. dns.yaml owns the record instead, because it
-    # has to exist and point at TrueNAS *before* this Service does.
+    # publish from this Service. dns.yaml owns the record instead.
     external-dns.alpha.kubernetes.io/exclude: "true"
+    # UniFi's admin UI is HTTPS-only behind a self-signed cert with no IP SANs.
+    # Traefik reads these `service.*` annotations from the SERVICE - on the
+    # Ingress the scheme is honoured but the transport is not, which fails
+    # verification and returns 500.
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: unifi-unifi-insecure@kubernetescrd
 spec:
   type: LoadBalancer
   # Preserve the device's real source IP rather than SNATing to a node address —

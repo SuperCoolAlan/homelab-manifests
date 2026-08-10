@@ -31,10 +31,12 @@ metadata:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    # Speak HTTPS to the backend, and use the transport above so the
-    # self-signed backend cert is accepted.
-    traefik.ingress.kubernetes.io/service.serversscheme: https
-    traefik.ingress.kubernetes.io/service.serverstransport: unifi-unifi-insecure@kubernetescrd
+    # NOTE: the traefik `service.*` annotations that make the HTTPS backend work
+    # (serversscheme / serverstransport) live on the SERVICE, not here. Putting
+    # them on the Ingress silently half-works: traefik picks up the https scheme
+    # but ignores the transport, then rejects UniFi's self-signed cert with
+    # "x509: cannot validate certificate for <pod-ip> because it doesn't contain
+    # any IP SANs" and returns 500. See service.yaml.
 spec:
   ingressClassName: traefik
   rules:
