@@ -7,6 +7,13 @@ persistentVolumeClaims:
   sonarr-config:
     requestStorage: '10Gi'
     storageClassName: 'nfs'
+  # Replacement on the local ZFS `fast` pool. storageClassName is immutable on
+  # a PVC, hence a second claim rather than editing the first. The original is
+  # kept while the migration soaks so rollback is a one-line claimName change -
+  # its PV is Retain and still holds the data.
+  sonarr-config-fast:
+    requestStorage: '10Gi'
+    storageClassName: 'fast-array'
 
 # Disable config.xml mounting - let app manage its own config
 application:
