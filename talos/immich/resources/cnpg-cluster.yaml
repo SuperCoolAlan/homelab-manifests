@@ -36,5 +36,20 @@ spec:
       isWALArchiver: true
       parameters:
         barmanObjectName: immich-postgres-store
+        # Clean archive path, overriding the default (the cluster name).
+        #
+        # Moving this cluster to ssd-array required deleting and recreating it
+        # (storageClass is immutable on a CNPG cluster), so the new instance
+        # began a fresh WAL timeline at 000000010000000000000001 while
+        # s3://asandov-cnpg/immich-postgres/ still held the old cluster's
+        # archive. barman refused every WAL push -
+        #   "WAL archive check failed: Expected empty archive"
+        # - and since base backups need working WAL archiving, each scheduled
+        # backup wedged in `started` and blocked the next. Backups were dead
+        # from the move until 2026-08-10.
+        #
+        # A new path fixes it without destroying the old archive, which is the
+        # only pre-move backup that exists.
+        serverName: immich-cnpg-talos
   nodeMaintenanceWindow:
     inProgress: false
