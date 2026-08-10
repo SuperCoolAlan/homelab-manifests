@@ -1,0 +1,25 @@
+# Replacement for the immich photo library, moving off TrueNAS NFS onto the
+# local ZFS `ssd` pool (4x 480G SAS raidz2).
+#
+# ssd-array rather than fast-array: raidz2 tolerates ANY two disk failures where
+# the fast mirrors guarantee only one, and photos are the one genuinely
+# irreplaceable dataset here. immich-postgres already lives on ssd-array too, so
+# library and database stay on the same pool.
+#
+# RWO, not RWX: the old PV declared ReadWriteMany, but only immich-server mounts
+# it (verified 2026-08-09) - and zfs-localpv cannot do RWX anyway, since its CSI
+# driver enforces verifyMount on a second attach.
+#
+# 100Gi against 22G actual: room to grow, and ssd-array allows expansion.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-library-fast
+  namespace: immich
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ssd-array
+  resources:
+    requests:
+      storage: 100Gi
