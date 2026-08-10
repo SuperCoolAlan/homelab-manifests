@@ -37,6 +37,11 @@ redis:
   enabled: true
 
 server:
+  # TEMPORARY (zero-divergence Postgres cutover, 2026-08-09): held at 0 so no
+  # further writes reach the TrueNAS database while the CNPG cluster re-imports
+  # from a quiesced source. Restored to 1 in the commit that flips
+  # authentik.postgresql.host to the in-cluster service.
+  replicas: 0
   resources:
     requests:
       cpu: 100m
@@ -58,6 +63,11 @@ server:
     tls: []
 
 worker:
+  # TEMPORARY (zero-divergence Postgres cutover, 2026-08-09): held at 0 so no
+  # further writes reach the TrueNAS database while the CNPG cluster re-imports
+  # from a quiesced source. Restored to 1 in the commit that flips
+  # authentik.postgresql.host to the in-cluster service.
+  replicas: 0
   resources:
     requests:
       cpu: 100m
