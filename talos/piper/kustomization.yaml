@@ -6,7 +6,6 @@ namespace: piper
 resources:
   - namespace.yaml
   - pvc-fast.yaml
-  - pvc-legacy.yaml
 
 
 helmCharts:

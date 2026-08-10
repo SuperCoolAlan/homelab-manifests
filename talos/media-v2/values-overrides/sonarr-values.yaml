@@ -4,13 +4,12 @@ metrics:
 
 # Inherited from original media deployment
 persistentVolumeClaims:
-  sonarr-config:
-    requestStorage: '10Gi'
-    storageClassName: 'nfs'
-  # Replacement on the local ZFS `fast` pool. storageClassName is immutable on
-  # a PVC, hence a second claim rather than editing the first. The original is
-  # kept while the migration soaks so rollback is a one-line claimName change -
-  # its PV is Retain and still holds the data.
+  sonarr-config: null  # chart default — superseded by sonarr-config-fast
+  # On the local ZFS `fast` pool. The original TrueNAS NFS claim
+  # (sonarr-config) was dropped 2026-08-10 with the TrueNAS decommission. Its
+  # PV is Retain so the dataset survives, but the server exporting it does not,
+  # so the claim could never bind again - keeping it only left a
+  # permanently-Pending PVC and a rollback note that no longer worked.
   sonarr-config-fast:
     requestStorage: '10Gi'
     storageClassName: 'fast-array'
@@ -39,8 +38,8 @@ deployment:
   volumes:
     config:
       persistentVolumeClaim:
-        # Migrated off TrueNAS NFS 2026-08-09. Rollback is one line: point this
-        # back at sonarr-config - its PV is Retain and still holds the data.
+        # Migrated off TrueNAS NFS 2026-08-09; the NFS claim was dropped
+        # 2026-08-10 when TrueNAS was decommissioned.
         claimName: 'sonarr-config-fast'
     sabnzbd-downloads:
       persistentVolumeClaim:

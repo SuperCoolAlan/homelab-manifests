@@ -1,12 +1,12 @@
-# App state (queue db, history) — first dynamic PVC on pool1 via truenas-nfs
+# App state (queue db, history) on the local ZFS `fast` pool.
 persistentVolumeClaims:
-  sabnzbd-config: null  # chart default — superseded by sabnzbd-state
-  sabnzbd-state:
-    requestStorage: '5Gi'
-    storageClassName: 'truenas-nfs'
-  # Replacement on the local ZFS `fast` pool. NB the old PV was reclaimPolicy
-  # Delete (dynamic truenas-nfs); patched to Retain 2026-08-09 so removing the
-  # old claim cannot destroy the source dataset.
+  sabnzbd-config: null  # chart default — superseded by sabnzbd-state-fast
+  # The original claim (sabnzbd-state) was a dynamic truenas-nfs volume,
+  # dropped 2026-08-10 with the TrueNAS decommission. Its PV had been patched
+  # from reclaimPolicy Delete to Retain on 2026-08-09 precisely so removing the
+  # claim could not fire democratic-csi's delete against the source dataset -
+  # which matters more now, since that call would hit a server that is gone and
+  # leave the PV wedged in Terminating on an unsatisfiable finalizer.
   sabnzbd-state-fast:
     requestStorage: '5Gi'
     storageClassName: 'fast-array'

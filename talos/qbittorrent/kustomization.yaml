@@ -7,7 +7,6 @@ resources:
   - namespace.yaml
   - pvcs.yaml
   - pvc-fast.yaml
-  - pvc-legacy.yaml
   - local-asandov-ingress.yaml
 
 generators:
