@@ -1,8 +1,16 @@
 # Jellyseerr configuration for media requests
 persistentVolumeClaims:
+  # Original TrueNAS NFS claim. Kept while the migration soaks so rollback is
+  # just pointing deployment.volumes.config back at it - the underlying PV is
+  # Retain and still holds the data. Reap once verified.
   jellyseerr-config:
     requestStorage: '5Gi'
     storageClassName: 'nfs'
+  # Replacement on the local ZFS `fast` pool. storageClassName is immutable on
+  # a PVC, hence a second claim rather than editing the first.
+  jellyseerr-config-fast:
+    requestStorage: '5Gi'
+    storageClassName: 'fast-array'
 
 # Use specific UID/GID that matches TrueNAS NFS user
 deployment:
