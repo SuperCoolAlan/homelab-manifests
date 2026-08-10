@@ -1,0 +1,26 @@
+# VolumeSnapshotClass for zfs-localpv.
+#
+# The CSI driver and the zfssnapshots.zfs.openebs.io CRD were both installed by
+# the chart, and snapshot-controller runs in kube-system - but no
+# VolumeSnapshotClass existed, so nothing could actually request a snapshot. The
+# only class in the cluster was truenas-nfs (democratic-csi).
+#
+# Needed by VolSync: copyMethod Direct cannot work against zfs-localpv, because
+# the driver refuses a second mount of a volume even on the same node -
+#
+#   verifyMount: device already mounted at [...]
+#
+# - so a mover pod cannot attach a PVC that its application already has open.
+# copyMethod Snapshot sidesteps that entirely: VolSync snapshots the volume,
+# mounts a clone of the snapshot, backs that up, and deletes it. It also gives a
+# consistent point-in-time copy rather than reading a live directory.
+#
+# Delete: the snapshot is a transient artifact owned by the backup run; there is
+# no reason to retain the VolumeSnapshotContent once VolSync removes the
+# VolumeSnapshot.
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: zfs-localpv-snapshot
+driver: zfs.csi.openebs.io
+deletionPolicy: Delete
