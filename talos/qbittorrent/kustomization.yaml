@@ -8,6 +8,7 @@ resources:
   - pvcs.yaml
   - pvc-fast.yaml
   - local-asandov-ingress.yaml
+  - volsync.yaml
 
 generators:
   - secrets-generator.yaml
