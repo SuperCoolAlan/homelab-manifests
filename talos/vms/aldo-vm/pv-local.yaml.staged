@@ -1,0 +1,64 @@
+# ============================================================================
+# STAGED FOR PHASE 4 — NOT WIRED INTO kustomization.yaml
+# ============================================================================
+# Replaces the TrueNAS NFS PV for the aldo VM's root disk once
+# ST6000NM0095-pool1 is imported on ramhaus as `media` at /var/mnt/media.
+#
+# Like tracearr, the current path
+#   /mnt/ST6000NM0095-pool0/media/nfs/vms/aldo-rootdisk
+# is a mountpoint ALIAS. The dataset physically lives at
+#   ST6000NM0095-pool1/pool0-evac/media/nfs/vms/aldo-rootdisk   (1.3 GB used)
+# so it travels with the disks - no copy required.
+#
+# ⚠️ THIS ONE IS DIFFERENT FROM THE OTHERS: it backs a KubeVirt
+# VirtualMachine, not a Deployment. Before the swap, STOP THE VM - scaling a
+# Deployment is not the equivalent, and pulling storage from a running VM risks
+# corrupting its filesystem the same way yanking a disk from a physical machine
+# would:
+#
+#   virtctl stop aldo-vm -n vms
+#   # or: kubectl patch vm aldo-vm -n vms --type merge -p '{"spec":{"running":false}}'
+#
+# Bring it back only after the PV/PVC below are bound.
+#
+# NOTE volumeMode stays Filesystem, matching the existing PV - KubeVirt is
+# storing a disk image as a file here, not using a raw block device. Changing it
+# to Block would make the image unreadable.
+# ============================================================================
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: aldo-rootdisk-local
+spec:
+  capacity:
+    storage: 100Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: media-local
+  local:
+    path: /var/mnt/media/pool0-evac/media/nfs/vms/aldo-rootdisk
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-ramhaus
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aldo-rootdisk
+  namespace: vms
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: media-local
+  volumeMode: Filesystem
+  volumeName: aldo-rootdisk-local
+  resources:
+    requests:
+      storage: 100Gi
