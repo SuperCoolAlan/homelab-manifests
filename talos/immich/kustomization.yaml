@@ -24,18 +24,3 @@ helmCharts:
     namespace: immich
     valuesFile: values.yaml
 
-# TEMPORARY: held at 0 while /data (13955 files, 22G) is copied to
-# immich-library-fast. Removed in the follow-up commit that repoints
-# immich.persistence.library.existingClaim.
-patches:
-  - target:
-      kind: Deployment
-      name: immich-server
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: immich-server
-        namespace: immich
-      spec:
-        replicas: 0

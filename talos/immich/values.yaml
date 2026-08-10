@@ -36,7 +36,10 @@ persistence:
 immich:
   persistence:
     library:
-      existingClaim: immich-library
+      # Migrated off TrueNAS NFS 2026-08-09 to local ZFS on the ssd pool.
+      # Rollback is one line: point back at immich-library - that PV is Retain
+      # and still holds all 13955 files.
+      existingClaim: immich-library-fast
 
 # Enable built-in Valkey (Redis) - disabled by default in chart
 valkey:

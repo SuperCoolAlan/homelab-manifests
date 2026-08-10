@@ -146,7 +146,7 @@ deployment:
   volumes:
     config:
       persistentVolumeClaim:
-        claimName: 'sabnzbd-state'
+        claimName: 'sabnzbd-state-fast'
     downloads:
       persistentVolumeClaim:
         claimName: 'sabnzbd-downloads'
