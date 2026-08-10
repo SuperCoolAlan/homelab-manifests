@@ -6,27 +6,10 @@ metadata:
 spec:
   configuration:
     destinationPath: s3://asandov-cnpg/
-    # Explicit serverName, overriding the default (the cluster name).
-    #
-    # WHY: when immich-postgres moved to ssd-array it had to be deleted and
-    # recreated - storageClass is immutable on a CNPG cluster. The new instance
-    # starts a fresh WAL timeline at 000000010000000000000001, but
-    # s3://asandov-cnpg/immich-postgres/ still held the OLD cluster's archive.
-    # barman refuses to write into an archive it does not recognise as its own:
-    #
-    #   ERROR: WAL archive check failed for server immich-postgres:
-    #          Expected empty archive
-    #
-    # Every WAL push then failed, and since base backups require working WAL
-    # archiving, each scheduled backup wedged in `started` forever - blocking
-    # the next one. Backups had been silently dead since the move.
-    #
-    # Writing to a clean path fixes it without destroying the old archive, which
-    # is the only pre-move backup that exists. That archive cannot be restored
-    # INTO this cluster, but it can still be restored FROM, into a scratch
-    # cluster, if the current data ever looks wrong. Delete it once that stops
-    # being worth keeping.
-    serverName: immich-cnpg-talos
+    # NOTE: serverName is NOT settable here - the admission webhook rejects it
+    # ("Forbidden: use the 'serverName' plugin parameter in the Cluster
+    # resource") even though the CRD schema exposes the field. It is set on the
+    # Cluster's plugin parameters instead; see cnpg-cluster.yaml for why.
     endpointURL: https://s3.us-west-004.backblazeb2.com
     s3Credentials:
       accessKeyId:
