@@ -1,0 +1,54 @@
+# Browser UI at unifi.local.asandov.com, matching every other local service:
+# traefik + cert-manager DNS-01 via Cloudflare, so a non-public name still gets
+# a real publicly-trusted cert.
+#
+# NOTE this is the UI ONLY. Devices do NOT talk to this name — inform is
+# 8080/tcp and discovery is UDP, neither of which traefik carries (its
+# entrypoints are 80, 443 and 389). Devices use unifi.asandov.local, which
+# resolves to the LoadBalancer in service.yaml. Setting "Override Inform Host"
+# to this hostname would break adoption.
+#
+# UniFi's UI is HTTPS-only behind a self-signed cert, so traefik has to be told
+# to (a) speak https to the backend and (b) not verify it. The repo had no
+# HTTPS-backend example before this — argocd uses serversscheme h2c, which is
+# the cleartext-h2 case, not this one.
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: unifi-insecure
+  namespace: unifi
+spec:
+  # The backend cert is UniFi's own self-signed keystore cert. Nothing can
+  # validate it, and it is a single hop inside the cluster to a pod IP.
+  insecureSkipVerify: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unifi
+  namespace: unifi
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Speak HTTPS to the backend, and use the transport above so the
+    # self-signed backend cert is accepted.
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: unifi-unifi-insecure@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: unifi.local.asandov.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: unifi
+                port:
+                  number: 8443
+  tls:
+    - hosts:
+        - unifi.local.asandov.com
+      secretName: unifi-local-tls

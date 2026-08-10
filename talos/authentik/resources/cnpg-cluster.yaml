@@ -70,25 +70,15 @@ spec:
     # raidz2 across 4x 480G SAS SSD. Same class immich-postgres already runs on.
     storageClass: ssd-array
 
-  # BACKUPS ARE NOT WIRED UP YET - deliberately.
-  #
-  # The barman-cloud plugin needs the cnpg-b2-asandov-credentials secret, which
-  # currently exists only in the immich namespace. Secrets here are ksops/SOPS
-  # encrypted, so adding it needs the GPG key. With isWALArchiver: true and no
-  # credentials, WAL archiving would fail continuously and WAL would accumulate
-  # on the PVC - so the block is omitted rather than shipped broken.
-  #
-  # TO ENABLE, once talos/authentik/secrets/cnpg-b2-credentials.enc.yaml exists
-  # and is listed in secrets-generator.yaml:
-  #   1. add resources/cnpg-objectstore.yaml + resources/cnpg-scheduled-backup.yaml
-  #      to kustomization.yaml (both files are already committed, just unwired)
-  #   2. uncomment the block below
-  #
-  # plugins:
-  #   - name: barman-cloud.cloudnative-pg.io
-  #     isWALArchiver: true
-  #     parameters:
-  #       barmanObjectName: authentik-postgres-store
+  # Backup via the barman-cloud plugin, same pattern as immich. Requires the
+  # cnpg-b2-asandov-credentials secret in this namespace - with
+  # isWALArchiver: true and no credentials, WAL archiving fails continuously and
+  # WAL accumulates on the PVC.
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: authentik-postgres-store
 
   nodeMaintenanceWindow:
     inProgress: false

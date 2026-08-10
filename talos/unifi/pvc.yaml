@@ -1,0 +1,36 @@
+# UniFi Network Application state: the bundled MongoDB, site config, and stats.
+#
+# fast-array rather than ssd-array: Mongo does small random writes continuously
+# (device stats every few seconds), which is the workload raidz2 is worst at.
+#
+# Sized for growth — UniFi stats retention is what drives this, not the current
+# footprint. Expandable, since fast-array allows it.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unifi-data
+  namespace: unifi
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 20Gi
+---
+# The controller's TLS keystore. Small, but worth persisting: without it UniFi
+# regenerates a self-signed cert on every pod restart. Nothing validates it
+# (devices don't, and the browser UI is fronted by traefik with a real
+# cert-manager cert) but a stable keystore keeps restarts quiet.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unifi-cert
+  namespace: unifi
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 1Gi

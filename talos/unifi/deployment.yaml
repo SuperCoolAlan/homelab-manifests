@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifi
+  namespace: unifi
+  labels:
+    app: unifi
+spec:
+  replicas: 1
+  # Recreate, not RollingUpdate: the data PVC is RWO and it holds a MongoDB.
+  # Two controllers against one Mongo store is a corruption scenario, not a
+  # rollout strategy.
+  strategy:
+    type: Recreate
+    rollingUpdate: null
+  selector:
+    matchLabels:
+      app: unifi
+  template:
+    metadata:
+      labels:
+        app: unifi
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      securityContext:
+        # The image drops privileges itself; fsGroup is what makes the PVCs
+        # writable by whatever uid it lands on. Restoring from a .unf backup
+        # into empty volumes means ownership is established correctly on first
+        # write, which is a further reason not to copy the old data directory in
+        # by hand.
+        fsGroup: 999
+      containers:
+        - name: unifi
+          # Pinned to exactly what TrueNAS runs. UniFi does not support
+          # downgrade, and a .unf backup restores cleanly only into the same or
+          # a newer version — so match first, upgrade deliberately afterwards.
+          # This image bundles MongoDB; there is no separate database pod.
+          image: goofball222/unifi:9.3.43
+          ports:
+            - name: inform
+              containerPort: 8080
+            - name: https-ui
+              containerPort: 8443
+            - name: stun
+              containerPort: 3478
+              protocol: UDP
+            - name: discovery
+              containerPort: 10001
+              protocol: UDP
+          env:
+            - name: TZ
+              value: America/Chicago
+          volumeMounts:
+            - name: data
+              mountPath: /usr/lib/unifi/data
+            - name: cert
+              mountPath: /usr/lib/unifi/cert
+            # Logs are disposable and chatty — no reason to put them on ZFS.
+            - name: logs
+              mountPath: /usr/lib/unifi/logs
+          resources:
+            requests:
+              cpu: 250m
+              # UniFi is a JVM plus MongoDB; it is memory-hungry at rest.
+              memory: 1Gi
+            limits:
+              memory: 4Gi
+          # UniFi is slow to start — JVM plus Mongo plus schema checks. The
+          # startupProbe is what stops the liveness probe killing it mid-boot:
+          # it allows up to 5 minutes before liveness takes over.
+          startupProbe:
+            tcpSocket:
+              port: 8443
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            tcpSocket:
+              port: 8443
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 8443
+            periodSeconds: 15
+            timeoutSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: unifi-data
+        - name: cert
+          persistentVolumeClaim:
+            claimName: unifi-cert
+        - name: logs
+          emptyDir: {}
