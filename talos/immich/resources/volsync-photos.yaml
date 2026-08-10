@@ -11,20 +11,40 @@
 # 2026-07-30, then it stopped. Nothing replaced it, so from 2026-07-30 the photo
 # library existed only on live storage. This re-homes that job into the cluster.
 #
-# It points at the SAME restic repository, so it appends to those 30 snapshots
-# rather than starting fresh - preserving the history and the deduplication
-# (a new repo would mean re-uploading all 22 GB).
+# NEW REPO, deliberately. The old bucket was named for a machine being
+# decommissioned, so this starts fresh in s3://asandov-volsync/immich-photos.
+# That costs a full 22 GB re-upload and loses the July snapshot history -
+# accepted, because B2 does not charge for ingress (uploads are free, and
+# b2_upload_file is a free Class A transaction), so the only real cost is
+# wall-clock on the first run.
 #
-# PREREQUISITE - secret `immich-photos-restic` in this namespace, NOT in git:
+# Bucket is per-tool rather than per-app, mirroring asandov-cnpg: further
+# VolSync sources get their own prefix in the same bucket, keeping the number of
+# buckets and application keys flat as more apps are added.
 #
-#   kubectl create secret generic immich-photos-restic -n immich \
-#     --from-literal=RESTIC_REPOSITORY='s3:https://s3.us-west-004.backblazeb2.com/asandov-truenas/immich-photos' \
-#     --from-literal=RESTIC_PASSWORD='<the repo password>' \
-#     --from-literal=AWS_ACCESS_KEY_ID='<b2 keyID with WRITE on asandov-truenas>' \
-#     --from-literal=AWS_SECRET_ACCESS_KEY='<b2 applicationKey>'
+# VolSync's restic mover runs `restic init` when the repository does not exist,
+# so no manual setup is needed - the first run just takes a while.
 #
-# The audit key is read-only and will NOT work. Convert this to the ksops/SOPS
-# pattern used elsewhere in the repo once it is proven.
+# ⚠️ Keep s3://asandov-truenas until this repo has a verified snapshot. Those 30
+# snapshots are the only historical photo backup that exists until then.
+#
+# PREREQUISITE - fill in secrets/immich-photos-restic.enc.yaml:
+#
+#   sops talos/immich/secrets/immich-photos-restic.enc.yaml
+#
+# RESTIC_REPOSITORY is pre-filled and correct. The other three are REPLACE_ME:
+#
+#   RESTIC_PASSWORD        new password for the new repo - restic init will use
+#                          it. Do NOT reuse the old repo's password; it was
+#                          exposed in plaintext.
+#   AWS_ACCESS_KEY_ID      B2 keyID with WRITE on asandov-volsync. Must be a
+#                          NON-master key - B2's S3 endpoint rejects master
+#                          credentials outright.
+#   AWS_SECRET_ACCESS_KEY  the matching applicationKey.
+#
+# pruneIntervalDays below also needs DELETE on the bucket. Without it backups
+# keep succeeding and only prune fails, which is easy to miss - grant
+# read+write+delete, or drop pruneIntervalDays.
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource
 metadata:
