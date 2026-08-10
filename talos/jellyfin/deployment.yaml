@@ -6,7 +6,14 @@ metadata:
   labels:
     app: jellyfin
 spec:
-  replicas: 1
+  # PHASE4-QUIESCE: scaled to 0 for the TrueNAS disk swap. jellyfin mounts
+  # media-library, an NFS PV backed by truenas.asandov.local. Once TrueNAS is
+  # powered off, a running pod holding that mount wedges in uninterruptible I/O
+  # on a stale NFS handle - which often needs a node reboot to clear.
+  #
+  # Restore to 1 in the same commit that swaps media-pv.yaml from the NFS PV to
+  # the local: PV on /var/mnt/media. Grep PHASE4-QUIESCE for the full set.
+  replicas: 0
   # Recreate, not RollingUpdate: the config PVC is RWO and the GPU is a single
   # exclusive device, so a second pod could never schedule alongside the first.
   strategy:

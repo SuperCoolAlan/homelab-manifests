@@ -1,0 +1,22 @@
+# PHASE4-QUIESCE: park qbittorrent for the TrueNAS disk swap.
+#
+# qbittorrent mounts media-library, an NFS PV backed by truenas.asandov.local
+# (/mnt/ST6000NM0095-pool1/media). Its config already lives on fast-array, so
+# this is purely about the media mount.
+#
+# A pod holding an NFS mount when the server disappears blocks in
+# uninterruptible I/O on a stale handle - SIGKILL will not clear it, and it
+# often takes a node reboot. Scale to zero before the shutdown.
+#
+# Worth doing cleanly here even beyond the mount: qbittorrent writes .fastresume
+# state on shutdown, and killing it hard means re-checking torrents on restart.
+#
+# TO RESTORE: delete this file and its entry in kustomization.yaml, in the same
+# commit that swaps pvcs.yaml for pvcs-local.yaml.staged.
+# Grep PHASE4-QUIESCE for the full set across the repo.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent
+spec:
+  replicas: 0

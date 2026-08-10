@@ -1,0 +1,35 @@
+# PHASE4-QUIESCE: park every NFS-mounting *arr for the TrueNAS disk swap.
+#
+# These four are the media-v2 workloads that mount a PVC backed by
+# truenas.asandov.local:
+#
+#   sonarr    media-library
+#   radarr    media-library
+#   bazarr    media-library, media-downloads
+#   prowlarr  media-library, media-downloads
+#
+# When TrueNAS powers off, a pod holding an NFS mount does not fail cleanly - it
+# blocks in uninterruptible I/O on a stale file handle, which SIGKILL cannot
+# clear and which frequently requires a node reboot to resolve. Scaling to zero
+# before the shutdown avoids that entirely.
+#
+# NOT patched, deliberately - these are already fully on local storage and
+# should keep running through the swap:
+#
+#   sabnzbd     sabnzbd-state-fast (fast-array) + sabnzbd-downloads (media-local)
+#   jellyseerr  jellyseerr-config-fast (fast-array)
+#
+# The apps are Helm charts, so replicas cannot be set in git by editing a
+# Deployment - hence this patch. The target `name` is a regex, and kustomize
+# hard-fails the whole render if it matches nothing, so a chart rename will
+# surface as a sync error rather than silently un-parking a workload.
+#
+# TO RESTORE: delete this file and its entry in kustomization.yaml, in the same
+# commit that swaps shared-pvcs.yaml for shared-pvcs-local.yaml.staged.
+# Grep PHASE4-QUIESCE for the full set across the repo.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: placeholder # ignored: the `target` in kustomization.yaml selects resources
+spec:
+  replicas: 0

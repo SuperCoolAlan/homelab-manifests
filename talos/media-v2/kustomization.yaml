@@ -28,6 +28,12 @@ patches:
     kind: Deployment
     name: sonarr
   path: patches/sonarr-install-unrar.yaml
+# PHASE4-QUIESCE — remove this entry and patches/phase4-quiesce.yaml after the
+# disk swap, in the commit that moves media-library onto local storage.
+- target:
+    kind: Deployment
+    name: ^(sonarr|radarr|bazarr|prowlarr)$
+  path: patches/phase4-quiesce.yaml
 
 helmCharts:
 - name: sonarr
