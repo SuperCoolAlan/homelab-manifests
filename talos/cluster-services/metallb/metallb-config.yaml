@@ -1,3 +1,8 @@
+# LAN clients reach these VIPs over an ASYMMETRIC path — the request hairpins
+# through OPNsense, the reply comes straight back from the node. pf therefore
+# needs `sloppy` state on the LAN rule covering this range, or every long-lived
+# connection dies at 120s. See docs/metallb-bgp-hairpin.md before debugging any
+# "connection randomly drops" report against a LoadBalancer service.
 ---
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
@@ -6,6 +11,9 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
+  # GROWING THIS RANGE? The OPNsense alias `Kubernetes_LoadBalancers` hardcodes
+  # 10.0.7.200-10.0.7.210 and gates LAN access. Addresses outside it are handed
+  # out happily by MetalLB and are then silently unreachable from the LAN.
   - 10.0.7.200-10.0.7.210  # LoadBalancer IP range
 ---
 apiVersion: metallb.io/v1beta1
@@ -17,6 +25,12 @@ spec:
   myASN: 65000
   peerASN: 65000
   peerAddress: 10.0.1.1
+# NOTE: this only configures OUR side. OPNsense must have a matching neighbor
+# entry per node, by node IP (Routing > BGP > Neighbors). A node with no entry
+# there retries forever in `Active` and its advertisements never arrive — which
+# is exactly how talos-blackbox sat unpeered for ~17 weeks, leaving every VIP on
+# a single next-hop. After adding or re-IPing a node, verify BOTH sessions:
+#   ssh root@10.0.1.1 'vtysh -c "show bgp summary"'   # expect Established, not Active
 ---
 apiVersion: metallb.io/v1beta1
 kind: BGPAdvertisement
