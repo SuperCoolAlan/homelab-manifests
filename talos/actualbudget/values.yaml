@@ -7,7 +7,10 @@ image:
 
 persistence:
   enabled: true
-  storageClass: truenas-nfs
+  # Migrated off TrueNAS 2026-08-09. The old PV was reclaimPolicy Delete and was
+  # patched to Retain first, so rollback (pointing back at actualbudget-data)
+  # still has its data.
+  existingClaim: actualbudget-data-fast
   accessModes:
     - ReadWriteOnce
   size: 5Gi

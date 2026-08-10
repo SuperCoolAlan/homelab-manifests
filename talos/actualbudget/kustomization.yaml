@@ -6,20 +6,8 @@ namespace: actualbudget
 resources:
   - namespace.yaml
   - pvc-fast.yaml
+  - pvc-legacy.yaml
 
-# TEMPORARY: held at 0 while /data is copied to actualbudget-data-fast.
-patches:
-  - target:
-      kind: Deployment
-      name: actualbudget
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: actualbudget
-        namespace: actualbudget
-      spec:
-        replicas: 0
 
 generators:
   - secrets-generator.yaml

@@ -30,18 +30,6 @@ patches:
     kind: Deployment
     name: sonarr
   path: patches/sonarr-install-unrar.yaml
-# TEMPORARY: held at 0 while /config is copied to sabnzbd-state-fast.
-- target:
-    kind: Deployment
-    name: sabnzbd
-  patch: |-
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: sabnzbd
-      namespace: media-v2
-    spec:
-      replicas: 0
 
 helmCharts:
 - name: sonarr
