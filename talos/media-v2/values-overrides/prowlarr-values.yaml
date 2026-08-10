@@ -49,7 +49,9 @@ deployment:
   volumes:
     config:
       persistentVolumeClaim:
-        claimName: 'prowlarr-config'
+        # Migrated off TrueNAS NFS 2026-08-09. Rollback is one line: point this
+        # back at prowlarr-config - its PV is Retain and still holds the data.
+        claimName: 'prowlarr-config-fast'
     downloads:
       persistentVolumeClaim:
         claimName: 'media-downloads'

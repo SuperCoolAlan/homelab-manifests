@@ -1,0 +1,33 @@
+# The original chart-created `qbittorrent` config PVC, transcribed from what
+# the chart renders today so Argo sees it as in-sync.
+#
+# Once persistence.existingClaim points at qbittorrent-config-fast, the chart
+# stops rendering this PVC - and with prune: true Argo would delete it, leaving
+# qbittorrent-config-nfs Released with a stale claimRef needing manual clearing
+# before it could rebind. Declaring it here keeps rollback to a one-line
+# existingClaim change.
+#
+# Note the storage class is carried by the deprecated beta annotation rather
+# than spec.storageClassName - that is what the chart emits, and matching it
+# exactly is what keeps Argo from reporting drift.
+#
+# Delete this file (and qbittorrent-config-nfs) once the migration has soaked.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qbittorrent
+  namespace: qbittorrent
+  annotations:
+    volume.beta.kubernetes.io/storage-class: nfs
+  labels:
+    app.kubernetes.io/instance: qbittorrent
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: qbittorrent
+    app.kubernetes.io/version: release-5.2.3
+    helm.sh/chart: qbittorrent-2.7.5
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

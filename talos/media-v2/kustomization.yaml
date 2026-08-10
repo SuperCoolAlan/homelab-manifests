@@ -30,33 +30,6 @@ patches:
     kind: Deployment
     name: sonarr
   path: patches/sonarr-install-unrar.yaml
-# TEMPORARY: held at 0 while /config is copied from the TrueNAS NFS PVs to the
-# -fast claims on local ZFS. sqlite must not be copied live. Removed in the
-# follow-up commit that repoints deployment.volumes.config.
-# The namespace below is load-bearing: without it kustomize resolves the patch
-# to Deployment/<name>.[noNs], matches nothing, and hard-fails the whole render.
-- target:
-    kind: Deployment
-    name: bazarr
-  patch: |-
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: bazarr
-      namespace: media-v2
-    spec:
-      replicas: 0
-- target:
-    kind: Deployment
-    name: prowlarr
-  patch: |-
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: prowlarr
-      namespace: media-v2
-    spec:
-      replicas: 0
 
 helmCharts:
 - name: sonarr

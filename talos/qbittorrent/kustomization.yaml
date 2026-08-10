@@ -7,6 +7,7 @@ resources:
   - namespace.yaml
   - pvcs.yaml
   - pvc-fast.yaml
+  - pvc-legacy.yaml
   - local-asandov-ingress.yaml
 
 generators:
@@ -17,20 +18,6 @@ patches:
       kind: Deployment
       name: qbittorrent
     path: patches/gluetun-secrets-dns.yaml
-  # TEMPORARY: held at 0 while /config is copied from the TrueNAS NFS PV to
-  # qbittorrent-config-fast. Removed in the follow-up commit that switches
-  # persistence to existingClaim.
-  - target:
-      kind: Deployment
-      name: qbittorrent
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: qbittorrent
-        namespace: qbittorrent
-      spec:
-        replicas: 0
 
 helmCharts:
   - name: qbittorrent
