@@ -6,9 +6,10 @@
 # ⚠️ THIS IS NOT OPTIONAL INFRASTRUCTURE. It looked like a democratic-csi
 # implementation detail - the chart renders a VolumeSnapshotClass and so needed
 # the CRDs - but the CRDs and controller are cluster-wide and now underpin
-# every VolSync backup in the cluster. All fourteen ReplicationSources use
-# copyMethod: Snapshot, because zfs-localpv enforces verifyMount and refuses a
-# second mount of a volume its application already holds open.
+# VolSync in this cluster. immich-photos uses copyMethod: Snapshot, because
+# zfs-localpv enforces verifyMount and refuses a second mount of a volume its
+# application already holds open - so any future ReplicationSource needs these
+# too.
 #
 # Deleting democratic-csi while it still owned these would have pruned the CRDs,
 # and deleting a CRD cascade-deletes its custom resources: every VolumeSnapshot
