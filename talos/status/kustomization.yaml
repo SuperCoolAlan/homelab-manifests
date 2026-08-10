@@ -6,6 +6,23 @@ namespace: status
 resources:
   - namespace.yaml
   - ingress.yaml
+  - pvc-fast.yaml
+
+# TEMPORARY: held at 0 while /data is copied from the TrueNAS NFS PV to
+# gatus-data-fast (local ZFS). sqlite must not be copied live. Removed in the
+# follow-up commit that switches persistence to existingClaim.
+patches:
+  - target:
+      kind: Deployment
+      name: gatus
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gatus
+        namespace: status
+      spec:
+        replicas: 0
 
 helmCharts:
   - name: gatus
