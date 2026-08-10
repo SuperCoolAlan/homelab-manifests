@@ -1,3 +1,20 @@
+# Was storageClassName: nfs, a democratic-csi volume on TrueNAS. Now a dynamic
+# fast-array volume (mirrored SSD, zfs-localpv on ramhaus).
+#
+# Nothing was migrated: the old volume held 176K of empty postgres/ redis/
+# tracearr/ backup directories and never got further, because the pod had been
+# in CrashLoopBackOff on
+#
+#   chown: changing ownership of '/data/postgres': Operation not permitted
+#
+# since before Postgres ever initialized. That was NFS root_squash refusing the
+# container's chown - the export mapped root to nobody, so the entrypoint could
+# not take ownership of its own data directory. A local ZFS volume has no such
+# mapping and honours fsGroup normally, so this should come up clean on first
+# boot rather than needing the fix applied separately.
+#
+# fast-array rather than ssd-array: this is Postgres plus Redis, i.e. small
+# synchronous writes, which the raidz2 pool handles worst.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -6,7 +23,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: nfs
+  storageClassName: fast-array
   resources:
     requests:
       storage: 10Gi
