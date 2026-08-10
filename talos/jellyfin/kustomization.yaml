@@ -10,7 +10,3 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
-  - resources/volsync-config.yaml
-
-generators:
-  - secrets-generator.yaml

@@ -7,7 +7,6 @@ resources:
   - namespace.yaml
   - ingress.yaml
   - pvc-fast.yaml
-  - volsync.yaml
 
 helmCharts:
   - name: gatus
@@ -144,6 +143,3 @@ helmCharts:
               query-type: A
             conditions:
               - "[DNS_RCODE] == NOERROR"
-
-generators:
-  - secrets-generator.yaml
