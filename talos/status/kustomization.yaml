@@ -81,20 +81,12 @@ helmCharts:
             conditions:
               - "[STATUS] == 200"
           # Infrastructure
-          - name: NFS
-            group: Infrastructure
-            url: tcp://truenas.asandov.local:2049
-            interval: 30s
-            conditions:
-              - "[CONNECTED] == true"
-          - name: TrueNAS
-            group: Infrastructure
-            url: https://truenas.asandov.local
-            interval: 60s
-            client:
-              insecure: true
-            conditions:
-              - "[STATUS] == 200"
+          #
+          # The `NFS` (tcp://truenas.asandov.local:2049) and `TrueNAS`
+          # (https://truenas.asandov.local) checks were removed 2026-08-10 with
+          # the decommission. Nothing in the cluster mounts NFS any more - the
+          # media library and every app config now live on local ZFS - so those
+          # two would page on a box that is deliberately switched off.
           - name: Kubernetes API
             group: Infrastructure
             url: https://kubernetes.default.svc.cluster.local:443
@@ -127,12 +119,19 @@ helmCharts:
             interval: 30s
             conditions:
               - "[STATUS] == 200"
+          # Checks the lab resolver at 10.0.1.1, not the record's subject. The
+          # query name was truenas.asandov.local until 2026-08-10; it moved to
+          # ldap.asandov.local rather than being deleted, because losing this
+          # would mean no DNS monitoring at all. ldap.asandov.local is managed
+          # by external-dns-opnsense from talos/authentik/resources/ldap-dns.yaml,
+          # so it exists for as long as the cluster publishes it - update this if
+          # the LDAP outpost is ever retired.
           - name: Lab DNS
             group: Infrastructure
             url: 10.0.1.1
             interval: 30s
             dns:
-              query-name: truenas.asandov.local
+              query-name: ldap.asandov.local
               query-type: A
             conditions:
               - "[DNS_RCODE] == NOERROR"
