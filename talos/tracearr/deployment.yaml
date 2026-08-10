@@ -6,14 +6,7 @@ metadata:
   labels:
     app: tracearr
 spec:
-  # PHASE4-QUIESCE: scaled to 0 for the TrueNAS disk swap. tracearr-data is an
-  # NFS PVC on truenas.asandov.local; a pod holding it when TrueNAS goes away
-  # wedges on a stale handle.
-  #
-  # This one is already in CrashLoopBackOff (chown /data/postgres: Operation not
-  # permitted), so nothing is lost by parking it. Restore to 1 alongside
-  # pv-local.yaml.staged. Grep PHASE4-QUIESCE for the full set.
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: tracearr

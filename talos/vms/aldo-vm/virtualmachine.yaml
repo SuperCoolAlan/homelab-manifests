@@ -6,17 +6,7 @@ metadata:
   labels:
     app: aldo-vm
 spec:
-  # PHASE4-QUIESCE: halted for the TrueNAS disk swap. aldo-rootdisk is an NFS
-  # PVC on truenas.asandov.local, and this is a VM, not a Deployment - pulling
-  # storage out from under a running guest is the same class of event as yanking
-  # a disk out of a physical machine. Halting cleanly is not optional here.
-  #
-  # `running: false` performs a graceful ACPI shutdown; watch for the VMI to
-  # disappear (kubectl get vmi -n vms) before exporting the pool, since Argo
-  # sets the intent but the guest takes time to actually stop.
-  #
-  # Restore to true alongside pv-local.yaml.staged. Grep PHASE4-QUIESCE.
-  running: false
+  running: true
   template:
     metadata:
       labels:
