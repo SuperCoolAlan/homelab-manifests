@@ -1,0 +1,30 @@
+# external-snapshotter: the snapshot.storage.k8s.io CRDs and snapshot-controller.
+#
+# Extracted from talos/cluster-services/democratic-csi on 2026-08-10, ahead of
+# that app being deleted with the TrueNAS decommission.
+#
+# ⚠️ THIS IS NOT OPTIONAL INFRASTRUCTURE. It looked like a democratic-csi
+# implementation detail - the chart renders a VolumeSnapshotClass and so needed
+# the CRDs - but the CRDs and controller are cluster-wide and now underpin
+# every VolSync backup in the cluster. All fourteen ReplicationSources use
+# copyMethod: Snapshot, because zfs-localpv enforces verifyMount and refuses a
+# second mount of a volume its application already holds open.
+#
+# Deleting democratic-csi while it still owned these would have pruned the CRDs,
+# and deleting a CRD cascade-deletes its custom resources: every VolumeSnapshot
+# and VolumeSnapshotContent, including any mid-backup. With
+# zfs-localpv-snapshot's deletionPolicy: Delete, the underlying ZFS snapshots go
+# too.
+#
+# Vendored rather than referenced remotely, same reason as before: git fetches
+# to GitHub's origin crawl at ~1Mbps over this network's Starlink transit,
+# blowing kustomize's 27s remote timeout on every ArgoCD render. To bump: copy
+# client/config/crd and deploy/kubernetes/snapshot-controller from the new tag
+# into vendor/.
+# https://github.com/kubernetes-csi/external-snapshotter/releases
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - vendor/external-snapshotter-v8.2.0/crd
+  - vendor/external-snapshotter-v8.2.0/snapshot-controller
