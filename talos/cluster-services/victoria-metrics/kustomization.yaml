@@ -467,6 +467,48 @@ configMapGenerator:
         grafana_folder: "Storage"
     files:
       - dashboards/Storage/storage-disk-health.json
+
+  # NVIDIA (added 2026-08-10 alongside the GPU fix). Fed by
+  # talos/monitoring/nvidia-gpu-exporter, which emits nvidia_smi_* - the same family the
+  # old TrueNAS/nvidia-gpu.json queried. That one stays disabled rather than being ported:
+  # it pointed at a host that no longer exists, and these three supersede it.
+  #
+  # Every query in all three was run against live vmsingle before commit; 56 of 56 return
+  # data. Split three ways deliberately - hardware health, transcode activity, and whether
+  # Kubernetes can schedule the device. The third is the one that was broken for two days,
+  # during which the first two would have looked perfectly healthy.
+  - name: dashboard-nvidia-gpu-overview
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "NVIDIA"
+    files:
+      - dashboards/NVIDIA/nvidia-gpu-overview.json
+
+  - name: dashboard-nvidia-gpu-transcode
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "NVIDIA"
+    files:
+      - dashboards/NVIDIA/nvidia-gpu-transcode.json
+
+  - name: dashboard-nvidia-gpu-allocation
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "NVIDIA"
+    files:
+      - dashboards/NVIDIA/nvidia-gpu-allocation.json
 # 
 #   # Starlink
 #   - name: dashboard-starlink
