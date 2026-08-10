@@ -2,3 +2,13 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: nvidia-device-plugin
+  labels:
+    # The device plugin mounts hostPath volumes (kubelet-device-plugins-dir,
+    # cdi-root, mps-root, mps-shm) to advertise the GPU to kubelet. The cluster
+    # enforces PodSecurity `baseline`, which forbids hostPath, so without these
+    # the DaemonSet reaches DESIRED 1 and then every pod creation is rejected -
+    # visible only as FailedCreate events, with the Argo app still Synced.
+    # Same exemption falco already carries for the same reason.
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
