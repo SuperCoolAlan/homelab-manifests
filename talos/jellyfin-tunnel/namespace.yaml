@@ -1,0 +1,15 @@
+# Its own namespace rather than living in `jellyfin`, because the init container
+# needs NET_ADMIN to create a WireGuard link, and the cluster enforces the
+# `baseline` PodSecurity profile, which forbids adding that capability.
+#
+# Scoping the exemption here keeps jellyfin itself on `baseline` - it has no
+# business running privileged, and widening its namespace to get the tunnel
+# working would have weakened the app rather than the plumbing.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jellyfin-tunnel
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged

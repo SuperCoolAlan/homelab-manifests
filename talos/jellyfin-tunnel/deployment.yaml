@@ -1,0 +1,153 @@
+# Home end of the WireGuard tunnel that publishes jellyfin.asandov.com.
+#
+#   internet -> Caddy on an Oracle Cloud VPS (163.192.195.190, DNS-only A record)
+#            -> WireGuard 10.100.0.1 -> 10.100.0.2  (this pod)
+#            -> socat :30013 -> jellyfin.jellyfin.svc.cluster.local:8096
+#
+# jellyfin.asandov.com deliberately does not use the Cloudflare tunnel that
+# authentik, immich, gatus and jellyseerr use - Cloudflare's terms discourage
+# serving video through their proxy - so it takes this path instead. See
+# docs/oracle-wireguard-jumphost.md.
+#
+# Until 2026-08-10 this tunnel terminated on TrueNAS. It never actually broke:
+# it was still handshaking days after the migration, with jellyfin long gone
+# behind it, so Caddy answered every request with a 502. Moving the endpoint
+# here was the last thing keeping TrueNAS powered on.
+#
+# Two design points worth not undoing:
+#
+# 1. The WireGuard interface is created by an INIT container, not a long-running
+#    one. Kernel WireGuard is stateless once configured - the interface lives in
+#    the pod's network namespace for the pod's lifetime, and the kernel handles
+#    handshakes and keepalives on its own. So nothing privileged needs to stay
+#    running; the only container alive in steady state is an unprivileged socat.
+#
+# 2. There is no Service, no NodePort and no Ingress. Traffic arrives inside
+#    this pod's own network namespace over the tunnel, so nothing is published
+#    on the LAN at all. That is a deliberate improvement on the TrueNAS setup,
+#    where jellyfin listened on a host port and the tunnel was constrained by
+#    hand-maintained nftables rules. Here the blast radius is the pod: even with
+#    the Oracle VPS fully compromised, the only thing reachable through the
+#    tunnel is whatever socat forwards to.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin-tunnel
+  namespace: jellyfin-tunnel
+  labels:
+    app: jellyfin-tunnel
+spec:
+  # Exactly one. Two replicas would mean two peers presenting the same key and
+  # the same 10.100.0.2, and WireGuard would flap between them - Oracle keys its
+  # peer table on the public key and tracks a single endpoint per peer.
+  replicas: 1
+  strategy:
+    type: Recreate
+    rollingUpdate: null
+  selector:
+    matchLabels:
+      app: jellyfin-tunnel
+  template:
+    metadata:
+      labels:
+        app: jellyfin-tunnel
+    spec:
+      # Not strictly required - socat reaches jellyfin through its ClusterIP
+      # from anywhere - but co-locating with the pod it serves keeps a 4K
+      # remux off the node-to-node hop.
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      initContainers:
+        - name: wg-up
+          # linuxserver/wireguard is used purely as a source of `wg` and `ip`;
+          # its s6 entrypoint is bypassed by overriding command. Pinned rather
+          # than :latest so a rebuild upstream cannot silently change the tunnel.
+          image: linuxserver/wireguard:1.0.20260223
+          securityContext:
+            capabilities:
+              # The whole reason this namespace is PodSecurity-privileged.
+              # Nothing else here needs elevation.
+              add: ["NET_ADMIN"]
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              # The config is assembled here rather than stored whole, so that
+              # the SOPS secret holds only the private key. Everything else
+              # about this tunnel is public information and belongs in git where
+              # it can be read.
+              umask 077
+              cat > /tmp/wg.conf <<EOF
+              [Interface]
+              PrivateKey = $(cat /secrets/privatekey)
+
+              [Peer]
+              PublicKey = wmYukGZetdwvr7odYv0BoonsCdz3UmXSqsz9hrrvfXI=
+              AllowedIPs = 10.100.0.1/32
+              Endpoint = 163.192.195.190:51820
+              PersistentKeepalive = 25
+              EOF
+
+              # Deliberately not wg-quick: it also rewrites resolv.conf and
+              # installs routes we do not want, and in a pod that would break
+              # cluster DNS - which socat needs to resolve the jellyfin Service.
+              ip link add wg0 type wireguard
+              wg setconf wg0 /tmp/wg.conf
+              ip address add 10.100.0.2/32 dev wg0
+              # 1420 = 1500 - 80 for the WireGuard header. The pod network adds
+              # its own overhead, so leaving this at the 1500 default produces
+              # exactly the failure that is hardest to diagnose: handshakes fine,
+              # small requests fine, video stalls.
+              ip link set wg0 mtu 1420 up
+              ip route add 10.100.0.1/32 dev wg0
+              rm -f /tmp/wg.conf
+              echo "wg0 configured:"
+              wg show wg0
+          volumeMounts:
+            - name: wg-key
+              mountPath: /secrets
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: forwarder
+          image: alpine/socat:1.8.1.3
+          # Listens on every address in the pod namespace, which includes
+          # 10.100.0.2 - the address Caddy dials. Port 30013 is NOT arbitrary:
+          # it is hardcoded in the Oracle Caddyfile and in that host's nftables
+          # egress rule (`oifname "wg0" tcp dport 30013 accept`). Changing it
+          # here alone breaks public jellyfin, and the symptom is a 502 from
+          # Caddy with nothing visibly wrong in the cluster.
+          args:
+            - -d
+            - TCP-LISTEN:30013,fork,reuseaddr
+            - TCP:jellyfin.jellyfin.svc.cluster.local:8096
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+          ports:
+            - name: tunnel
+              containerPort: 30013
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              # socat forks per connection and jellyfin streams are few and
+              # long-lived, so this is generous. If it ever OOMs, suspect a
+              # connection leak rather than raising it.
+              memory: 128Mi
+      volumes:
+        - name: wg-key
+          secret:
+            secretName: jellyfin-wg-key
+            defaultMode: 0400
