@@ -61,3 +61,24 @@ spec:
     - hosts:
         - jellyfin.local.asandov.com
       secretName: jellyfin-local-tls
+---
+# Public ingress via Cloudflare Tunnel, same pattern as jellyseerr.asandov.com.
+# Restores the external exposure jellyfin had before it was moved in-cluster.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin-cloudflare
+  namespace: jellyfin
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: jellyfin.asandov.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096

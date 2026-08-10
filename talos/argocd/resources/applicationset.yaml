@@ -26,6 +26,7 @@ spec:
           # the appset — see PR #18 bootstrap notes)
           - path: talos/actualbudget
           # Media apps
+          - path: talos/jellyfin
           - path: talos/media-v2
           - path: talos/qbittorrent
           # Tracearr

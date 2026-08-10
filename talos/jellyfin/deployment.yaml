@@ -6,7 +6,9 @@ metadata:
   labels:
     app: jellyfin
 spec:
-  replicas: 1
+  # Starts at 0 so /config can be copied from TrueNAS cold, before jellyfin
+  # opens the library database. Set to 1 in the follow-up commit.
+  replicas: 0
   # Recreate, not RollingUpdate: the config PVC is RWO and the GPU is a single
   # exclusive device, so a second pod could never schedule alongside the first.
   strategy:
@@ -24,9 +26,13 @@ spec:
       # nodeAffinity would force this anyway; stating it is clearer.
       nodeSelector:
         kubernetes.io/hostname: talos-ramhaus
-      # Required for the container to see the NVIDIA device. Provided by
-      # talos/cluster-services/nvidia-device-plugin.
-      runtimeClassName: nvidia
+      # GPU DISABLED 2026-08-09 — nvidia.com/gpu is not allocatable on this node.
+      # The driver and Talos extensions are fine; the container toolkit fails in
+      # legacy mode on a cgroups-v2 eBPF device-filter load, and CDI mode needs
+      # Talos machine-config work. See NVIDIA-GPU-HANDOFF.md.
+      # Direct play is unaffected; only hardware transcode. Re-enable this line
+      # and the nvidia.com/gpu limit below once `nvidia-smi` works in-cluster.
+      # runtimeClassName: nvidia
       securityContext:
         # Matches the uid/gid the media tree already uses across the *arr stack,
         # so jellyfin can read what sonarr/radarr write without a chown pass.
@@ -44,7 +50,9 @@ spec:
           env:
             - name: TZ
               value: America/Chicago
-            # Advertise NVENC/NVDEC to the container.
+            # Advertise NVENC/NVDEC to the container. Harmless without the
+            # nvidia runtime; re-activates automatically when the GPU is
+            # re-enabled above.
             - name: NVIDIA_VISIBLE_DEVICES
               value: all
             - name: NVIDIA_DRIVER_CAPABILITIES
@@ -69,8 +77,9 @@ spec:
               memory: 1Gi
             limits:
               # Exactly one GPU — the 1660 Ti is shared with ollama/whisper if
-              # those follow, and it cannot be split.
-              nvidia.com/gpu: 1
+              # those follow, and it cannot be split. Disabled with
+              # runtimeClassName above; see NVIDIA-GPU-HANDOFF.md.
+              # nvidia.com/gpu: 1
               memory: 8Gi
           livenessProbe:
             httpGet:

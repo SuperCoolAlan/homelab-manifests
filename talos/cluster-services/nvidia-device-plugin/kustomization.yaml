@@ -7,10 +7,29 @@ resources:
   - namespace.yaml
   - runtimeclass.yaml
 
-helmCharts:
-  - name: nvidia-device-plugin
-    repo: https://nvidia.github.io/k8s-device-plugin
-    version: 0.19.3
-    releaseName: nvidia-device-plugin
-    namespace: nvidia-device-plugin
-    valuesFile: values.yaml
+# DaemonSet DISABLED 2026-08-09 — it crashloops on this host and the cause is
+# below Kubernetes, in Talos' containerd/NVIDIA runtime configuration:
+#
+#   nvidia-container-cli: mount error: failed to add device rules: unable to
+#   create new device filters program: load program: invalid argument
+#   ... Auto-detected mode as 'legacy'
+#
+# That is the known cgroups-v2 / eBPF device-filter failure in the toolkit's
+# legacy mode. The fix is CDI mode, but the node has no CDI specs at all
+# (/var/cdi and /etc/cdi both absent), so the nvidia-container-toolkit extension
+# needs configuring at the Talos machine-config level to generate them. That is
+# not something a manifest change can reach.
+#
+# The RuntimeClass above is correct and harmless, so it stays. Re-enable this
+# chart once the node produces CDI specs and `talosctl ls /var/cdi` is non-empty.
+#
+# Consequence today: nvidia.com/gpu is not allocatable, so jellyfin runs without
+# hardware transcode. Direct play is unaffected; only transcoding is.
+#
+# helmCharts:
+#   - name: nvidia-device-plugin
+#     repo: https://nvidia.github.io/k8s-device-plugin
+#     version: 0.19.3
+#     releaseName: nvidia-device-plugin
+#     namespace: nvidia-device-plugin
+#     valuesFile: values.yaml
