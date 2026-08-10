@@ -48,6 +48,15 @@ helmCharts:
             interval: 60s
             conditions:
               - "[STATUS] == 200"
+          # Exercises the full Cloudflare -> traefik -> pod path. Paired with
+          # the internal check below: if this fails while that one passes, the
+          # problem is ingress or DNS, not jellyfin.
+          - name: Jellyfin
+            group: Public
+            url: https://jellyfin.asandov.com
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
           # Media stack (internal)
           - name: Sonarr
             group: Media
@@ -79,6 +88,23 @@ helmCharts:
             interval: 60s
             conditions:
               - "[STATUS] == 200"
+          # /health returns the literal body "Healthy", so this asserts on the
+          # body as well as the status - jellyfin can answer 200 on / while the
+          # library database is still loading.
+          #
+          # Worth watching specifically since the 2026-08-10 cutover: jellyfin
+          # mounts media-library, a local: PV bind-mounted from /var/mnt/media.
+          # If the ZFS dataset is ever not mounted when the pod starts, kubelet
+          # binds an empty directory and jellyfin comes up "healthy" with an
+          # empty library - this check would still pass, so treat it as a
+          # liveness signal, not a proof the media is there.
+          - name: Jellyfin
+            group: Media
+            url: http://jellyfin.jellyfin.svc.cluster.local:8096/health
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
+              - "[BODY] == Healthy"
           # Infrastructure
           #
           # The `NFS` (tcp://truenas.asandov.local:2049) and `TrueNAS`
