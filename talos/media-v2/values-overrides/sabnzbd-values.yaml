@@ -4,6 +4,12 @@ persistentVolumeClaims:
   sabnzbd-state:
     requestStorage: '5Gi'
     storageClassName: 'truenas-nfs'
+  # Replacement on the local ZFS `fast` pool. NB the old PV was reclaimPolicy
+  # Delete (dynamic truenas-nfs); patched to Retain 2026-08-09 so removing the
+  # old claim cannot destroy the source dataset.
+  sabnzbd-state-fast:
+    requestStorage: '5Gi'
+    storageClassName: 'fast-array'
 
 # Application configuration with Eweka news server
 application:
