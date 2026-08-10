@@ -1,0 +1,54 @@
+# ============================================================================
+# STAGED FOR CUTOVER — NOT WIRED INTO kustomization.yaml
+# ============================================================================
+# Replaces pvcs.yaml once ST6000NM0095-pool1 is imported as `media` on ramhaus.
+#
+# Second PV onto the SAME host path as media-v2's media-library-local. A PV
+# binds to exactly one PVC, so cross-namespace sharing needs one PV per
+# consuming namespace — which is exactly the existing arrangement, where
+# media-library-pool1 and qbittorrent-media-library both point at the same NFS
+# export. Only the source changes: nfs: -> local:.
+#
+# PVC name is unchanged (media-library), so values.yaml needs no edit — the
+# additionalVolumes claimName and the /downloads + /media subPath mounts all
+# keep working.
+#
+# IMPORTANT: qBittorrent's torrent store lives at media/torrents (mounted as
+# /downloads via subPath). Keeping the same on-disk layout is what preserves
+# SavePath and fastresume data, so no recheck is triggered on 151 torrents.
+# ============================================================================
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: qbittorrent-media-library-local
+spec:
+  capacity:
+    storage: 5Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: media-local
+  local:
+    path: /var/mnt/media
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-ramhaus
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-library
+  namespace: qbittorrent
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: media-local
+  volumeName: qbittorrent-media-library-local
+  resources:
+    requests:
+      storage: 5Ti

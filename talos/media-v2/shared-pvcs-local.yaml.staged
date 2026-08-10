@@ -1,0 +1,104 @@
+# ============================================================================
+# STAGED FOR CUTOVER — NOT WIRED INTO kustomization.yaml
+# ============================================================================
+# Replaces shared-pvcs.yaml once the 6TB pair is swapped into ramhaus and
+# ST6000NM0095-pool1 is imported as `media` at /var/mnt/media.
+#
+# At cutover, replace the contents of shared-pvcs.yaml with this file.
+# The PVC NAMES ARE UNCHANGED (media-library, media-downloads) so no consumer
+# manifest needs editing — sonarr, radarr, bazarr, prowlarr, sabnzbd, jellyseerr
+# and jellyfin all keep claimName: media-library.
+#
+# WHY A NEW PV RATHER THAN AN EDIT: a PV's source is immutable, so nfs: cannot
+# be changed to local: in place. Both the PV and the PVC (whose volumeName is
+# also immutable) must be deleted and recreated. Both are Retain, so deleting
+# the Kubernetes objects does not touch the data on the disks.
+#
+# WHY local: RATHER THAN A StorageClass: the media library is the one genuinely
+# RWX volume left — media-v2 and qbittorrent both mount it, across namespaces.
+# zfs-localpv cannot serve RWX: its CSI driver enforces verifyMount and refuses
+# the second attach (proven by probe 2026-08-09). A local: PV has no attach step
+# — kubelet bind-mounts the host path — so any number of pods on the same node
+# share it. This is the same mechanism sabnzbd-downloads-pv already uses.
+#
+# nodeAffinity is load-bearing twice over: it keeps consumers on ramhaus (where
+# the pool physically is) and makes that pinning self-enforcing rather than
+# convention.
+# ============================================================================
+
+# Static local PV for the media library on the imported `media` pool
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-library-local
+spec:
+  capacity:
+    storage: 5Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: media-local
+  local:
+    path: /var/mnt/media
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-ramhaus
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-library
+  namespace: media-v2
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: media-local
+  volumeName: media-library-local
+  resources:
+    requests:
+      storage: 5Ti
+---
+# media-downloads was 0.1 MB in use and is effectively a landing zone. Pointing
+# it at a dataset on the media pool rather than recreating it on TrueNAS.
+# Create the dataset before applying:
+#   zfs create media/downloads
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-downloads-local
+spec:
+  capacity:
+    storage: 200Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: media-local
+  local:
+    path: /var/mnt/media/downloads
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-ramhaus
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-downloads
+  namespace: media-v2
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: media-local
+  volumeName: media-downloads-local
+  resources:
+    requests:
+      storage: 200Gi
