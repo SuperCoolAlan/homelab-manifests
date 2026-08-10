@@ -179,8 +179,11 @@ kubeControllerManager:
 kubeScheduler:
   enabled: false
 
-# Disable node-exporter-full dashboard - too large for ConfigMap annotation
+# Default dashboards from the chart. node-exporter-full is large enough to blow
+# the client-side-apply annotation limit; the ArgoCD ApplicationSet sets
+# ServerSideApply=true, so it applies cleanly.
 defaultDashboards:
+  enabled: true
   dashboards:
     node-exporter-full:
-      enabled: false
+      enabled: true
