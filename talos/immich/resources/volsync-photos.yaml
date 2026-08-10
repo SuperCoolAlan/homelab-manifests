@@ -1,0 +1,73 @@
+# Off-site backup of the immich PHOTO LIBRARY (the actual image files).
+#
+# ⚠️ THIS IS NOT THE SAME AS THE CNPG BACKUP. cnpg-objectstore.yaml backs up
+# immich's PostgreSQL database - albums, metadata, users, face recognition -
+# which is 166 MB. The photos themselves are 22 GB of files on the
+# immich-library-fast PVC and are NOT in Postgres. Restoring only the database
+# gives you an immich that knows about every photo and has none of them.
+#
+# HISTORY: a restic job on TrueNAS backed these up daily at ~10:11 to
+# s3://asandov-truenas/immich-photos - 30 snapshots, 2026-07-01 through
+# 2026-07-30, then it stopped. Nothing replaced it, so from 2026-07-30 the photo
+# library existed only on live storage. This re-homes that job into the cluster.
+#
+# It points at the SAME restic repository, so it appends to those 30 snapshots
+# rather than starting fresh - preserving the history and the deduplication
+# (a new repo would mean re-uploading all 22 GB).
+#
+# PREREQUISITE - secret `immich-photos-restic` in this namespace, NOT in git:
+#
+#   kubectl create secret generic immich-photos-restic -n immich \
+#     --from-literal=RESTIC_REPOSITORY='s3:https://s3.us-west-004.backblazeb2.com/asandov-truenas/immich-photos' \
+#     --from-literal=RESTIC_PASSWORD='<the repo password>' \
+#     --from-literal=AWS_ACCESS_KEY_ID='<b2 keyID with WRITE on asandov-truenas>' \
+#     --from-literal=AWS_SECRET_ACCESS_KEY='<b2 applicationKey>'
+#
+# The audit key is read-only and will NOT work. Convert this to the ksops/SOPS
+# pattern used elsewhere in the repo once it is proven.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: immich-photos
+  namespace: immich
+spec:
+  sourcePVC: immich-library-fast
+  trigger:
+    # 04:00 daily - after immich-postgres' 02:00 CNPG backup, so the two are not
+    # competing for the same disks and uplink.
+    schedule: "0 4 * * *"
+  restic:
+    repository: immich-photos-restic
+
+    # Direct rather than Snapshot: zfs-localpv has no VolumeSnapshotClass
+    # registered in this cluster (the only one is truenas-nfs, for
+    # democratic-csi). Direct mounts the live PVC into the mover pod.
+    #
+    # Acceptable here because immich writes originals once and never mutates
+    # them - the worst case is a photo mid-upload being caught partially, and
+    # the next run picks it up. It would NOT be acceptable for a database.
+    #
+    # Worth revisiting: creating a VolumeSnapshotClass for zfs.csi.openebs.io
+    # would allow copyMethod: Snapshot and a consistent point-in-time copy.
+    copyMethod: Direct
+
+    # RWO PVC already mounted by immich-server. Both pods land on ramhaus (the
+    # pool is node-local), and RWO permits multiple pods on the SAME node, so
+    # the mover can mount it alongside immich.
+    accessModes:
+      - ReadWriteOnce
+
+    # restic needs scratch space for its local cache; without this it is sized
+    # from the source PVC and is wastefully large.
+    cacheCapacity: 4Gi
+    cacheStorageClassName: fast-array
+
+    retain:
+      daily: 30
+      weekly: 8
+      monthly: 12
+
+    # Prune rewrites the repo and needs DELETE on the bucket. If the B2 key is
+    # write-only, prune fails while backups keep working - set the key up with
+    # delete, or drop this and prune manually.
+    pruneIntervalDays: 14
