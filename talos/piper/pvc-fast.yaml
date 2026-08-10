@@ -1,0 +1,19 @@
+# Replacement for the chart-created `wyoming-piper-data` PVC (TrueNAS NFS).
+# storageClassName is immutable, so the migration to local ZFS goes via a
+# second claim which the chart then adopts by persistence.data.existingClaim.
+#
+# Holds the downloaded piper voice models (en_US-lessac-medium). Regenerable
+# in principle - the container re-downloads on a cache miss - but copying is
+# cheaper than a cold re-fetch and keeps startup deterministic.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wyoming-piper-data-fast
+  namespace: piper
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 5Gi
