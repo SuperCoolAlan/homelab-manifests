@@ -7,7 +7,6 @@ resources:
   - namespace.yaml
   - ingress.yaml
   - pvc-fast.yaml
-  - pvc-legacy.yaml
 
 helmCharts:
   - name: gatus
@@ -21,9 +20,10 @@ helmCharts:
       persistence:
         enabled: true
         size: 1Gi
-        # Migrated off TrueNAS NFS 2026-08-09. Rollback is one line: point this
-        # back at `gatus` (declared in pvc-legacy.yaml) - its PV is Retain and
-        # still holds the original sqlite history.
+        # Migrated off TrueNAS NFS 2026-08-09; the legacy `gatus` claim was
+        # dropped 2026-08-10 with the TrueNAS decommission. Its PV is Retain so
+        # the original sqlite history survives on the imported pool, but the
+        # server that exported it is gone, so the claim could not rebind.
         existingClaim: gatus-data-fast
       serviceMonitor:
         enabled: true
