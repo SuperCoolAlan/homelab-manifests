@@ -6,8 +6,6 @@ namespace: media-v2
 resources:
 - shared-pvcs.yaml
 - local-storage.yaml
-- resources/external-truenas-svc.yaml
-- resources/jellyfin-ingress.yaml
 - resources/jellyseerr-public-ingress.yaml
 - resources/local-asandov-ingresses.yaml
 - configs/setup-rbac.yaml
