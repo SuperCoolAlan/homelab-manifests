@@ -6,6 +6,7 @@ namespace: actualbudget
 resources:
   - namespace.yaml
   - pvc-fast.yaml
+  - volsync.yaml
 
 
 generators:

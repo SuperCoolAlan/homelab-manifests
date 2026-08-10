@@ -1,0 +1,189 @@
+# Off-site backup of this namespace's application config volumes.
+#
+# WHY: git creates these PVCs empty. Everything inside them is runtime state -
+# sqlite databases, API keys, provider credentials, download history - and none
+# of it is reproducible from a manifest. After the TrueNAS decommission these
+# volumes are the only copy, on a single node.
+#
+# Pattern matches talos/immich/resources/volsync-photos.yaml: restic into
+# s3://asandov-volsync with one prefix per source.
+#
+# copyMethod Snapshot, not Direct: zfs-localpv enforces verifyMount and refuses
+# a second mount of a volume its application already holds open, so a mover pod
+# cannot attach a PVC while the app is running. Snapshot also gives a
+# consistent read of a live sqlite file instead of copying it mid-write.
+#
+# Schedules are staggered so the movers do not contend for disk and uplink, and
+# all land before immich-postgres (02:00) and immich-photos (04:00).
+#
+# PREREQUISITE: each source has a matching stub in secrets/ with RESTIC_PASSWORD
+# and the two AWS_* keys set to REPLACE_ME. They must be filled before the first
+# run can succeed - see README-restic-secrets.md at the repo root.
+---
+# sonarr-config-fast (85 MB) - series library, quality profiles, indexer links, download history (sqlite)
+#
+# Only copy: the TrueNAS-backed original is being destroyed with the box, and
+# fast-array lives on a single node.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: sonarr-config
+  namespace: media-v2
+spec:
+  sourcePVC: sonarr-config-fast
+  trigger:
+    schedule: "5 0 * * *"
+  restic:
+    repository: sonarr-config-restic
+    copyMethod: Snapshot
+    volumeSnapshotClassName: zfs-localpv-snapshot
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: fast-array
+    cacheCapacity: 1Gi
+    cacheStorageClassName: fast-array
+    retain:
+      daily: 14
+      weekly: 6
+      monthly: 6
+    pruneIntervalDays: 14
+---
+# radarr-config-fast (149 MB) - film library, quality profiles, indexer links, download history (sqlite)
+#
+# Only copy: the TrueNAS-backed original is being destroyed with the box, and
+# fast-array lives on a single node.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: radarr-config
+  namespace: media-v2
+spec:
+  sourcePVC: radarr-config-fast
+  trigger:
+    schedule: "10 0 * * *"
+  restic:
+    repository: radarr-config-restic
+    copyMethod: Snapshot
+    volumeSnapshotClassName: zfs-localpv-snapshot
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: fast-array
+    cacheCapacity: 1Gi
+    cacheStorageClassName: fast-array
+    retain:
+      daily: 14
+      weekly: 6
+      monthly: 6
+    pruneIntervalDays: 14
+---
+# prowlarr-config-fast (9 MB) - indexer definitions and their API keys - the hardest of these to re-enter by hand
+#
+# Only copy: the TrueNAS-backed original is being destroyed with the box, and
+# fast-array lives on a single node.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: prowlarr-config
+  namespace: media-v2
+spec:
+  sourcePVC: prowlarr-config-fast
+  trigger:
+    schedule: "15 0 * * *"
+  restic:
+    repository: prowlarr-config-restic
+    copyMethod: Snapshot
+    volumeSnapshotClassName: zfs-localpv-snapshot
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: fast-array
+    cacheCapacity: 1Gi
+    cacheStorageClassName: fast-array
+    retain:
+      daily: 14
+      weekly: 6
+      monthly: 6
+    pruneIntervalDays: 14
+---
+# bazarr-config-fast (4 MB) - subtitle provider credentials and per-series language profiles
+#
+# Only copy: the TrueNAS-backed original is being destroyed with the box, and
+# fast-array lives on a single node.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: bazarr-config
+  namespace: media-v2
+spec:
+  sourcePVC: bazarr-config-fast
+  trigger:
+    schedule: "20 0 * * *"
+  restic:
+    repository: bazarr-config-restic
+    copyMethod: Snapshot
+    volumeSnapshotClassName: zfs-localpv-snapshot
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: fast-array
+    cacheCapacity: 1Gi
+    cacheStorageClassName: fast-array
+    retain:
+      daily: 14
+      weekly: 6
+      monthly: 6
+    pruneIntervalDays: 14
+---
+# jellyseerr-config-fast (3 MB) - request history and the OIDC client config for authentik
+#
+# Only copy: the TrueNAS-backed original is being destroyed with the box, and
+# fast-array lives on a single node.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: jellyseerr-config
+  namespace: media-v2
+spec:
+  sourcePVC: jellyseerr-config-fast
+  trigger:
+    schedule: "25 0 * * *"
+  restic:
+    repository: jellyseerr-config-restic
+    copyMethod: Snapshot
+    volumeSnapshotClassName: zfs-localpv-snapshot
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: fast-array
+    cacheCapacity: 1Gi
+    cacheStorageClassName: fast-array
+    retain:
+      daily: 14
+      weekly: 6
+      monthly: 6
+    pruneIntervalDays: 14
+---
+# sabnzbd-state-fast (336 KB) - queue and download history
+#
+# Only copy: the TrueNAS-backed original is being destroyed with the box, and
+# fast-array lives on a single node.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: sabnzbd-state
+  namespace: media-v2
+spec:
+  sourcePVC: sabnzbd-state-fast
+  trigger:
+    schedule: "30 0 * * *"
+  restic:
+    repository: sabnzbd-state-restic
+    copyMethod: Snapshot
+    volumeSnapshotClassName: zfs-localpv-snapshot
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: fast-array
+    cacheCapacity: 1Gi
+    cacheStorageClassName: fast-array
+    retain:
+      daily: 14
+      weekly: 6
+      monthly: 6
+    pruneIntervalDays: 14
