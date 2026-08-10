@@ -2,7 +2,12 @@ csiDriver:
   name: "nfs"
 storageClasses:
 - name: truenas-nfs
-  defaultClass: true
+  # No longer the cluster default (2026-08-09). Any PVC created without an
+  # explicit storageClassName used to land on TrueNAS - the machine being
+  # decommissioned. Default moved to fast-array (local ZFS mirrors on ramhaus).
+  # This class stays declared until no PVs reference it and democratic-csi is
+  # retired.
+  defaultClass: false
   reclaimPolicy: Delete
   volumeBindingMode: Immediate
   allowVolumeExpansion: true

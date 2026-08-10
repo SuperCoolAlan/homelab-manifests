@@ -11,6 +11,11 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: fast-array
+  annotations:
+    # Cluster default as of 2026-08-09, taking over from truenas-nfs so a PVC
+    # with no explicit class no longer provisions onto the box being retired.
+    storageclass.kubernetes.io/is-default-class: "true"
+
 provisioner: zfs.csi.openebs.io
 # WaitForFirstConsumer: PVCs bind when a pod schedules, pinning to the node
 # that actually has the pool (ramhaus is the only one)
