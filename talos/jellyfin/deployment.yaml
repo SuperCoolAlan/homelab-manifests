@@ -38,6 +38,38 @@ spec:
         runAsUser: 1000
         runAsGroup: 3001
         fsGroup: 3001
+      # Stamp the git-managed transcoding settings into the config PVC before
+      # jellyfin reads them. See talos/jellyfin/config/encoding.xml.
+      #
+      # A copy, not a mount: jellyfin rewrites encoding.xml in place whenever
+      # anything is saved from the dashboard, and it needs the whole
+      # /config/config directory writable to do that. A subPath mount would be
+      # read-only to jellyfin and would also never pick up ConfigMap updates.
+      #
+      # Reuses the jellyfin image rather than pulling busybox - it is already
+      # on the node, so this adds no pull and no second image to track.
+      initContainers:
+        - name: seed-encoding-config
+          image: jellyfin/jellyfin:10.11.5
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              mkdir -p /config/config
+              cp /seed/encoding.xml /config/config/encoding.xml
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: encoding-config
+              mountPath: /seed
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
       containers:
         - name: jellyfin
           # Pinned to what TrueNAS was running, so the config database is opened
@@ -104,6 +136,11 @@ spec:
         - name: media
           persistentVolumeClaim:
             claimName: media-library
+        # Consumed only by the seed-encoding-config initContainer. Kustomize
+        # rewrites this name to the hashed one, so it tracks the file content.
+        - name: encoding-config
+          configMap:
+            name: jellyfin-encoding
         - name: transcodes
           emptyDir:
             medium: Memory
