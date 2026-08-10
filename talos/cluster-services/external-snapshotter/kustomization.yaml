@@ -29,3 +29,23 @@ kind: Kustomization
 resources:
   - vendor/external-snapshotter-v8.2.0/crd
   - vendor/external-snapshotter-v8.2.0/snapshot-controller
+
+# Delete=false,Prune=false on every object here.
+#
+# These CRDs are data-bearing: deleting one cascade-deletes its custom
+# resources, so an accidental prune takes every VolumeSnapshot and
+# VolumeSnapshotContent in the cluster with it, and zfs-localpv-snapshot's
+# deletionPolicy: Delete then removes the underlying ZFS snapshots.
+#
+# Set during the democratic-csi removal on 2026-08-10, where exactly that was
+# the failure mode: that app carried resources-finalizer.argocd.argoproj.io and
+# tracked these CRDs, so deleting its directory would have cascade-deleted them.
+# The finalizer could not simply be removed - the ApplicationSet re-adds it,
+# because preserveResourcesOnDeletion defaults to false and the finalizer is how
+# that is implemented.
+#
+# Keeping it means this app cannot prune them either. That is the intent: CRDs
+# holding live custom resources should never disappear because a manifest moved.
+# Removing a CRD is then a deliberate manual act.
+commonAnnotations:
+  argocd.argoproj.io/sync-options: Delete=false,Prune=false
