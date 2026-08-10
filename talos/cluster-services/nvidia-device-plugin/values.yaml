@@ -1,0 +1,14 @@
+# Pods must run under the nvidia runtime to see the device.
+runtimeClassName: nvidia
+
+# Only ramhaus has the GPU. blackbox is the control-plane and has none, so
+# without this the DaemonSet would crashloop there.
+nodeSelector:
+  kubernetes.io/hostname: talos-ramhaus
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
