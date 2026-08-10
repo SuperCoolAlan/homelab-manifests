@@ -1,0 +1,61 @@
+# Off-site backup of jellyfin's /config volume.
+#
+# WHY THIS EXISTS: after the TrueNAS decommission, jellyfin-config is the ONLY
+# copy of this data. It used to live at /mnt/dual_hdd/app_configs/jellyfin on a
+# separate machine; that copy goes away with the box, and the local: PVs and
+# fast-array volumes all live on a single node. A node loss takes the lot.
+#
+# WHAT IS IN IT (3.33 GB): the library database (watch states, resume points,
+# user accounts), plugin binaries and their settings -
+#
+#   Intro Skipper 1.10.11.13, LDAP Authentication 22.0.0.0,
+#   Jellyfin Enhanced 12.2.0.0, plus configurations/ for each
+#
+# and the custom index.html web mod. None of that is reproducible from git -
+# git holds the manifests that create an EMPTY volume. This job is what makes
+# the contents recoverable.
+#
+# NOT backed up, deliberately: jellyfin-cache (7 MB, regenerated on demand) and
+# the transcodes tmpfs.
+#
+# copyMethod Snapshot, not Direct: zfs-localpv enforces verifyMount and refuses
+# a second mount of a volume its application already holds open, so a mover pod
+# cannot attach jellyfin-config while jellyfin is running. Snapshot sidesteps
+# that and gives a consistent point-in-time copy of a live sqlite database
+# rather than reading it mid-write. Same reasoning as immich's photo backup -
+# see talos/immich/resources/volsync-photos.yaml.
+#
+# PREREQUISITE - fill in secrets/jellyfin-config-restic.enc.yaml:
+#
+#   sops talos/jellyfin/secrets/jellyfin-config-restic.enc.yaml
+#
+# RESTIC_REPOSITORY is pre-filled. The rest are REPLACE_ME. The B2 key needs
+# read+write+delete on asandov-volsync (delete because pruneIntervalDays
+# rewrites the repo; without it backups keep succeeding and only prune fails,
+# which is easy to miss). It must be a NON-master application key - B2's S3
+# endpoint rejects master credentials outright.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: jellyfin-config
+  namespace: jellyfin
+spec:
+  sourcePVC: jellyfin-config
+  trigger:
+    # 03:30 - after immich-postgres (02:00), before immich-photos (04:00), so
+    # the three jobs are not competing for the same disks and uplink.
+    schedule: "30 3 * * *"
+  restic:
+    repository: jellyfin-config-restic
+    copyMethod: Snapshot
+    volumeSnapshotClassName: zfs-localpv-snapshot
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: fast-array
+    cacheCapacity: 2Gi
+    cacheStorageClassName: fast-array
+    retain:
+      daily: 14
+      weekly: 6
+      monthly: 6
+    pruneIntervalDays: 14
