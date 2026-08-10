@@ -1,0 +1,26 @@
+# Stable name for UniFi device inform + discovery.
+#
+# THIS IS THE WHOLE POINT OF DOING DNS FIRST. Devices are told to report to
+# whatever "Override Inform Host" says. Point them at a NAME while the
+# controller is still on TrueNAS, let every device absorb it, and migration day
+# becomes "change the target below from 10.0.1.14 to 10.0.7.202". Point them at
+# an IP instead and every AP needs SSH `set-inform` after the move.
+#
+# CURRENT TARGET: TrueNAS (10.0.1.14) — the controller still lives there.
+# AT MIGRATION: change to 10.0.7.202, the pinned MetalLB IP in service.yaml.
+#
+# The pinned IP matters. ldap-dns.yaml hardcodes 10.0.7.201 with a comment
+# saying it points at traefik — but traefik is .200 and MetalLB gave .201 to
+# piper, so that record resolves to the wrong service. Pinning the Service's IP
+# and hardcoding the same value here keeps the two from drifting apart.
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: unifi-dns
+  namespace: unifi
+spec:
+  endpoints:
+    - dnsName: unifi.asandov.local
+      recordType: A
+      targets:
+        - 10.0.1.14

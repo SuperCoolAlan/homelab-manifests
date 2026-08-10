@@ -1,0 +1,50 @@
+# Device-facing endpoint. This CANNOT be an Ingress: traefik only listens on
+# 80, 443 and 389, while UniFi devices need 8080/tcp (inform) plus UDP for STUN
+# and discovery. So it is a LoadBalancer, and the browser UI is layered on top
+# via ingress.yaml pointing at port 8443 of this same Service.
+#
+# The IP is PINNED. MetalLB's pool is 10.0.7.200-210; .200 is traefik and .201
+# is piper, so .202 is the next free one. Pinning matters because dns.yaml
+# hardcodes the same value — ldap-dns.yaml did not pin, MetalLB later handed its
+# assumed IP to a different service, and that record now resolves to the wrong
+# host. Pinning both ends keeps them in agreement.
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi
+  namespace: unifi
+  labels:
+    app: unifi
+  annotations:
+    metallb.io/loadBalancerIPs: 10.0.7.202
+    # external-dns has `sources: [ingress, service, crd]`, so it would also
+    # publish from this Service. dns.yaml owns the record instead, because it
+    # has to exist and point at TrueNAS *before* this Service does.
+    external-dns.alpha.kubernetes.io/exclude: "true"
+spec:
+  type: LoadBalancer
+  # Preserve the device's real source IP rather than SNATing to a node address —
+  # UniFi records and displays client/device IPs. Safe here: single worker node.
+  externalTrafficPolicy: Local
+  selector:
+    app: unifi
+  ports:
+    # THE critical one. Devices POST their status here; lose it and they show
+    # as disconnected regardless of everything else working.
+    - name: inform
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    # Web UI. Also the backend the traefik ingress targets.
+    - name: https-ui
+      port: 8443
+      targetPort: 8443
+      protocol: TCP
+    - name: stun
+      port: 3478
+      targetPort: 3478
+      protocol: UDP
+    - name: discovery
+      port: 10001
+      targetPort: 10001
+      protocol: UDP

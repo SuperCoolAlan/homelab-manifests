@@ -39,6 +39,8 @@ spec:
           - path: talos/status
           # Twingate
           - path: talos/twingate
+          # UniFi controller (phase 1: DNS only — see talos/unifi/README.md)
+          - path: talos/unifi
           # Immich (photo management)
           - path: talos/immich
           # Security scanning
