@@ -59,23 +59,24 @@ spec:
   restic:
     repository: immich-photos-restic
 
-    # Direct rather than Snapshot: zfs-localpv has no VolumeSnapshotClass
-    # registered in this cluster (the only one is truenas-nfs, for
-    # democratic-csi). Direct mounts the live PVC into the mover pod.
+    # Snapshot, NOT Direct. Direct fails outright against zfs-localpv: the
+    # driver refuses a second mount of a volume even on the same node -
     #
-    # Acceptable here because immich writes originals once and never mutates
-    # them - the worst case is a photo mid-upload being caught partially, and
-    # the next run picks it up. It would NOT be acceptable for a database.
+    #   verifyMount: device already mounted at [...]
     #
-    # Worth revisiting: creating a VolumeSnapshotClass for zfs.csi.openebs.io
-    # would allow copyMethod: Snapshot and a consistent point-in-time copy.
-    copyMethod: Direct
+    # - so the mover can never attach a PVC that immich-server already holds.
+    # (The same limitation is why the media library has to be a static local: PV
+    # rather than a zfs-localpv RWX claim.)
+    #
+    # Snapshot also gives a consistent point-in-time copy instead of reading a
+    # live directory, and keeps the mover off immich's own volume entirely.
+    copyMethod: Snapshot
+    volumeSnapshotClassName: zfs-localpv-snapshot
 
-    # RWO PVC already mounted by immich-server. Both pods land on ramhaus (the
-    # pool is node-local), and RWO permits multiple pods on the SAME node, so
-    # the mover can mount it alongside immich.
+    # Applies to the snapshot clone the mover mounts, not to immich's PVC.
     accessModes:
       - ReadWriteOnce
+    storageClassName: ssd-array
 
     # restic needs scratch space for its local cache; without this it is sized
     # from the source PVC and is wastefully large.
