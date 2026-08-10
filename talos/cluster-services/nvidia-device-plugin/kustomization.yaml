@@ -7,29 +7,26 @@ resources:
   - namespace.yaml
   - runtimeclass.yaml
 
-# DaemonSet DISABLED 2026-08-09 — it crashloops on this host and the cause is
-# below Kubernetes, in Talos' containerd/NVIDIA runtime configuration:
+# This was disabled 2026-08-09 because every plugin pod died with:
 #
 #   nvidia-container-cli: mount error: failed to add device rules: unable to
-#   create new device filters program: load program: invalid argument
-#   ... Auto-detected mode as 'legacy'
+#   create new device filters program: load program: invalid argument:
+#   last insn is not an exit or jmp   ... Auto-detected mode as 'legacy'
 #
-# That is the known cgroups-v2 / eBPF device-filter failure in the toolkit's
-# legacy mode. The fix is CDI mode, but the node has no CDI specs at all
-# (/var/cdi and /etc/cdi both absent), so the nvidia-container-toolkit extension
-# needs configuring at the Talos machine-config level to generate them. That is
-# not something a manifest change can reach.
+# That was read at the time as a cgroups-v2 problem requiring CDI mode. It was
+# not. Talos defaults net.core.bpf_jit_harden=2, which constant-blinds *every*
+# JIT-compiled BPF program - privileged ones included - and the device-filter
+# program the toolkit builds does not survive that rewrite. The Talos NVIDIA
+# guide prescribes net.core.bpf_jit_harden=1 (blind unprivileged programs only)
+# on GPU nodes for exactly this reason.
 #
-# The RuntimeClass above is correct and harmless, so it stays. Re-enable this
-# chart once the node produces CDI specs and `talosctl ls /var/cdi` is non-empty.
-#
-# Consequence today: nvidia.com/gpu is not allocatable, so jellyfin runs without
-# hardware transcode. Direct play is unaffected; only transcoding is.
-#
-# helmCharts:
-#   - name: nvidia-device-plugin
-#     repo: https://nvidia.github.io/k8s-device-plugin
-#     version: 0.19.3
-#     releaseName: nvidia-device-plugin
-#     namespace: nvidia-device-plugin
-#     valuesFile: values.yaml
+# Re-enabled 2026-08-10 by that one sysctl on talos-ramhaus; see
+# talos/config/worker-ramhaus-nvme.yaml. No CDI specs, no config.toml override
+# and no reboot were needed - legacy mode is fine once the program can load.
+helmCharts:
+  - name: nvidia-device-plugin
+    repo: https://nvidia.github.io/k8s-device-plugin
+    version: 0.19.3
+    releaseName: nvidia-device-plugin
+    namespace: nvidia-device-plugin
+    valuesFile: values.yaml
