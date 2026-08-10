@@ -420,6 +420,30 @@ configMapGenerator:
     files:
       - dashboards/ArgoCD/argocd-overview.json
 
+  # CertManager (re-enabled: cert-manager target up, all queried metrics present)
+  - name: dashboard-cert-manager
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "CertManager"
+    files:
+      - dashboards/CertManager/cert-manager.json
+
+  # Traefik (re-enabled: traefik-metrics target up, all queried metrics present)
+  - name: dashboard-traefik
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Traefik"
+    files:
+      - dashboards/Traefik/traefik-official.json
+
   - name: dashboard-trivy-operator
     namespace: monitoring
     options:
