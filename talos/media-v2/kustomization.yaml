@@ -30,20 +30,6 @@ patches:
     kind: Deployment
     name: sonarr
   path: patches/sonarr-install-unrar.yaml
-# TEMPORARY: held at 0 while /app/config is copied from the TrueNAS NFS PV to
-# jellyseerr-config-fast (local ZFS). sqlite must not be copied live. Removed
-# in the follow-up commit that repoints deployment.volumes.config.
-- target:
-    kind: Deployment
-    name: jellyseerr
-  patch: |-
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: jellyseerr
-      namespace: media-v2
-    spec:
-      replicas: 0
 
 helmCharts:
 - name: sonarr

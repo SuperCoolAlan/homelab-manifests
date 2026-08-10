@@ -7,22 +7,7 @@ resources:
   - namespace.yaml
   - ingress.yaml
   - pvc-fast.yaml
-
-# TEMPORARY: held at 0 while /data is copied from the TrueNAS NFS PV to
-# gatus-data-fast (local ZFS). sqlite must not be copied live. Removed in the
-# follow-up commit that switches persistence to existingClaim.
-patches:
-  - target:
-      kind: Deployment
-      name: gatus
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: gatus
-        namespace: status
-      spec:
-        replicas: 0
+  - pvc-legacy.yaml
 
 helmCharts:
   - name: gatus
@@ -36,7 +21,10 @@ helmCharts:
       persistence:
         enabled: true
         size: 1Gi
-        storageClassName: nfs
+        # Migrated off TrueNAS NFS 2026-08-09. Rollback is one line: point this
+        # back at `gatus` (declared in pvc-legacy.yaml) - its PV is Retain and
+        # still holds the original sqlite history.
+        existingClaim: gatus-data-fast
       serviceMonitor:
         enabled: true
       config:
