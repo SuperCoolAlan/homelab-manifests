@@ -6,9 +6,7 @@ metadata:
   labels:
     app: jellyfin
 spec:
-  # Starts at 0 so /config can be copied from TrueNAS cold, before jellyfin
-  # opens the library database. Set to 1 in the follow-up commit.
-  replicas: 0
+  replicas: 1
   # Recreate, not RollingUpdate: the config PVC is RWO and the GPU is a single
   # exclusive device, so a second pod could never schedule alongside the first.
   strategy:
