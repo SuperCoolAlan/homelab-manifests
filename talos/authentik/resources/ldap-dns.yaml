@@ -1,4 +1,23 @@
-# DNS record for LDAP outpost - points to Traefik LoadBalancer
+# DNS record for the authentik LDAP outpost.
+#
+# Points at Traefik's LoadBalancer, because that is what actually serves LDAP:
+# ldap-ingressroute.yaml declares an IngressRouteTCP on the `ldap` entrypoint
+# (389) routing to ak-outpost-ldap. The outpost has no LoadBalancer of its own.
+#
+# ⚠️ This was 10.0.7.201 until 2026-08-10 - a hardcoded address that drifted.
+# MetalLB assigns from 10.0.7.200-210 in the order services request them, and
+# .201 has since been taken by piper (piper/wyoming-piper), so this record was
+# sending every LDAP client to a text-to-speech service. Jellyfin's LDAP
+# Authentication plugin is one of the clients that breaks when it does.
+#
+# Current allocation:
+#   10.0.7.200  traefik/traefik      <- this record
+#   10.0.7.201  piper/wyoming-piper
+#   10.0.7.202  unifi/unifi
+#
+# If this needs to survive reallocation, the durable fix is a static
+# loadBalancerIP (or an ipAddressPool annotation) on the traefik Service rather
+# than a literal here - MetalLB will otherwise reassign on service recreation.
 apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
 metadata:
@@ -9,4 +28,4 @@ spec:
     - dnsName: ldap.asandov.local
       recordType: A
       targets:
-        - 10.0.7.201
+        - 10.0.7.200

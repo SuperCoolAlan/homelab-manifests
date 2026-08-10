@@ -3,9 +3,6 @@ kind: Kustomization
 
 namespace: jellyfin
 
-# NOTE: this directory is NOT in the talos-apps ApplicationSet allowlist
-# (talos/argocd/resources/applicationset.yaml), so none of it is deployed.
-# See README.md for how to enable and what must be true first.
 resources:
   - namespace.yaml
   - pvc.yaml
@@ -13,3 +10,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+  - resources/volsync-config.yaml
+
+generators:
+  - secrets-generator.yaml
