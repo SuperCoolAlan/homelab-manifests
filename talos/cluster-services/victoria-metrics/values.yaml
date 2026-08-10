@@ -121,10 +121,17 @@ vmagent:
         memory: 128Mi
       limits:
         memory: 2Gi
-    # additionalScrapeConfigs temporarily disabled
-    # additionalScrapeConfigs:
-    #   name: vm-additional-scrape-configs
-    #   key: prometheus-additional.yaml
+    # additionalScrapeConfigs held four static jobs against TrueNAS
+    # (truenas-gpu :9835, truenas-graphite :9108, truenas-dcgm :9400,
+    # truenas-pdu :8088). It was commented out well before the migration, so
+    # none of them were scraping; the whole block went with the decommission
+    # on 2026-08-10 along with resources/additional-scrape-configs.yaml.
+    #
+    # Two capabilities are genuinely gone rather than moved:
+    #   - GPU telemetry (:9835 nvidia-gpu-exporter, :9400 dcgm). The card is in
+    #     ramhaus now; re-home these once NVIDIA-GPU-HANDOFF.md is resolved.
+    #   - PDU power draw (:8088). Not a storage exporter and not replaced -
+    #     needs a new host if that data is wanted.
 
 # VMAlert for alerting rules
 vmalert:
