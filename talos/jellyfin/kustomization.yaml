@@ -10,3 +10,18 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+
+# Jellyfin has no env-var or values surface for transcoding settings - the web
+# UI writes /config/config/encoding.xml directly, inside the config PVC, where
+# nothing in git can see it. This ships the file instead, and an initContainer
+# in deployment.yaml copies it into place on every start.
+#
+# The name suffix hash is deliberately left ON. It is what makes this work:
+# editing config/encoding.xml renames the ConfigMap, which changes the volume
+# reference in the pod spec, which rolls the Deployment. Without it Argo would
+# update the ConfigMap and the running pod would keep the old settings until
+# something unrelated restarted it. Argo prunes the superseded ConfigMaps.
+configMapGenerator:
+  - name: jellyfin-encoding
+    files:
+      - encoding.xml=config/encoding.xml

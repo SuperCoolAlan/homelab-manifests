@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  THIS FILE IS THE SOURCE OF TRUTH FOR JELLYFIN'S TRANSCODING SETTINGS.
+
+  An initContainer copies it over /config/config/encoding.xml on every pod
+  start (see deployment.yaml), so anything changed in Dashboard > Playback >
+  Transcoding survives until the next restart and then silently reverts. Edit
+  it here and let Argo roll the pod; do not edit it in the UI.
+
+  Jellyfin rewrites this file itself when you press Save, and its serializer
+  drops comments - so if you ever capture the live file back into git, this
+  header has to be re-added by hand.
+
+  These values came off TrueNAS with the 2026-08-10 migration and are correct
+  for the GTX 1660 Ti (TU116) in talos-ramhaus. Verified against the 4K HDR10
+  source that exposed the GPU outage:
+    NVDEC -> scale_cuda -> h264_nvenc             4.5x realtime
+    NVDEC -> tonemap_cuda (bt2390) -> h264_nvenc  2.07x realtime
+
+  The settings that are not self-explanatory:
+
+  - HardwareAccelerationType nvenc needs runtimeClassName: nvidia AND the
+    nvidia.com/gpu limit on the deployment. With neither, ffmpeg exits 255 on
+    every title that needs transcoding and playback simply fails - which is
+    what happened between 2026-08-09 and 2026-08-10.
+
+  - EnableTonemapping matters because most 2160p titles in this library are
+    HDR10 (smpte2084 / bt2020). Without it they play washed out on SDR clients
+    rather than failing outright, so it regresses quietly.
+
+  - VaapiDevice is inert while the type is nvenc. Left as-is because Jellyfin
+    writes the key back regardless and removing it only causes churn.
+
+  - AllowAv1Encoding is false deliberately: Turing has no AV1 encoder.
+-->
+<EncodingOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <EncodingThreadCount>-1</EncodingThreadCount>
+  <EnableFallbackFont>false</EnableFallbackFont>
+  <EnableAudioVbr>false</EnableAudioVbr>
+  <DownMixAudioBoost>2</DownMixAudioBoost>
+  <DownMixStereoAlgorithm>None</DownMixStereoAlgorithm>
+  <MaxMuxingQueueSize>2048</MaxMuxingQueueSize>
+  <EnableThrottling>false</EnableThrottling>
+  <ThrottleDelaySeconds>180</ThrottleDelaySeconds>
+  <EnableSegmentDeletion>false</EnableSegmentDeletion>
+  <SegmentKeepSeconds>720</SegmentKeepSeconds>
+  <HardwareAccelerationType>nvenc</HardwareAccelerationType>
+  <EncoderAppPathDisplay>/usr/lib/jellyfin-ffmpeg/ffmpeg</EncoderAppPathDisplay>
+  <VaapiDevice>/dev/dri/renderD128</VaapiDevice>
+  <QsvDevice />
+  <EnableTonemapping>true</EnableTonemapping>
+  <EnableVppTonemapping>false</EnableVppTonemapping>
+  <EnableVideoToolboxTonemapping>false</EnableVideoToolboxTonemapping>
+  <TonemappingAlgorithm>bt2390</TonemappingAlgorithm>
+  <TonemappingMode>auto</TonemappingMode>
+  <TonemappingRange>auto</TonemappingRange>
+  <TonemappingDesat>0</TonemappingDesat>
+  <TonemappingPeak>100</TonemappingPeak>
+  <TonemappingParam>0</TonemappingParam>
+  <VppTonemappingBrightness>16</VppTonemappingBrightness>
+  <VppTonemappingContrast>1</VppTonemappingContrast>
+  <H264Crf>23</H264Crf>
+  <H265Crf>28</H265Crf>
+  <EncoderPreset xsi:nil="true" />
+  <DeinterlaceDoubleRate>false</DeinterlaceDoubleRate>
+  <DeinterlaceMethod>yadif</DeinterlaceMethod>
+  <EnableDecodingColorDepth10Hevc>true</EnableDecodingColorDepth10Hevc>
+  <EnableDecodingColorDepth10Vp9>true</EnableDecodingColorDepth10Vp9>
+  <EnableDecodingColorDepth10HevcRext>true</EnableDecodingColorDepth10HevcRext>
+  <EnableDecodingColorDepth12HevcRext>false</EnableDecodingColorDepth12HevcRext>
+  <EnableEnhancedNvdecDecoder>true</EnableEnhancedNvdecDecoder>
+  <PreferSystemNativeHwDecoder>true</PreferSystemNativeHwDecoder>
+  <EnableIntelLowPowerH264HwEncoder>false</EnableIntelLowPowerH264HwEncoder>
+  <EnableIntelLowPowerHevcHwEncoder>false</EnableIntelLowPowerHevcHwEncoder>
+  <EnableHardwareEncoding>true</EnableHardwareEncoding>
+  <AllowHevcEncoding>true</AllowHevcEncoding>
+  <AllowAv1Encoding>false</AllowAv1Encoding>
+  <EnableSubtitleExtraction>false</EnableSubtitleExtraction>
+  <HardwareDecodingCodecs>
+    <string>h264</string>
+    <string>mpeg2video</string>
+    <string>vc1</string>
+    <string>hevc</string>
+    <string>mpeg4</string>
+    <string>vp8</string>
+    <string>vp9</string>
+  </HardwareDecodingCodecs>
+  <AllowOnDemandMetadataBasedKeyframeExtractionForExtensions>
+    <string>mkv</string>
+  </AllowOnDemandMetadataBasedKeyframeExtractionForExtensions>
+</EncodingOptions>
