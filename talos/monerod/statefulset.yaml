@@ -1,0 +1,121 @@
+# monerod - private, outbound-only Monero node with a pruned blockchain.
+#
+# No operator: monerod is a single stateful process, so a StatefulSet plus a
+# volumeClaimTemplate is the whole deployment. cirocosta/monero-operator wraps
+# the same StatefulSet and has been dormant for years.
+#
+# The image is built from source on every upstream Monero release by
+# https://github.com/sethforprivacy/simple-monerod-docker. Renovate tracks the
+# tag directly.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: monerod
+  namespace: monerod
+spec:
+  serviceName: monerod-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: monerod
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: monerod
+    spec:
+      # The `ssd` ZFS pool only exists on talos-ramhaus, and the ssd-array
+      # StorageClass carries no allowedTopologies - without this the scheduler
+      # can land the pod on talos-blackbox and provisioning fails.
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: monerod
+          # Monero tags are 4-component (v0.18.5.1), which docker versioning
+          # does not parse - loose does.
+          # renovate: datasource=docker depName=ghcr.io/sethforprivacy/simple-monerod versioning=loose
+          image: ghcr.io/sethforprivacy/simple-monerod:v0.18.5.1
+          args:
+            # HOME is not reliably set by the runtime, and monerod derives its
+            # default data dir from it. Be explicit.
+            - --data-dir=/home/monero/.bitmonero
+            # Keep ~1/8 of ring signature data. Still fully validating and
+            # usable by any wallet.
+            - --prune-blockchain
+            # Restricted RPC only. The unrestricted daemon RPC (18081) stays
+            # unbound - it exposes admin methods with no auth.
+            - --rpc-restricted-bind-ip=0.0.0.0
+            - --rpc-restricted-bind-port=18089
+            # Outbound-only: no inbound peers reach us, so don't advertise a
+            # port other nodes cannot dial, and don't try to punch one via UPnP.
+            - --hide-my-port
+            - --no-igd
+            - --no-zmq
+            # Ships in the image at this path.
+            - --enable-dns-blocklist
+            - --ban-list=/home/monero/ban_list.txt
+          ports:
+            - name: p2p
+              containerPort: 18080
+            - name: rpc
+              containerPort: 18089
+          # Opening a large LMDB after an unclean shutdown can take minutes, so
+          # the startup probe is generous: up to 30m before the pod is failed.
+          startupProbe:
+            httpGet:
+              path: /get_height
+              port: rpc
+            periodSeconds: 15
+            failureThreshold: 120
+          readinessProbe:
+            httpGet:
+              path: /get_height
+              port: rpc
+            periodSeconds: 30
+            timeoutSeconds: 10
+          # Deliberately tcpSocket, not the RPC endpoint: monerod can stop
+          # answering HTTP promptly under heavy sync I/O, and an httpGet
+          # liveness probe would restart it mid-flush.
+          livenessProbe:
+            tcpSocket:
+              port: rpc
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "4"
+              memory: 6Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: bitmonero
+              mountPath: /home/monero/.bitmonero
+      # LMDB writes are memory-mapped and random; a slow drain here means an
+      # unclean shutdown and a long recovery on the next start.
+      terminationGracePeriodSeconds: 300
+  volumeClaimTemplates:
+    - metadata:
+        name: bitmonero
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        # NOT fast-array (the cluster default) - that pool is degraded, and
+        # NOT truenas-nfs: LMDB does memory-mapped random writes, which are
+        # slow and corruption-prone over NFS.
+        storageClassName: ssd-array
+        resources:
+          requests:
+            # Pruned chain is ~110GiB today and grows ~15-20GiB/year. The ssd
+            # pool has ~812GiB free; the class allows volume expansion.
+            storage: 250Gi

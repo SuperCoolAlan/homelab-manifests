@@ -43,6 +43,8 @@ spec:
           - path: talos/unifi
           # Immich (photo management)
           - path: talos/immich
+          # Monero node (private, outbound-only)
+          - path: talos/monerod
           # Security scanning
           - path: talos/security/*
           # Virtual machines (KubeVirt)
