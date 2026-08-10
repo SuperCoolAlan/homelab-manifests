@@ -3,15 +3,10 @@ kind: Kustomization
 
 namespace: unifi
 
-# PHASE 1 (now): this app manages ONLY the DNS record, so devices can be pointed
-# at unifi.asandov.local while the controller is still on TrueNAS.
 resources:
   - namespace.yaml
   - dns.yaml
-
-# PHASE 2 (migration day): uncomment these, and change dns.yaml's target to
-# 10.0.7.202. See README.md for the full sequence.
-#   - pvc.yaml
-#   - service.yaml
-#   - deployment.yaml
-#   - ingress.yaml
+  - pvc.yaml
+  - service.yaml
+  - deployment.yaml
+  - ingress.yaml

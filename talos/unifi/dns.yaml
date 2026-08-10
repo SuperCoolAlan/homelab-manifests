@@ -1,18 +1,23 @@
 # Stable name for UniFi device inform + discovery.
 #
-# THIS IS THE WHOLE POINT OF DOING DNS FIRST. Devices are told to report to
-# whatever "Override Inform Host" says. Point them at a NAME while the
-# controller is still on TrueNAS, let every device absorb it, and migration day
-# becomes "change the target below from 10.0.1.14 to 10.0.7.202". Point them at
-# an IP instead and every AP needs SSH `set-inform` after the move.
+# ⚠️ NOT a .local name. The first attempt used unifi.asandov.local and the U6+
+# reported `Unable to resolve` — .local is reserved for mDNS/Bonjour, and the
+# AP's resolver routes it to multicast rather than unicast DNS. OPNsense answers
+# the record correctly (dig @10.0.1.1 returns it), so the record was fine; the
+# device simply will not ask for it that way. macOS tolerates this, the AP does
+# not.
 #
-# CURRENT TARGET: TrueNAS (10.0.1.14) — the controller still lives there.
-# AT MIGRATION: change to 10.0.7.202, the pinned MetalLB IP in service.yaml.
+# local.asandov.com is a real unicast zone, already in external-dns's
+# domainFilters, and resolves normally on the AP's network - the same zone the
+# browser UI uses.
 #
-# The pinned IP matters. ldap-dns.yaml hardcodes 10.0.7.201 with a comment
-# saying it points at traefik — but traefik is .200 and MetalLB gave .201 to
-# piper, so that record resolves to the wrong service. Pinning the Service's IP
-# and hardcoding the same value here keeps the two from drifting apart.
+# Points at the pinned MetalLB IP from service.yaml. Deployed alongside the
+# workload rather than ahead of it: the "point devices at a name first, flip DNS
+# later" trick did not survive contact, because Override Inform Host only
+# overrides the HOST - the port comes from the controller. TrueNAS serves inform
+# on NodePort 30073 while this Deployment serves 8080, so the AP needs one
+# explicit `set-inform` at cutover regardless. The name still earns its place
+# for any device added later.
 apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
 metadata:
@@ -20,7 +25,7 @@ metadata:
   namespace: unifi
 spec:
   endpoints:
-    - dnsName: unifi.asandov.local
+    - dnsName: unifi-inform.local.asandov.com
       recordType: A
       targets:
-        - 10.0.1.14
+        - 10.0.7.202
