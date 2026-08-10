@@ -51,5 +51,17 @@
       ],
       versioningTemplate: '{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}',
     },
+    {
+      // Same annotation, but for raw manifests that set a full `image:` ref
+      // rather than a chart `tag:` value (e.g. talos/monerod/statefulset.yaml).
+      // The `kubernetes` manager stays off on purpose — this keeps bumps opt-in
+      // per image instead of scanning every rendered manifest in the tree.
+      customType: 'regex',
+      managerFilePatterns: ['/talos/.*\\.ya?ml$/'],
+      matchStrings: [
+        '# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s*\\n\\s*image:\\s*"?\\S+:(?<currentValue>[^"\\s@]+)',
+      ],
+      versioningTemplate: '{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}',
+    },
   ],
 }

@@ -1,0 +1,12 @@
+# monerod needs no privileges at all - no host networking, no NET_ADMIN, no
+# root. Enforce the strictest PSA profile so that stays true. If the Oracle
+# WireGuard sidecar is ever added (see README), this has to relax to
+# `privileged` for the NET_ADMIN capability.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monerod
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
