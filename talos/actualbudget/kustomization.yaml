@@ -6,7 +6,6 @@ namespace: actualbudget
 resources:
   - namespace.yaml
   - pvc-fast.yaml
-  - pvc-legacy.yaml
 
 
 generators:
