@@ -7,6 +7,7 @@ resources:
   - namespace.yaml
   - storageclass.yaml
   - storageclass-fast.yaml
+  - volumesnapshotclass.yaml
 
 # Chart vendored (same rationale as democratic-csi: remote helm refs blow
 # kustomize's render timeout on Starlink transit). To bump:
