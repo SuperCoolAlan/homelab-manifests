@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: monitoring
+
+resources:
+  - resources/nvidia-gpu-exporter-daemonset.yaml
+  - resources/nvidia-gpu-exporter-service.yaml
+  - resources/nvidia-gpu-exporter-servicemonitor.yaml

@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-gpu-exporter
+  namespace: monitoring
+  labels:
+    app: nvidia-gpu-exporter
+    io.kompose.service: nvidia-gpu-exporter
+spec:
+  selector:
+    matchLabels:
+      app: nvidia-gpu-exporter
+  template:
+    metadata:
+      labels:
+        app: nvidia-gpu-exporter
+        io.kompose.service: nvidia-gpu-exporter
+    spec:
+      # Same pin as the device plugin: talos-ramhaus is the only node with a
+      # GPU, and blackbox is the control plane. A DaemonSet rather than a
+      # Deployment so a second GPU node would be covered by widening this
+      # selector, without also having to think about replica counts.
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      # Required. This is what injects nvidia-smi and the driver libraries;
+      # without it the exporter starts and every scrape returns nothing.
+      runtimeClassName: nvidia
+      containers:
+        - name: nvidia-gpu-exporter
+          # DCGM would be the more conventional choice, but DCGM's useful
+          # metrics (the DCGM_FI_PROF_* family) need a data-center card. This
+          # is a GeForce GTX 1660 Ti, so DCGM would expose little more than
+          # NVML basics. This exporter shells out to nvidia-smi and reports
+          # everything the card reports - including utilization.encoder and
+          # utilization.decoder, which are the two that actually matter for
+          # jellyfin.
+          #
+          # It also emits nvidia_smi_* metric names, which is what the
+          # dashboard inherited from TrueNAS already queries.
+          image: ghcr.io/utkuozdemir/nvidia_gpu_exporter:1.13.1
+          args:
+            - --web.listen-address=:9835
+            # Default is 10s. The scrape interval is 30s and nvidia-smi on an
+            # idle card returns in well under a second, so this only matters if
+            # the driver wedges - in which case failing fast is what surfaces it.
+            - --collect.timeout=5s
+          ports:
+            - name: metrics
+              containerPort: 9835
+          env:
+            # NOT a resource request. Requesting nvidia.com/gpu would take the
+            # cluster's only GPU away from jellyfin and leave one of the two
+            # pods permanently Pending - the exporter's own docs call this out.
+            # These env vars make the nvidia runtime expose the device without
+            # going through device-plugin accounting, which is correct here:
+            # reading counters is not exclusive use.
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+            # utility is the tier that provides nvidia-smi and NVML. Deliberately
+            # narrower than jellyfin's compute,video,utility - this never encodes.
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: utility
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 10

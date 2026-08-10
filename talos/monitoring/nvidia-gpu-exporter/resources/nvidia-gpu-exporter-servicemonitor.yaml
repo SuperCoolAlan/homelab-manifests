@@ -1,0 +1,25 @@
+# ServiceMonitor rather than VMServiceScrape purely for consistency with the
+# other hand-written exporters here (opnsense, starlink). The VictoriaMetrics
+# operator converts these, so both kinds end up as the same scrape config.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nvidia-gpu-exporter
+  namespace: monitoring
+  labels:
+    app: nvidia-gpu-exporter
+    io.kompose.service: nvidia-gpu-exporter
+spec:
+  endpoints:
+    - port: metrics
+      path: /metrics
+      scheme: http
+      # 30s matches the other exporters. Fine for temperature, power and memory.
+      # Note it does undersample encoder/decoder utilization, which is an
+      # instantaneous sample rather than a counter - a short transcode can start
+      # and finish between two scrapes and leave no trace. Raise this to 10s if
+      # per-session transcode visibility ever matters more than storage cost.
+      interval: 30s
+  selector:
+    matchLabels:
+      io.kompose.service: nvidia-gpu-exporter
