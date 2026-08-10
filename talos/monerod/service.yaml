@@ -1,0 +1,34 @@
+# Headless service backing the StatefulSet's stable network identity.
+# Not used for client traffic - see monerod-rpc below.
+apiVersion: v1
+kind: Service
+metadata:
+  name: monerod-headless
+  namespace: monerod
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: monerod
+  ports:
+    - name: p2p
+      port: 18080
+      targetPort: p2p
+    - name: rpc
+      port: 18089
+      targetPort: rpc
+---
+# Restricted RPC for in-cluster and (via the Traefik ingress) LAN wallet
+# clients. The unrestricted RPC on 18081 is never bound - see statefulset.yaml.
+apiVersion: v1
+kind: Service
+metadata:
+  name: monerod-rpc
+  namespace: monerod
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: monerod
+  ports:
+    - name: rpc
+      port: 18089
+      targetPort: rpc
