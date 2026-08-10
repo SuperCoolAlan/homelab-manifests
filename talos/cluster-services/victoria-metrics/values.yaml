@@ -207,6 +207,56 @@ kubeApiServer:
 # Kubelet metrics
 kubelet:
   enabled: true
+  vmScrape:
+    spec:
+      # ⚠️ Overriding relabelConfigs REPLACES the chart's list - Helm merges maps
+      # but not sequences. The first three entries below are the chart defaults
+      # restated verbatim; only the labeldrop at the end is ours. If the chart is
+      # upgraded, re-diff this against
+      # charts/victoria-metrics-k8s-stack-*/victoria-metrics-k8s-stack/values.yaml.
+      #
+      # Why the labeldrop exists (fixed 2026-08-10):
+      #
+      # The chart's `labelmap __meta_kubernetes_node_label_(.+)` copies *every*
+      # node label onto *every* kubelet and cadvisor series. That is harmless on
+      # talos-blackbox, which has 7 node labels. talos-ramhaus has 417, because
+      # KubeVirt's node-labeller stamps one label per CPU feature, CPU model and
+      # migration-compatible model:
+      #
+      #   147  cpu-feature.node.kubevirt.io/*
+      #   113  cpu-model-migration.node.kubevirt.io/*
+      #    93  host-model-required-features.node.kubevirt.io/*
+      #    18  cpu-model.node.kubevirt.io/*
+      #    15  machine-type.node.kubevirt.io/*
+      #    12  hyperv.node.kubevirt.io/*
+      #
+      # That made every ramhaus series carry 421 labels, and VictoriaMetrics
+      # defaults -maxLabelsPerTimeseries=30. Rows over the limit are *ignored
+      # outright*, not truncated - so every kubelet and cadvisor sample from the
+      # node that runs the entire workload was silently discarded at ingestion.
+      # vmsingle had counted 8,109,257 of them under
+      # vm_rows_ignored_total{reason="too_many_labels"}.
+      #
+      # Nothing surfaced it: the scrape targets all reported up with no error,
+      # because the drop happens at the storage end, after a successful scrape.
+      # The visible symptom was that every Kubernetes compute-resources dashboard
+      # was blank for talos-ramhaus while looking fine for the control plane.
+      #
+      # Dropping the three families below leaves 8 node labels and ~18 total per
+      # series, well inside the limit. The KubeVirt labels describe the host's
+      # CPU capabilities and mean nothing on a per-container metric; the
+      # extensions_talos_dev_* ones grow every time a system extension is added,
+      # which is exactly how this would creep back; beta_kubernetes_io_* are
+      # deprecated duplicates of kubernetes_io_*.
+      relabelConfigs:
+        - action: labelmap
+          regex: __meta_kubernetes_node_label_(.+)
+        - sourceLabels: [__metrics_path__]
+          targetLabel: metrics_path
+        - targetLabel: job
+          replacement: kubelet
+        - action: labeldrop
+          regex: (.*_node_kubevirt_io_.*|extensions_talos_dev_.*|beta_kubernetes_io_.*)
 
 # Disable kubeControllerManager - name too long and Talos doesn't expose it standard way
 kubeControllerManager:
