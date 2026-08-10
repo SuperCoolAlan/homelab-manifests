@@ -1,50 +1,48 @@
-# Media library for jellyfin.
+# Media library for jellyfin, on the local ZFS pool (cutover 2026-08-10).
 #
-# ⚠️ THIS IS THE PRE-PHASE-4 FORM. It points at the TrueNAS NFS export, the same
-# one media-v2 and qbittorrent use today, so jellyfin can run NOW rather than
-# waiting for the disk swap.
+# The 6TB pair now lives in ramhaus; ST6000NM0095-pool1 is imported with its
+# media dataset mounted at /var/mnt/media. This was previously an nfs: PV
+# against truenas.asandov.local, which no longer exists.
 #
-# AT PHASE 4, when ST6000NM0095-pool1 is imported onto ramhaus as `media` at
-# /var/mnt/media, replace the PV below with the local: form — alongside
-# talos/media-v2/shared-pvcs-local.yaml.staged and
-# talos/qbittorrent/pvcs-local.yaml.staged, which do the same for their
-# namespaces:
+# A PV's source and a PVC's volumeName are both immutable, so the swap meant
+# deleting and recreating both objects rather than editing them. Reclaim policy
+# is Retain on both the old and new PV, so no data was touched.
 #
-#   spec:
-#     storageClassName: media-local
-#     local:
-#       path: /var/mnt/media
-#     nodeAffinity:
-#       required:
-#         nodeSelectorTerms:
-#           - matchExpressions:
-#               - key: kubernetes.io/hostname
-#                 operator: In
-#                 values: [talos-ramhaus]
-#
-# A PV's source and a PVC's volumeName are both immutable, so that swap means
-# deleting and recreating both objects. Reclaim policy is Retain, so no data is
-# touched.
+# WHY local: RATHER THAN A StorageClass: the media library is the one genuinely
+# RWX volume left - media-v2, qbittorrent and jellyfin all mount it, across
+# namespaces. zfs-localpv cannot serve RWX: its CSI driver enforces verifyMount
+# and refuses the second attach (proven by probe 2026-08-09). A local: PV has no
+# attach step - kubelet bind-mounts the host path - so any number of pods on the
+# same node share it.
 #
 # A PV binds to exactly one PVC, which is why the media library needs one PV per
-# consuming namespace — media-v2, qbittorrent, and now jellyfin.
+# consuming namespace - media-v2, qbittorrent, and jellyfin each get their own
+# pointing at the same host path.
+#
+# nodeAffinity is load-bearing twice over: it keeps consumers on ramhaus (where
+# the pool physically is) and makes that pinning self-enforcing rather than
+# convention.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: jellyfin-media-library
+  name: jellyfin-media-library-local
 spec:
   capacity:
     storage: 5Ti
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: ""
-  nfs:
-    server: truenas.asandov.local
-    path: /mnt/ST6000NM0095-pool1/media
-  mountOptions:
-    - noatime
-    - nfsvers=4
+  storageClassName: media-local
+  local:
+    path: /var/mnt/media
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-ramhaus
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -54,8 +52,8 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: ""
-  volumeName: jellyfin-media-library
+  storageClassName: media-local
+  volumeName: jellyfin-media-library-local
   resources:
     requests:
       storage: 5Ti
