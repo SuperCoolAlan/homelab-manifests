@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+  labels:
+    app: jellyfin
+spec:
+  replicas: 1
+  # Recreate, not RollingUpdate: the config PVC is RWO and the GPU is a single
+  # exclusive device, so a second pod could never schedule alongside the first.
+  strategy:
+    type: Recreate
+    rollingUpdate: null
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+    spec:
+      # Both the GPU and the media pool are on ramhaus. The media PV's
+      # nodeAffinity would force this anyway; stating it is clearer.
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      # Required for the container to see the NVIDIA device. Provided by
+      # talos/cluster-services/nvidia-device-plugin.
+      runtimeClassName: nvidia
+      securityContext:
+        # Matches the uid/gid the media tree already uses across the *arr stack,
+        # so jellyfin can read what sonarr/radarr write without a chown pass.
+        runAsUser: 1000
+        runAsGroup: 3001
+        fsGroup: 3001
+      containers:
+        - name: jellyfin
+          # Pinned to what TrueNAS was running, so the config database is opened
+          # by the same version that wrote it. Upgrade deliberately, afterwards.
+          image: jellyfin/jellyfin:10.11.5
+          ports:
+            - name: http
+              containerPort: 8096
+          env:
+            - name: TZ
+              value: America/Chicago
+            # Advertise NVENC/NVDEC to the container.
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: compute,video,utility
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: cache
+              mountPath: /cache
+            - name: media
+              mountPath: /mnt/media
+            # TrueNAS backed both of these with a /mnt/transcode-ram RAM disk;
+            # a Memory-medium emptyDir is the direct equivalent and keeps
+            # transcode churn off the SSDs entirely.
+            - name: transcodes
+              mountPath: /config/transcodes
+            - name: transcodes
+              mountPath: /cache/transcodes
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              # Exactly one GPU — the 1660 Ti is shared with ollama/whisper if
+              # those follow, and it cannot be split.
+              nvidia.com/gpu: 1
+              memory: 8Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 10
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: jellyfin-config
+        - name: cache
+          persistentVolumeClaim:
+            claimName: jellyfin-cache
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-library
+        - name: transcodes
+          emptyDir:
+            medium: Memory
+            # ramhaus has 128 GiB; 16 GiB of tmpfs is generous for concurrent
+            # transcodes and still leaves the node plenty of headroom.
+            sizeLimit: 16Gi
