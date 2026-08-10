@@ -30,33 +30,6 @@ patches:
     kind: Deployment
     name: sonarr
   path: patches/sonarr-install-unrar.yaml
-# TEMPORARY: held at 0 while /config is copied to the -fast claims on local
-# ZFS. sqlite must not be copied live, and these two are the busiest writers of
-# the set. Removed in the follow-up commit that repoints volumes.config.
-# The namespace below is load-bearing: without it kustomize resolves the patch
-# to Deployment/<name>.[noNs], matches nothing, and hard-fails the whole render.
-- target:
-    kind: Deployment
-    name: sonarr
-  patch: |-
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: sonarr
-      namespace: media-v2
-    spec:
-      replicas: 0
-- target:
-    kind: Deployment
-    name: radarr
-  patch: |-
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: radarr
-      namespace: media-v2
-    spec:
-      replicas: 0
 
 helmCharts:
 - name: sonarr

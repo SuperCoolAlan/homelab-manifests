@@ -12,8 +12,11 @@ nodeSelector:
 persistence:
   data:
     enabled: true
-    storageClass: nfs
     size: 5Gi
+    # Migrated off TrueNAS NFS 2026-08-09. Rollback is one line: point this back
+    # at wyoming-piper-data (declared in pvc-legacy.yaml) - its PV is Retain and
+    # still holds the original voice models.
+    existingClaim: wyoming-piper-data-fast
 
 livenessProbe:
   httpGet: null
