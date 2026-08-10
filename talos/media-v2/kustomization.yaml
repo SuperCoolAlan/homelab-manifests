@@ -10,6 +10,7 @@ resources:
 - resources/local-asandov-ingresses.yaml
 - configs/setup-rbac.yaml
 - windscribe-openvpn-configmap.yaml
+- resources/volsync-configs.yaml
 
 generators:
 - secrets-generator.yaml

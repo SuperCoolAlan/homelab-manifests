@@ -1,0 +1,49 @@
+# Off-site backup of this namespace's application config volumes.
+#
+# WHY: git creates these PVCs empty. Everything inside them is runtime state -
+# sqlite databases, API keys, provider credentials, download history - and none
+# of it is reproducible from a manifest. After the TrueNAS decommission these
+# volumes are the only copy, on a single node.
+#
+# Pattern matches talos/immich/resources/volsync-photos.yaml: restic into
+# s3://asandov-volsync with one prefix per source.
+#
+# copyMethod Snapshot, not Direct: zfs-localpv enforces verifyMount and refuses
+# a second mount of a volume its application already holds open, so a mover pod
+# cannot attach a PVC while the app is running. Snapshot also gives a
+# consistent read of a live sqlite file instead of copying it mid-write.
+#
+# Schedules are staggered so the movers do not contend for disk and uplink, and
+# all land before immich-postgres (02:00) and immich-photos (04:00).
+#
+# PREREQUISITE: each source has a matching stub in secrets/ with RESTIC_PASSWORD
+# and the two AWS_* keys set to REPLACE_ME. They must be filled before the first
+# run can succeed - see README-restic-secrets.md at the repo root.
+---
+# gatus-data-fast (1.6 MB) - uptime history (sqlite) - the only record of past incidents
+#
+# Only copy: the TrueNAS-backed original is being destroyed with the box, and
+# fast-array lives on a single node.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: gatus-data
+  namespace: status
+spec:
+  sourcePVC: gatus-data-fast
+  trigger:
+    schedule: "45 0 * * *"
+  restic:
+    repository: gatus-data-restic
+    copyMethod: Snapshot
+    volumeSnapshotClassName: zfs-localpv-snapshot
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: fast-array
+    cacheCapacity: 1Gi
+    cacheStorageClassName: fast-array
+    retain:
+      daily: 14
+      weekly: 6
+      monthly: 6
+    pruneIntervalDays: 14
