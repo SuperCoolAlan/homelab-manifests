@@ -108,6 +108,11 @@ vmagent:
   enabled: true
   spec:
     scrapeInterval: 30s
+    extraArgs:
+      # kube-apiserver /metrics is ~17.6MB uncompressed and exceeds the 16MiB
+      # default, so the whole target was being dropped. See kubeApiServer below,
+      # which also trims the unused histogram families.
+      promscrape.maxScrapeSize: "32MB"
     nodeSelector:
       kubernetes.io/hostname: talos-ramhaus
     resources:
@@ -166,6 +171,31 @@ kube-state-metrics:
   enabled: true
   nodeSelector:
     kubernetes.io/hostname: talos-ramhaus
+
+# Kube-apiserver metrics.
+#
+# The endpoint list is restated in full because Helm replaces lists rather than
+# merging them - everything except metricRelabelConfigs matches the chart default.
+#
+# The dropped histogram families account for ~2.8MB of the ~17.6MB response and
+# are referenced by no dashboard and no VMRule. apiserver_request_duration_seconds
+# and apiserver_request_sli_duration_seconds are deliberately kept: the latter
+# backs the kube-apiserver availability/burnrate/histogram SLO rule groups.
+kubeApiServer:
+  enabled: true
+  vmScrape:
+    spec:
+      endpoints:
+        - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+          port: https
+          scheme: https
+          tlsConfig:
+            caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            serverName: kubernetes
+          metricRelabelConfigs:
+            - action: drop
+              source_labels: [__name__]
+              regex: apiserver_request_body_size_bytes_bucket|apiserver_response_sizes_bucket|apiserver_watch_cache_read_wait_seconds_bucket|apiserver_watch_events_sizes_bucket
 
 # Kubelet metrics
 kubelet:
