@@ -1,0 +1,30 @@
+# The original chart-created `wyoming-piper-data` PVC, transcribed from the
+# live object so Argo sees it as in-sync.
+#
+# Once persistence.data.existingClaim points at wyoming-piper-data-fast the
+# chart stops rendering this PVC. It carries helm.sh/resource-policy: keep,
+# which Argo normally honours as a prune exemption - but declaring it here is
+# explicit rather than relying on that, and matches how gatus and qbittorrent
+# were handled.
+#
+# Delete this file (and wyoming-piper-data-nfs) once the migration has soaked.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wyoming-piper-data
+  namespace: piper
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    app.kubernetes.io/instance: wyoming-piper
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: wyoming-piper
+    helm.sh/chart: wyoming-piper-0.1.4
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs
+  volumeName: wyoming-piper-data-nfs
+  resources:
+    requests:
+      storage: 5Gi

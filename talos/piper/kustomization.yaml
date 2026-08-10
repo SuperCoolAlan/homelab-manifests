@@ -6,22 +6,8 @@ namespace: piper
 resources:
   - namespace.yaml
   - pvc-fast.yaml
+  - pvc-legacy.yaml
 
-# TEMPORARY: held at 0 while /data is copied to wyoming-piper-data-fast on
-# local ZFS. Removed in the follow-up commit that switches persistence to
-# existingClaim.
-patches:
-  - target:
-      kind: Deployment
-      name: wyoming-piper
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: wyoming-piper
-        namespace: piper
-      spec:
-        replicas: 0
 
 helmCharts:
   - name: wyoming-piper
