@@ -6,10 +6,7 @@ metadata:
   labels:
     app: maintainerr
 spec:
-  # TEMPORARY: held at 0 while maintainerr-data is copied from the TrueNAS NFS
-  # PV to maintainerr-data-fast (local ZFS). sqlite must not be copied live.
-  # Restored to 1 in the follow-up commit that repoints claimName.
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: maintainerr
@@ -46,4 +43,7 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: maintainerr-data
+            # Migrated off TrueNAS NFS 2026-08-09. Rollback is one line: point
+            # this back at maintainerr-data - that PV is Retain, so its copy of
+            # the data is still intact.
+            claimName: maintainerr-data-fast
