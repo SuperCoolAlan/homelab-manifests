@@ -25,7 +25,10 @@ global:
     - secretRef:
         name: authentik-secrets
 
-# Disable bundled PostgreSQL - using CNPG
+# Disable the bundled PostgreSQL. Despite the previous "using CNPG" note here,
+# authentik has never had a CNPG cluster - authentik.postgresql.host above
+# points at a Postgres running on the TrueNAS box. The unused authentik-cnpg
+# StorageClass and its two PVs were removed 2026-08-09.
 postgresql:
   enabled: false
 
