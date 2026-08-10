@@ -17,12 +17,6 @@ patches:
       kind: Deployment
       name: qbittorrent
     path: patches/gluetun-secrets-dns.yaml
-  # PHASE4-QUIESCE — remove this entry and patches/phase4-quiesce.yaml after the
-  # disk swap, in the commit that moves media-library onto local storage.
-  - target:
-      kind: Deployment
-      name: qbittorrent
-    path: patches/phase4-quiesce.yaml
 
 helmCharts:
   - name: qbittorrent
