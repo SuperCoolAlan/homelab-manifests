@@ -1,0 +1,18 @@
+# Replacement for the chart-created `qbittorrent` config PVC (TrueNAS NFS).
+# storageClassName is immutable, so the migration to local ZFS goes via a
+# second claim which the chart then adopts by persistence.existingClaim.
+#
+# This is qBittorrent's /config only - the torrent store itself lives on the
+# media-library claim (media/torrents subPath) and is NOT touched here.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qbittorrent-config-fast
+  namespace: qbittorrent
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 5Gi
