@@ -4,9 +4,16 @@ metrics:
 
 # Inherited from original media deployment
 persistentVolumeClaims:
+  # Original TrueNAS NFS claim, kept while the migration soaks so rollback is
+  # just pointing deployment.volumes.config back at it. Reap once verified.
   bazarr-config:
     requestStorage: '5Gi'
     storageClassName: 'nfs'
+  # Replacement on the local ZFS `fast` pool. storageClassName is immutable on
+  # a PVC, hence a second claim rather than editing the first.
+  bazarr-config-fast:
+    requestStorage: '5Gi'
+    storageClassName: 'fast-array'
 
 # Disable config.yaml mounting to avoid conflict with NFS volume
 application:
