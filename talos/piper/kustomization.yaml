@@ -6,7 +6,6 @@ namespace: piper
 resources:
   - namespace.yaml
   - pvc-fast.yaml
-  - volsync.yaml
 
 
 helmCharts:
@@ -16,6 +15,3 @@ helmCharts:
     releaseName: wyoming-piper
     namespace: piper
     valuesFile: values.yaml
-
-generators:
-  - secrets-generator.yaml

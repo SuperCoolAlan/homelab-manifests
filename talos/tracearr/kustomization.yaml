@@ -9,7 +9,6 @@ resources:
   - service.yaml
   - pvc.yaml
   - ingress.yaml
-  - volsync.yaml
 
 generators:
   - secrets-generator.yaml

@@ -1,0 +1,14 @@
+wing: homelab_manifests
+rooms:
+- name: talos
+  description: Files from talos/
+- name: llm
+  description: Files from llm/
+- name: keyboards
+  description: Files from keyboards/
+- name: documentation
+  description: Files from docs/
+- name: configuration
+  description: Files from config/
+- name: general
+  description: Files that don't fit other rooms
