@@ -22,7 +22,7 @@ metadata:
   annotations:
     cnpg.io/hibernation: "off"
 spec:
-  instances: 1
+  instances: 3
   # Must match the source major version (18). Plain CNPG image - authentik needs
   # no extensions beyond plpgsql, unlike immich which needs vectorchord.
   imageName: ghcr.io/cloudnative-pg/postgresql:18.1
