@@ -6,7 +6,10 @@ metadata:
   labels:
     app: maintainerr
 spec:
-  replicas: 1
+  # TEMPORARY: held at 0 while maintainerr-data is copied from the TrueNAS NFS
+  # PV to maintainerr-data-fast (local ZFS). sqlite must not be copied live.
+  # Restored to 1 in the follow-up commit that repoints claimName.
+  replicas: 0
   selector:
     matchLabels:
       app: maintainerr
