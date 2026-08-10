@@ -5,7 +5,6 @@ namespace: vms
 
 resources:
   - namespace.yaml
-  - pv.yaml
   - datavolume.yaml
   - cloud-init.yaml
   - virtualmachine.yaml

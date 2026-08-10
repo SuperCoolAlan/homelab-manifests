@@ -1,3 +1,22 @@
+# Rebuilt from scratch on fast-array as part of the TrueNAS decommission.
+#
+# The previous incarnation was statically bound to aldo-rootdisk-pv, an NFS PV
+# on truenas.asandov.local with permissive root mapping - that share existed
+# specifically so virt-launcher could chown the disk file, which normal
+# root_squash forbids. With TrueNAS gone the share goes with it, and a local ZFS
+# volume needs none of that special-casing.
+#
+# The old disk was NOT migrated. It held a stock Ubuntu install with nothing on
+# it worth preserving, so this re-imports the same base image rather than
+# copying 109 days of accumulated nothing. cloud-init.yaml re-runs on first
+# boot, so the aldo user and SSH keys are provisioned exactly as before.
+#
+# storageClassName is now dynamic: no volumeName, no pre-provisioned PV, no
+# claimRef. CDI asks fast-array for a volume and zfs-localpv creates it on
+# ramhaus. The disk is sparse - 100Gi requested, ~1 GiB actually consumed.
+#
+# fast-array (mirrored SSD) rather than ssd-array (raidz2): a VM root disk is
+# random-write-heavy, which is the raidz2 pool's worst case.
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
@@ -6,7 +25,9 @@ metadata:
 spec:
   source:
     # Pre-converted raw disk image from the kubevirt containerdisks project.
-    # Avoids CDI's http→qemu-img-convert path which was failing on NFS scratch.
+    # Avoids CDI's http→qemu-img-convert path, which was failing on NFS scratch
+    # space - less critical now that scratch is local, but still the shorter
+    # path and known to work here.
     registry:
       url: "docker://quay.io/containerdisks/ubuntu:24.04"
   pvc:
@@ -16,8 +37,4 @@ spec:
     resources:
       requests:
         storage: 100Gi
-    # Static binding to the pre-provisioned NFS PV that has permissive
-    # root mapping (needed for virt-launcher to chown the disk file).
-    # Keeps permissive NFS settings scoped to this one share.
-    storageClassName: nfs
-    volumeName: aldo-rootdisk-pv
+    storageClassName: fast-array
