@@ -1,0 +1,63 @@
+# Replacements for the two jellyfin ingresses currently in media-v2, both of
+# which point at TrueNAS:
+#
+#   media-v2/resources/jellyfin-ingress.yaml         -> external-truenas:30013
+#   media-v2/resources/local-asandov-ingresses.yaml  -> jellyfin-truenas:30013
+#
+# Same hostnames, same ingress classes and annotations, backend swung to the
+# in-cluster Service.
+#
+# AT CUTOVER, in the same commit that adds talos/jellyfin to the ApplicationSet:
+#   - delete talos/media-v2/resources/jellyfin-ingress.yaml (and dereference it)
+#   - remove the jellyfin-local-asandov block from local-asandov-ingresses.yaml
+#   - delete talos/media-v2/resources/external-truenas-svc.yaml (and dereference)
+# Leaving the old ones in place would mean two Ingress objects claiming the same
+# host, and which one wins is not something to leave to chance.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+  annotations:
+    external-dns.alpha.kubernetes.io/target: 10.0.7.200
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: jellyfin.asandov.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin-local-asandov
+  namespace: jellyfin
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: jellyfin.local.asandov.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin
+                port:
+                  number: 8096
+  tls:
+    - hosts:
+        - jellyfin.local.asandov.com
+      secretName: jellyfin-local-tls

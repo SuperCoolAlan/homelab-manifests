@@ -1,0 +1,31 @@
+# Library database, metadata, settings and the custom index.html web mod.
+# Migrated from /mnt/dual_hdd/app_configs/jellyfin on TrueNAS.
+# fast-array (mirrored SSD) rather than ssd-array: jellyfin's config is sqlite
+# and does a lot of small synchronous writes, which the raidz2 pool is worst at.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-config
+  namespace: jellyfin
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 20Gi
+---
+# Image/metadata cache. 63 MB on TrueNAS and fully regenerable, so this starts
+# empty rather than being copied.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-cache
+  namespace: jellyfin
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 20Gi

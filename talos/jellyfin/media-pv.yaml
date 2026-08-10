@@ -1,0 +1,54 @@
+# Third local: PV onto the same host path as media-v2's and qbittorrent's.
+#
+# A PV binds to exactly one PVC, so cross-namespace sharing of the media library
+# needs one PV per consuming namespace. That is already the arrangement for
+# media-v2 and qbittorrent; jellyfin in its own namespace makes three.
+#
+# local: rather than a StorageClass because this is the one genuinely RWX volume
+# left. zfs-localpv cannot serve RWX - its driver enforces verifyMount and
+# refuses the second attach (proven by probe 2026-08-09). A local: PV has no
+# attach step; kubelet bind-mounts the host path, so any number of pods on the
+# node share it.
+#
+# ⚠️ /var/mnt/media does not exist until ST6000NM0095-pool1 is imported onto
+# ramhaus in Phase 4. Enabling this directory before then leaves the pod Pending
+# on an unbindable PV.
+#
+# nodeAffinity is load-bearing: it keeps jellyfin on ramhaus, which is also
+# where the GPU is, so the media mount and the transcode device agree by
+# construction rather than by convention.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jellyfin-media-library
+spec:
+  capacity:
+    storage: 5Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: media-local
+  local:
+    path: /var/mnt/media
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-ramhaus
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-library
+  namespace: jellyfin
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: media-local
+  volumeName: jellyfin-media-library
+  resources:
+    requests:
+      storage: 5Ti

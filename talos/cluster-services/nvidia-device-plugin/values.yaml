@@ -6,6 +6,21 @@ runtimeClassName: nvidia
 nodeSelector:
   kubernetes.io/hostname: talos-ramhaus
 
+# The chart's default nodeAffinity requires one of three Node Feature Discovery
+# labels (feature.node.kubernetes.io/pci-10de.present,
+# feature.node.kubernetes.io/cpu-model.vendor_id=NVIDIA, or
+# nvidia.com/gpu.present). NFD is not installed here, so none of them exist and
+# the DaemonSet sat at DESIRED 0 - scheduled nowhere, silently, while Argo
+# reported Synced/Healthy.
+#
+# Cleared rather than installing NFD: there is exactly one GPU on one known
+# node, and nodeSelector above already targets it precisely. Revisit if a second
+# GPU node ever appears.
+#
+# Must be `null`, not `{}` - Helm deep-merges maps, so an empty map leaves the
+# chart's nested nodeAffinity intact. null is what actually removes the key.
+affinity: null
+
 resources:
   requests:
     cpu: 50m
