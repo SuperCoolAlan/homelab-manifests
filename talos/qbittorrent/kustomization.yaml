@@ -17,10 +17,6 @@ patches:
   - target:
       kind: Deployment
       name: qbittorrent
-    path: quiesce.yaml
-  - target:
-      kind: Deployment
-      name: qbittorrent
     path: patches/gluetun-secrets-dns.yaml
 
 helmCharts:
