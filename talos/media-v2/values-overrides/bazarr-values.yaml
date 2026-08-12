@@ -35,7 +35,7 @@ deployment:
       persistentVolumeClaim:
         # Migrated off TrueNAS NFS 2026-08-09; the NFS claim was dropped
         # 2026-08-10 when TrueNAS was decommissioned.
-        claimName: 'bazarr-config-fast'
+        claimName: 'bazarr-config-ssd'
     downloads:
       persistentVolumeClaim:
         claimName: 'media-downloads'

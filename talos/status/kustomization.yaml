@@ -9,12 +9,6 @@ resources:
   - pvc-fast.yaml
   - pvc-ssd.yaml
 
-patches:
-  - target:
-      kind: Deployment
-      name: gatus
-    path: quiesce.yaml
-
 helmCharts:
   - name: gatus
     repo: https://twin.github.io/helm-charts
@@ -31,7 +25,7 @@ helmCharts:
         # dropped 2026-08-10 with the TrueNAS decommission. Its PV is Retain so
         # the original sqlite history survives on the imported pool, but the
         # server that exported it is gone, so the claim could not rebind.
-        existingClaim: gatus-data-fast
+        existingClaim: gatus-data-ssd
       serviceMonitor:
         enabled: true
       config:

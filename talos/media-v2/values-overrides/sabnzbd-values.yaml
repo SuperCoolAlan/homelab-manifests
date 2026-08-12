@@ -152,7 +152,7 @@ deployment:
   volumes:
     config:
       persistentVolumeClaim:
-        claimName: 'sabnzbd-state-fast'
+        claimName: 'sabnzbd-state-ssd'
     downloads:
       persistentVolumeClaim:
         claimName: 'sabnzbd-downloads'

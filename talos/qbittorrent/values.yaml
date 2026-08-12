@@ -44,7 +44,7 @@ persistence:
   # Migrated off TrueNAS NFS 2026-08-09. Rollback is one line: point this back
   # at `qbittorrent` (declared in pvc-legacy.yaml) - its PV is Retain and still
   # holds the original /config.
-  existingClaim: qbittorrent-config-fast
+  existingClaim: qbittorrent-config-ssd
   # Torrent store lives inside the media dataset (media/torrents) so
   # radarr/sonarr can hardlink imports. Mounted at /downloads so qbt's
   # SavePath and fastresume data stay valid (no recheck after cutover).
