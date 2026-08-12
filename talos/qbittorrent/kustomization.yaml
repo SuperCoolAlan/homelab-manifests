@@ -6,7 +6,6 @@ namespace: qbittorrent
 resources:
   - namespace.yaml
   - pvcs.yaml
-  - pvc-fast.yaml
   - pvc-ssd.yaml
   - local-asandov-ingress.yaml
 

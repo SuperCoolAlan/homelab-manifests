@@ -1,18 +1,11 @@
-# App state (queue db, history) on the local ZFS `fast` pool.
+# App state (queue db, history) on the local ZFS `ssd` pool.
 persistentVolumeClaims:
-  sabnzbd-config: null  # chart default — superseded by sabnzbd-state-fast
-  # The original claim (sabnzbd-state) was a dynamic truenas-nfs volume,
-  # dropped 2026-08-10 with the TrueNAS decommission. Its PV had been patched
-  # from reclaimPolicy Delete to Retain on 2026-08-09 precisely so removing the
-  # claim could not fire democratic-csi's delete against the source dataset -
-  # which matters more now, since that call would hit a server that is gone and
-  # leave the PV wedged in Terminating on an unsatisfiable finalizer.
-  sabnzbd-state-fast:
-    requestStorage: '5Gi'
-    storageClassName: 'fast-array'
-  # Staged replacement on ssd-array while `fast` runs with no redundancy
-  # (both mirrors down to one leg since 2026-08-10). Low-write config
-  # volume, so raidz2's small-write penalty is irrelevant here.
+  sabnzbd-config: null  # chart default — superseded by sabnzbd-state-ssd
+  # On ssd-array (4x480G raidz2). Migrated off the `fast` pool 2026-08-12:
+  # fast has had no redundancy since 2026-08-10 (both mirrors down to one
+  # leg - see ~/Documents/truenas-migration/FAST-POOL-RECOVERY.md) and
+  # nothing on it is backed up. Low-write state volume, so raidz2's
+  # small-write penalty does not apply the way it does to jellyfin/unifi.
   sabnzbd-state-ssd:
     requestStorage: '5Gi'
     storageClassName: 'ssd-array'

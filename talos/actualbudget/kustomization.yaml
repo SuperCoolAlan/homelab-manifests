@@ -5,7 +5,6 @@ namespace: actualbudget
 
 resources:
   - namespace.yaml
-  - pvc-fast.yaml
   - pvc-ssd.yaml
 
 
