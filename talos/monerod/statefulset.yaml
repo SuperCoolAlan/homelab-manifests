@@ -41,7 +41,20 @@ spec:
           # does not parse - loose does.
           # renovate: datasource=docker depName=ghcr.io/sethforprivacy/simple-monerod versioning=loose
           image: ghcr.io/sethforprivacy/simple-monerod:v0.18.5.1
+          # Bypass the image's /entrypoint.sh, which ends in `exec fixuid -q
+          # monerod --non-interactive "$@"`. fixuid is setuid-root and needs
+          # NoNewPrivileges disabled, so it aborts under
+          # allowPrivilegeEscalation: false and the container never starts.
+          #
+          # Skipping it costs nothing here: fixuid's /etc/fixuid/config.yml
+          # targets user/group `monero` = 1000:1000, which is exactly what the
+          # pod securityContext already requests, so it would remap 1000->1000.
+          # Volume ownership is handled by fsGroup instead. The entrypoint's
+          # only other job is a numactl prefix, and numactl is not in the image.
+          # --non-interactive is the one flag it added, so pass it explicitly.
+          command: ["monerod"]
           args:
+            - --non-interactive
             # HOME is not reliably set by the runtime, and monerod derives its
             # default data dir from it. Be explicit.
             - --data-dir=/home/monero/.bitmonero
