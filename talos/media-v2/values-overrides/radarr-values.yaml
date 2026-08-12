@@ -45,7 +45,7 @@ deployment:
       persistentVolumeClaim:
         # Migrated off TrueNAS NFS 2026-08-09; the NFS claim was dropped
         # 2026-08-10 when TrueNAS was decommissioned.
-        claimName: 'radarr-config-fast'
+        claimName: 'radarr-config-ssd'
     sabnzbd-downloads:
       persistentVolumeClaim:
         claimName: 'sabnzbd-downloads'

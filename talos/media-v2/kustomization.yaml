@@ -29,30 +29,6 @@ patches:
     name: sonarr
   path: patches/sonarr-install-unrar.yaml
 
-- target:
-    kind: Deployment
-    name: sonarr
-  path: patches/quiesce-sonarr.yaml
-- target:
-    kind: Deployment
-    name: radarr
-  path: patches/quiesce-radarr.yaml
-- target:
-    kind: Deployment
-    name: prowlarr
-  path: patches/quiesce-prowlarr.yaml
-- target:
-    kind: Deployment
-    name: bazarr
-  path: patches/quiesce-bazarr.yaml
-- target:
-    kind: Deployment
-    name: jellyseerr
-  path: patches/quiesce-jellyseerr.yaml
-- target:
-    kind: Deployment
-    name: sabnzbd
-  path: patches/quiesce-sabnzbd.yaml
 
 helmCharts:
 - name: sonarr
