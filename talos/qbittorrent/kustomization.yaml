@@ -7,12 +7,17 @@ resources:
   - namespace.yaml
   - pvcs.yaml
   - pvc-fast.yaml
+  - pvc-ssd.yaml
   - local-asandov-ingress.yaml
 
 generators:
   - secrets-generator.yaml
 
 patches:
+  - target:
+      kind: Deployment
+      name: qbittorrent
+    path: quiesce.yaml
   - target:
       kind: Deployment
       name: qbittorrent
