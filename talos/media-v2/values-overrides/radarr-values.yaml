@@ -12,6 +12,12 @@ persistentVolumeClaims:
   radarr-config-fast:
     requestStorage: '10Gi'
     storageClassName: 'fast-array'
+  # Staged replacement on ssd-array while `fast` runs with no redundancy
+  # (both mirrors down to one leg since 2026-08-10). Low-write config
+  # volume, so raidz2's small-write penalty is irrelevant here.
+  radarr-config-ssd:
+    requestStorage: '10Gi'
+    storageClassName: 'ssd-array'
 
 # Disable config.xml mounting - let app manage its own config
 application:

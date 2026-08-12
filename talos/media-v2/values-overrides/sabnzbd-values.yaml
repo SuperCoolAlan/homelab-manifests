@@ -10,6 +10,12 @@ persistentVolumeClaims:
   sabnzbd-state-fast:
     requestStorage: '5Gi'
     storageClassName: 'fast-array'
+  # Staged replacement on ssd-array while `fast` runs with no redundancy
+  # (both mirrors down to one leg since 2026-08-10). Low-write config
+  # volume, so raidz2's small-write penalty is irrelevant here.
+  sabnzbd-state-ssd:
+    requestStorage: '5Gi'
+    storageClassName: 'ssd-array'
 
 # Application configuration with Eweka news server
 application:

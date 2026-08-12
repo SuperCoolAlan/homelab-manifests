@@ -1,0 +1,24 @@
+# Replacement for gatus-data-fast on the DEGRADED `fast` pool.
+#
+# fast lost one leg of each of its two mirrors on 2026-08-10 (the two Samsung
+# MZ7KM960s on motherboard SATA never come ready - see
+# ~/Documents/truenas-migration/FAST-POOL-RECOVERY.md). Until that is fixed the
+# pool has zero redundancy, and nothing here is backed up: b1a4443 removed the
+# app-config ReplicationSources.
+#
+# ssd-array (4x480G raidz2) is ONLINE and tolerates any two disk failures.
+# This volume is small and low-write, so raidz2's read-modify-write penalty on
+# small random writes does not matter here - unlike jellyfin/unifi/tracearr and
+# the aldo-vm root disk, which stay on fast-array for exactly that reason.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gatus-data-ssd
+  namespace: status
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ssd-array
+  resources:
+    requests:
+      storage: 1Gi

@@ -19,6 +19,12 @@ persistentVolumeClaims:
   prowlarr-config-fast:
     requestStorage: '5Gi'
     storageClassName: 'fast-array'
+  # Staged replacement on ssd-array while `fast` runs with no redundancy
+  # (both mirrors down to one leg since 2026-08-10). Low-write config
+  # volume, so raidz2's small-write penalty is irrelevant here.
+  prowlarr-config-ssd:
+    requestStorage: '5Gi'
+    storageClassName: 'ssd-array'
 
 # Configure URL base to serve from root
 application:
