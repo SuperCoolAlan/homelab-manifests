@@ -4,17 +4,12 @@ metrics:
 
 # Inherited from original media deployment
 persistentVolumeClaims:
-  radarr-config: null  # chart default — superseded by radarr-config-fast
-  # On the local ZFS `fast` pool. The original TrueNAS NFS claim
-  # (radarr-config) was dropped 2026-08-10 with the TrueNAS decommission. Its
-  # PV is Retain so the dataset survives, but the server exporting it does not,
-  # so the claim could never bind again.
-  radarr-config-fast:
-    requestStorage: '10Gi'
-    storageClassName: 'fast-array'
-  # Staged replacement on ssd-array while `fast` runs with no redundancy
-  # (both mirrors down to one leg since 2026-08-10). Low-write config
-  # volume, so raidz2's small-write penalty is irrelevant here.
+  radarr-config: null  # chart default — superseded by radarr-config-ssd
+  # On ssd-array (4x480G raidz2). Migrated off the `fast` pool 2026-08-12:
+  # fast has had no redundancy since 2026-08-10 (both mirrors down to one
+  # leg - see ~/Documents/truenas-migration/FAST-POOL-RECOVERY.md) and
+  # nothing on it is backed up. Low-write config volume, so raidz2's
+  # small-write penalty does not apply the way it does to jellyfin/unifi.
   radarr-config-ssd:
     requestStorage: '10Gi'
     storageClassName: 'ssd-array'
