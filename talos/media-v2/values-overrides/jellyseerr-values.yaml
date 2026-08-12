@@ -8,6 +8,12 @@ persistentVolumeClaims:
   jellyseerr-config-fast:
     requestStorage: '5Gi'
     storageClassName: 'fast-array'
+  # Staged replacement on ssd-array while `fast` runs with no redundancy
+  # (both mirrors down to one leg since 2026-08-10). Low-write config
+  # volume, so raidz2's small-write penalty is irrelevant here.
+  jellyseerr-config-ssd:
+    requestStorage: '5Gi'
+    storageClassName: 'ssd-array'
 
 # Use specific UID/GID that matches TrueNAS NFS user
 deployment:
