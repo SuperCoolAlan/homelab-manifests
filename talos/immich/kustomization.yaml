@@ -5,7 +5,9 @@ namespace: immich
 
 resources:
   - namespace.yaml
-  - resources/nfs-storage.yaml
+  # resources/nfs-storage.yaml removed 2026-08-12 with the TrueNAS decommission.
+  # The library moved to resources/library-fast.yaml (ssd-array) on 2026-08-09;
+  # the NFS PV pointed at ST6000NM0095-pool0, which is exported and shelved.
   - resources/library-fast.yaml
   - resources/cnpg-objectstore.yaml
   - resources/cnpg-cluster.yaml
