@@ -6,7 +6,6 @@ namespace: status
 resources:
   - namespace.yaml
   - ingress.yaml
-  - pvc-fast.yaml
   - pvc-ssd.yaml
 
 helmCharts:

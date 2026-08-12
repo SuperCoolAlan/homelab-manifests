@@ -4,16 +4,12 @@ metrics:
 
 # Inherited from original media deployment
 persistentVolumeClaims:
-  bazarr-config: null  # chart default — superseded by bazarr-config-fast
-  # On the local ZFS `fast` pool. The original TrueNAS NFS claim
-  # (bazarr-config) was dropped 2026-08-10 with the TrueNAS decommission - its
-  # PV is Retain so the dataset survives, but the server exporting it is gone.
-  bazarr-config-fast:
-    requestStorage: '5Gi'
-    storageClassName: 'fast-array'
-  # Staged replacement on ssd-array while `fast` runs with no redundancy
-  # (both mirrors down to one leg since 2026-08-10). Low-write config
-  # volume, so raidz2's small-write penalty is irrelevant here.
+  bazarr-config: null  # chart default — superseded by bazarr-config-ssd
+  # On ssd-array (4x480G raidz2). Migrated off the `fast` pool 2026-08-12:
+  # fast has had no redundancy since 2026-08-10 (both mirrors down to one
+  # leg - see ~/Documents/truenas-migration/FAST-POOL-RECOVERY.md) and
+  # nothing on it is backed up. Low-write config volume, so raidz2's
+  # small-write penalty does not apply the way it does to jellyfin/unifi.
   bazarr-config-ssd:
     requestStorage: '5Gi'
     storageClassName: 'ssd-array'
