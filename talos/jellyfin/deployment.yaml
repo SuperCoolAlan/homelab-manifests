@@ -111,7 +111,10 @@ spec:
               # wyoming-whisper ever move onto this node they contend for it
               # rather than share it. Requesting it here means jellyfin holds it.
               nvidia.com/gpu: 1
-              memory: 8Gi
+              # Must exceed the transcodes tmpfs sizeLimit plus jellyfin's own
+              # working set: tmpfs pages count against this cgroup, and a VOD
+              # remux writes the whole file into it ahead of playback.
+              memory: 24Gi
           livenessProbe:
             httpGet:
               path: /health
