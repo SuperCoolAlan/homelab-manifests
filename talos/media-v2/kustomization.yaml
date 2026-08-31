@@ -7,6 +7,7 @@ resources:
 - shared-pvcs.yaml
 - local-storage.yaml
 - resources/jellyseerr-public-ingress.yaml
+- resources/jellyseerr-config-pvc.yaml
 - resources/local-asandov-ingresses.yaml
 - configs/setup-rbac.yaml
 - windscribe-openvpn-configmap.yaml
