@@ -28,6 +28,16 @@ patches:
     kind: Deployment
     name: sonarr
   path: patches/sonarr-install-unrar.yaml
+# seerr chart ships a helm-test Pod; don't let ArgoCD sync it
+- target:
+    kind: Pod
+    name: jellyseerr-test-connection
+  patch: |-
+    $patch: delete
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: jellyseerr-test-connection
 
 
 helmCharts:
@@ -66,9 +76,9 @@ helmCharts:
   namespace: media-v2
   valuesFile: values-overrides/bazarr-values.yaml
 
-- name: jellyseerr
-  repo: https://media-servarr.shw.al/charts
-  version: 0.5.0
+- name: seerr-chart
+  repo: oci://ghcr.io/seerr-team/seerr
+  version: 3.9.1
   releaseName: jellyseerr
   namespace: media-v2
   valuesFile: values-overrides/jellyseerr-values.yaml
