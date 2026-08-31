@@ -533,9 +533,9 @@ configMapGenerator:
       labels:
         grafana_dashboard: "1"
       annotations:
-        grafana_folder: "CrowdSec"
+        grafana_folder: "Security"
     files:
-      - dashboards/CrowdSec/crowdsec-overview.json
+      - dashboards/Security/crowdsec-overview.json
 # 
 #   # Starlink
 #   - name: dashboard-starlink
