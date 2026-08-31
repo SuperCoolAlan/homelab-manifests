@@ -25,3 +25,4 @@ configMapGenerator:
   - name: jellyfin-encoding
     files:
       - encoding.xml=config/encoding.xml
+      - network.xml=config/network.xml
