@@ -1,0 +1,14 @@
+# Referenced by the seerr chart via existingClaim — must be declared here or
+# ArgoCD prunes it (the old media-servarr chart used to render this PVC).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyseerr-config-ssd
+  namespace: media-v2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ssd-array
+  resources:
+    requests:
+      storage: 5Gi
