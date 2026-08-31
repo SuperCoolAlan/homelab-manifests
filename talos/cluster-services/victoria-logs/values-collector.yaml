@@ -16,4 +16,6 @@ resources:
     cpu: 10m
     memory: 64Mi
   limits:
-    memory: 256Mi
+    # 256Mi OOMKilled the ramhaus pod: vlagent buffers blocks for every
+    # workload on the node and needs headroom when replaying backlog
+    memory: 1Gi
