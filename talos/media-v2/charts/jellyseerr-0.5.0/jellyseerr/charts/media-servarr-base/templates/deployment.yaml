@@ -1,0 +1,192 @@
+{{- define "media-servarr-base.deployment" -}}
+{{- $context := . }}
+{{/* Set application config object to map */}}
+{{- $config := .Values.application.config }}
+{{- if and $config (ne (kindOf $config) "slice") }}
+  {{- $config = list $config }}
+{{- end -}}
+
+apiVersion: 'apps/v1'
+kind: 'Deployment'
+metadata:
+  name: '{{ include "media-servarr-base.fullname" . }}'
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "media-servarr-base.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "media-servarr-base.selectorLabels" . | nindent 6 }}
+  strategy:
+    {{- with (default (dict "type" "Recreate") .Values.deployment.strategy) }}
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+  template:
+    metadata:
+      {{- with .Values.deployment.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "media-servarr-base.labels" . | nindent 8 }}
+        {{- with .Values.deployment.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: '{{ include "media-servarr-base.serviceAccountName" . }}'
+      securityContext:
+        {{- toYaml .Values.deployment.podSecurityContext | nindent 8 -}}
+        {{/*
+        We can use config maps to use configuraton as code.
+        If application.config includes valus, we'll use an init container to also set secrets, if
+          applicable, and add to a temporary rw storage (as servarr apps often crash if these files are ro
+        */}}
+      {{- if $config }}
+      {{/* Add config as array if not already */}}
+      initContainers:
+        - name: 'prepare-config'
+          image: 'alpine'
+          volumeMounts:
+            - name: 'config-map'
+              mountPath: '/config-map'
+            - name: 'config-map-processed'
+              mountPath: '/config-processed'
+          env:
+            {{- range $config }}
+              {{- if .secrets }}
+                {{- range .secrets }}
+            - name: '{{ . }}'
+              valueFrom:
+                secretKeyRef:
+                  name: '{{ include "media-servarr-base.fullname" $context }}'
+                  key: '{{ . }}'
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          command: ["/bin/sh"]
+          args:
+            - '-c'
+            - |
+              #!/bin/sh
+              # Inject secrets in config if set
+              {{- range $config }}
+              {{- if gt (len (default list .secrets)) 0 }}
+              sed \
+                {{- range .secrets }}
+                -e "s/\${{ . }}/${{ . }}/g" \
+                {{- end }}
+                '/config-map/{{ .filename }}' > \
+                '/config-processed/{{ .filename }}'
+              {{- else }}
+              cp \
+                '/config-map/{{ .filename }}' \
+                '/config-processed/{{ .filename }}'
+              {{- end }}
+              {{- end }}
+      {{- end }}
+      containers:
+        {{- with .Values.deployment.sideCarContainers }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        - name: '{{ .Chart.Name }}'
+          securityContext:
+            {{- toYaml .Values.deployment.container.securityContext | nindent 12 }}
+          {{- with .Values.deployment.container.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: '{{ .Values.deployment.container.image.repository }}:{{ .Values.deployment.container.image.tag | default .Chart.AppVersion }}'
+          imagePullPolicy: '{{ .Values.deployment.container.image.pullPolicy }}'
+          ports:
+            {{- range .Values.deployment.container.ports }}
+              - name: '{{ .name }}'
+                protocol: '{{ .protocol }}'
+                containerPort: {{ .containerPort | default $context.Values.application.port }}
+            {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.deployment.container.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.deployment.container.readinessProbe | nindent 12 }}
+          volumeMounts:
+            {{- toYaml .Values.deployment.container.volumeMounts | nindent 12 }}
+            {{- if $config }}
+              {{ range $config }}
+            - name: 'config-map-processed'
+              mountPath: '{{ .mountPath }}'
+              subPath: '{{ .filename }}'
+              {{- end }}
+            {{- end }}
+          {{- with .Values.deployment.container.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- if .Values.metrics.enabled }}
+        - name: '{{ .Values.metrics.name }}'
+          image: '{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}'
+          imagePullPolicy: '{{ .Values.metrics.image.pullPolicy }}'
+          args:
+            - '{{ .Values.metrics.app }}'
+          env:
+            - name: 'PORT'
+              value: '{{ .Values.metrics.port.number }}'
+            - name: 'URL'
+              value: 'http://{{ include "media-servarr-base.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.application.port }}/{{ .Values.application.urlBase }}'
+            - name: 'APIKEY'
+              valueFrom:
+                secretKeyRef:
+                  name: '{{ include "media-servarr-base.fullname" . }}'
+                  key: 'apiKey'
+            {{- if .Values.metrics.env }}
+            {{ toYaml .Values.metrics.env | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: '{{ .Values.metrics.port.name }}'
+              containerPort: {{ .Values.metrics.port.number }}
+          livenessProbe:
+            httpGet:
+              path: '/healthz'
+              port: {{ .Values.metrics.port.name }}
+            failureThreshold: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: '/healthz'
+              port: {{ .Values.metrics.port.name }}
+            failureThreshold: 5
+            periodSeconds: 10
+          {{- with .Values.metrics.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
+      volumes:
+        {{- range $key, $value := .Values.deployment.volumes }}
+        - name: '{{ $key }}'
+          {{- $volume := default (dict "emptyDir" dict) $value }}
+          {{- toYaml $volume | nindent 10 }}
+        {{- end }}
+        {{- if $config }}
+        - name: 'config-map'
+          configMap:
+            name: '{{ include "media-servarr-base.fullname" . }}'
+            items:
+              {{- range $config }}
+              - key: '{{ .filename }}'
+                path: '{{ .filename }}'
+              {{- end }}
+        - name: 'config-map-processed'
+          emptyDir: {}
+        {{- end }}
+      {{- with .Values.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
