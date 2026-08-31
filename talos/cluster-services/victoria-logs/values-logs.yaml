@@ -27,6 +27,10 @@ server:
     accessModes:
       - ReadWriteOnce
 
+  # Feeds vl_* metrics to the victorialogs-single-node Grafana dashboard
+  vmServiceScrape:
+    enabled: true
+
   ingress:
     enabled: true
     ingressClassName: traefik
