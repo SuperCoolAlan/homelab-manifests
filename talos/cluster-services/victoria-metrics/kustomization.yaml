@@ -522,6 +522,20 @@ configMapGenerator:
         grafana_folder: "VictoriaLogs"
     files:
       - dashboards/VictoriaLogs/victorialogs-explorer.json
+
+  # CrowdSec Overview (official, dashboards_v5). Acquisitions panel extended
+  # with cs_victorialogssource_hits_total — upstream only charts file/syslog/
+  # journald/cloudwatch sources; re-apply if re-vendoring.
+  - name: dashboard-crowdsec-overview
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "CrowdSec"
+    files:
+      - dashboards/CrowdSec/crowdsec-overview.json
 # 
 #   # Starlink
 #   - name: dashboard-starlink
