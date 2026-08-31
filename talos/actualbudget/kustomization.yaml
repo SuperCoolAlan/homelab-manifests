@@ -14,7 +14,7 @@ generators:
 helmCharts:
   - name: actualbudget
     repo: https://community-charts.github.io/helm-charts
-    version: 1.9.2
+    version: 1.9.3
     releaseName: actualbudget
     namespace: actualbudget
     valuesFile: values.yaml
