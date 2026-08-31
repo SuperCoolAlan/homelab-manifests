@@ -6,8 +6,8 @@
 
 [![Join Discord](https://img.shields.io/discord/809154715984199690?label=Discord&style=for-the-badge)](https://goauthentik.io/discord)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/goauthentik/helm/lint-test.yaml?branch=main&label=ci&style=for-the-badge)](https://github.com/goauthentik/helm/actions/workflows/lint-test.yaml)
-![Version: 2026.5.6](https://img.shields.io/badge/Version-2026.5.6-informational?style=flat-square)
-![AppVersion: 2026.5.6](https://img.shields.io/badge/AppVersion-2026.5.6-informational?style=flat-square)
+![Version: 2026.8.0](https://img.shields.io/badge/Version-2026.8.0-informational?style=flat-square)
+![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
 
 authentik is an open-source Identity Provider focused on flexibility and versatility
 
@@ -98,7 +98,7 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | Repository | Name | Version |
 |------------|------|---------|
 | https://charts.goauthentik.io | serviceAccount(authentik-remote-cluster) | 2.1.0 |
-| oci://registry-1.docker.io/bitnamicharts | postgresql | 18.7.9 |
+| oci://registry-1.docker.io/bitnamicharts | postgresql | 18.8.11 |
 
 ## Values
 
@@ -188,7 +188,7 @@ The secret `authentik-postgres-credentials` must have `username` and `password` 
 | postgresql.enabled | bool | `false` | enable the Bitnami PostgreSQL chart. Refer to https://github.com/bitnami/charts/blob/main/bitnami/postgresql/ for possible values. |
 | postgresql.image.registry | string | `"docker.io"` |  |
 | postgresql.image.repository | string | `"library/postgres"` |  |
-| postgresql.image.tag | string | `"17.10-bookworm"` |  |
+| postgresql.image.tag | string | `"17.11-bookworm"` |  |
 | postgresql.metrics.image.repository | string | `"prometheuscommunity/postgres-exporter"` |  |
 | postgresql.metrics.image.tag | string | `"v0.19.1"` |  |
 | postgresql.metrics.resourcesPreset | string | `"none"` |  |
