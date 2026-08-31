@@ -52,6 +52,30 @@ ports:
     expose:
       default: true
     protocol: TCP
+  # Cloudflare Tunnel traffic enters here (cloudflared -> traefik -> app).
+  # Separate from `web` because that entrypoint 308s everything to https,
+  # which would loop behind the tunnel (TLS already terminated at the edge).
+  tunnel:
+    port: 8081
+    exposedPort: 8081
+    protocol: TCP
+    forwardedHeaders:
+      # Trust X-Forwarded-* from cloudflared pods so apps and access logs
+      # see the real client IP, not the pod IP. CrowdSec detection is blind
+      # without this - the private-range whitelist eats pod-IP events.
+      trustedIPs:
+        - 10.244.0.0/16
+
+# JSON access logs -> stdout -> VictoriaLogs -> CrowdSec (type: traefik).
+# User-Agent must be kept: headers default to drop and http-bad-user-agent
+# needs it.
+accessLog:
+  enabled: true
+  format: json
+  fields:
+    headers:
+      names:
+        User-Agent: keep
 
 # Enable dashboard for debugging (internal only)
 ingressRoute:

@@ -91,7 +91,7 @@ agent:
     kubernetes.io/hostname: talos-ramhaus
   env:
     - name: COLLECTIONS
-      value: "LePresidente/jellyfin firix/authentik gauth-fr/immich LePresidente/jellyseerr"
+      value: "LePresidente/jellyfin firix/authentik gauth-fr/immich LePresidente/jellyseerr crowdsecurity/traefik"
     # syslog-logs carries the non-syslog fallback that maps acquisition
     # labels.type -> program (what the s01 parsers filter on); whitelists
     # keeps private ranges out of decisions; dateparse enriches StrTime.
@@ -132,6 +132,15 @@ agent:
       max_failure_duration: 10m
       labels:
         type: jellyseerr
+    # Tunnel-app HTTP detection: cloudflared routes through traefik's tunnel
+    # entrypoint, whose JSON access logs land in VL like any pod stdout.
+    - source: victorialogs
+      mode: tail
+      url: http://victoria-logs-victoria-logs-single-server.monitoring.svc:9428
+      query: 'kubernetes.pod_namespace:"traefik" kubernetes.pod_labels.app.kubernetes.io/name:"traefik"'
+      max_failure_duration: 10m
+      labels:
+        type: traefik
   resources:
     requests:
       cpu: 50m
