@@ -1,0 +1,27 @@
+{{- define "media-servarr-base.persistentvolumeclaim" -}}
+{{- $context := . }}
+{{- range $key, $value := .Values.persistentVolumeClaims }}
+---
+
+apiVersion: 'v1'
+kind: 'PersistentVolumeClaim'
+metadata:
+  name: '{{ $key }}'
+  namespace: {{ $context.Release.Namespace }}
+  labels:
+    {{- include "media-servarr-base.labels" $context | nindent 4 }}
+spec:
+  {{- if (hasKey $value "storageClassName")  }}
+  storageClassName: '{{ $value.storageClassName }}'
+  {{- end }}
+  accessModes:
+    - '{{ $value.accessMode | default "ReadWriteOnce" }}'
+  resources:
+    requests:
+      storage: '{{ $value.requestStorage | default "1Gi" }}'
+  {{- if $value.selector }}
+  selector:
+    {{- toYaml $value.selector | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

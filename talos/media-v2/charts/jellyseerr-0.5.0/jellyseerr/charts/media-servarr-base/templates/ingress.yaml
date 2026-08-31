@@ -1,0 +1,47 @@
+{{- define "media-servarr-base.ingress" -}}
+{{- if .Values.ingress.enabled -}}
+{{- $context := . }}
+{{- $fullName := include "media-servarr-base.fullname" . -}}
+---
+
+apiVersion: 'networking.k8s.io/v1'
+kind: 'Ingress'
+metadata:
+  name: '{{ $fullName }}'
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "media-servarr-base.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: '{{ .Values.ingress.className }}'
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- with .Values.ingress }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- $defaultPath := printf "/%s" $context.Values.application.urlBase }}
+          - path: {{ .path | default $defaultPath }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: '{{ $fullName }}'
+                port:
+                  number: {{ .port | default $context.Values.application.port }}
+    {{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,6 @@
+apiVersion: v2
+description: Base chart for media-servarr charts
+icon: https://github.com/drinkataco/media-servarr/blob/main/icon.png
+name: media-servarr-base
+type: application
+version: 0.8.0
