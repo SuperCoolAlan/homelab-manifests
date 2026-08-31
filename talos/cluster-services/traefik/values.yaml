@@ -70,12 +70,15 @@ ports:
       trustedIPs:
         - 10.244.0.0/16
 
-# JSON access logs -> stdout -> VictoriaLogs -> CrowdSec (type: traefik).
-# User-Agent must be kept: headers default to drop and http-bad-user-agent
-# needs it.
+# CLF access logs -> stdout -> VictoriaLogs -> CrowdSec (type: traefik).
+# Deliberately NOT json: the VL collector flattens JSON lines into fields,
+# and traefik's access JSON has no "msg" key, so records arrive with no
+# _msg at all and crowdsec (which reads _msg) parses nothing. CLF keeps the
+# whole line in _msg. User-Agent must be kept: headers default to drop and
+# http-bad-user-agent needs it.
 accessLog:
   enabled: true
-  format: json
+  format: common
   fields:
     headers:
       names:
