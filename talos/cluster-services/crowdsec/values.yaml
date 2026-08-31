@@ -1,0 +1,122 @@
+# CrowdSec phase 1: central LAPI + single log processor reading VictoriaLogs.
+# Detection-only — no bouncers yet. See docs/crowdsec-plan.md.
+
+container_runtime: containerd
+
+# csLapiSecret + registrationToken come from SOPS (secrets/lapi-secrets.enc.yaml).
+# They must be pinned externally: kustomize re-renders the chart on every sync,
+# so chart-generated random secrets would churn and break agent auth.
+secrets:
+  externalSecret:
+    name: crowdsec-lapi-secrets
+
+lapi:
+  enabled: true
+  replicas: 1
+  nodeSelector:
+    kubernetes.io/hostname: talos-ramhaus
+  # API only — no web UI exists in this chart. Exposed on the LAN for future
+  # satellites (Oracle VPS bouncer, OPNsense) and remote cscli.
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      external-dns.alpha.kubernetes.io/target: 10.0.7.200
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    host: crowdsec-lapi.local.asandov.com
+    tls:
+      - secretName: crowdsec-lapi-local-tls
+        hosts:
+          - crowdsec-lapi.local.asandov.com
+  # SQLite DB + bouncer API keys live in data; machine credentials in config.
+  # Both must survive pod restarts or every agent/bouncer re-registers.
+  persistentVolume:
+    data:
+      enabled: true
+      storageClassName: fast-array
+      accessModes:
+        - ReadWriteOnce
+      size: 1Gi
+    config:
+      enabled: true
+      storageClassName: fast-array
+      accessModes:
+        - ReadWriteOnce
+      size: 100Mi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+agent:
+  enabled: true
+  # Single Deployment querying VictoriaLogs — no hostPath /var/log DaemonSet.
+  isDeployment: true
+  replicas: 1
+  hostVarLog: false
+  nodeSelector:
+    kubernetes.io/hostname: talos-ramhaus
+  env:
+    - name: COLLECTIONS
+      value: "LePresidente/jellyfin firix/authentik gauth-fr/immich LePresidente/jellyseerr"
+    # syslog-logs carries the non-syslog fallback that maps acquisition
+    # labels.type -> program (what the s01 parsers filter on); whitelists
+    # keeps private ranges out of decisions; dateparse enriches StrTime.
+    - name: PARSERS
+      value: "crowdsecurity/syslog-logs crowdsecurity/whitelists crowdsecurity/dateparse-enrich"
+  # labels.type must equal the hub parser's expected program name exactly
+  # (checked against each parser's filter — don't rename).
+  # One acquisition entry per app: a VL stream carries exactly one type.
+  # tail mode starts at "now" (no replay across restarts); max_failure_duration
+  # is raised because crowdsec exits if VL is unreachable that long
+  # (crowdsec#3653) — k8s restarts the pod, but each exit loses tail time.
+  additionalAcquisition:
+    - source: victorialogs
+      mode: tail
+      url: http://victoria-logs-victoria-logs-single-server.monitoring.svc:9428
+      query: 'kubernetes.pod_namespace:"jellyfin" kubernetes.pod_labels.app:"jellyfin"'
+      max_failure_duration: 10m
+      labels:
+        type: jellyfin
+    - source: victorialogs
+      mode: tail
+      url: http://victoria-logs-victoria-logs-single-server.monitoring.svc:9428
+      query: 'kubernetes.pod_namespace:"authentik" kubernetes.pod_labels.app.kubernetes.io/name:"authentik"'
+      max_failure_duration: 10m
+      labels:
+        type: authentik
+    - source: victorialogs
+      mode: tail
+      url: http://victoria-logs-victoria-logs-single-server.monitoring.svc:9428
+      query: 'kubernetes.pod_namespace:"immich" kubernetes.pod_labels.app.kubernetes.io/name:"server"'
+      max_failure_duration: 10m
+      labels:
+        type: immich
+    - source: victorialogs
+      mode: tail
+      url: http://victoria-logs-victoria-logs-single-server.monitoring.svc:9428
+      query: 'kubernetes.pod_namespace:"media-v2" kubernetes.pod_labels.app.kubernetes.io/name:"jellyseerr"'
+      max_failure_duration: 10m
+      labels:
+        type: jellyseerr
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+appsec:
+  enabled: false
