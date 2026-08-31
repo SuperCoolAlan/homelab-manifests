@@ -1,10 +1,11 @@
 # VictoriaLogs Collector values
 # Collects logs from all Kubernetes pods
 
-# Send logs to VictoriaLogs — must match the victoria-logs-single release's
-# actual Service name or ingestion silently drops after 1m retries
+# Send logs to VictoriaLogs. Base URL only — vlagent appends /insert/native
+# itself; adding a path (e.g. /insert/jsonline) makes the server reject every
+# block as unparseable. Service name must match the victoria-logs-single release.
 remoteWrite:
-  - url: http://victoria-logs-victoria-logs-single-server.monitoring.svc:9428/insert/jsonline
+  - url: http://victoria-logs-victoria-logs-single-server.monitoring.svc:9428
 
 # Run on all nodes
 tolerations:
