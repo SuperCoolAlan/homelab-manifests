@@ -146,6 +146,35 @@ spec:
               # long-lived, so this is generous. If it ever OOMs, suspect a
               # connection leak rather than raising it.
               memory: 128Mi
+        - name: lapi-forwarder
+          image: alpine/socat:1.8.1.3
+          # CrowdSec path: the Oracle VPS agent and firewall bouncer reach the
+          # central LAPI at 10.100.0.2:8080 through the same tunnel. Port 8080
+          # must also be allowed in the VPS nftables wg0 egress rule, same as
+          # 30013 above. This widens the tunnel blast radius from "jellyfin
+          # only" to "jellyfin + LAPI"; the LAPI still requires machine/bouncer
+          # credentials, so a compromised VPS gets an authenticated API surface,
+          # not an open one.
+          args:
+            - -d
+            - TCP-LISTEN:8080,fork,reuseaddr
+            - TCP:crowdsec-service.crowdsec.svc.cluster.local:8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+          ports:
+            - name: lapi
+              containerPort: 8080
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
       volumes:
         - name: wg-key
           secret:
