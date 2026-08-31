@@ -15,6 +15,14 @@ lapi:
   replicas: 1
   nodeSelector:
     kubernetes.io/hostname: talos-ramhaus
+  # Console enrollment: ENROLL_KEY from SOPS; image enrolls on startup and
+  # it's a no-op once accepted. Approve the engine at app.crowdsec.net.
+  env:
+    - name: ENROLL_INSTANCE_NAME
+      value: talos-dell
+  envFrom:
+    - secretRef:
+        name: crowdsec-console-enroll
   # API only — no web UI exists in this chart. Exposed on the LAN for future
   # satellites (Oracle VPS bouncer, OPNsense) and remote cscli.
   ingress:
