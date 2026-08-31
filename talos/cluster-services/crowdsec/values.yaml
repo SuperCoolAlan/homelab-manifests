@@ -3,6 +3,23 @@
 
 container_runtime: containerd
 
+# Admin-egress whitelist on the in-cluster log processor: events from these
+# IPs are dropped before scenarios, so cluster-side detection can never ban
+# us out of our own apps. The LAPI also has a centralized `trusted-admin`
+# allowlist (cscli-managed, covers all bouncers incl. the Oracle VPS) with
+# the same IPs — keep both in sync. Home is Starlink CGNAT and rotates.
+config:
+  parsers:
+    s02-enrich:
+      admin-whitelist.yaml: |
+        name: alan/admin-whitelist
+        description: "Whitelist home and office egress IPs"
+        whitelist:
+          reason: "admin egress IP"
+          ip:
+            - "173.187.236.236"
+            - "153.66.233.225"
+
 # csLapiSecret + registrationToken come from SOPS (secrets/lapi-secrets.enc.yaml).
 # They must be pinned externally: kustomize re-renders the chart on every sync,
 # so chart-generated random secrets would churn and break agent auth.
