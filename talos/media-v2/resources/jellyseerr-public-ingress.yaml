@@ -7,6 +7,7 @@ metadata:
   namespace: media-v2
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: tunnel
+    traefik.ingress.kubernetes.io/router.middlewares: traefik-crowdsec-bouncer@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:

@@ -3,6 +3,10 @@ kind: Kustomization
 
 resources:
   - resources/public-tunnel-ingress.yaml
+  - resources/crowdsec-middleware.yaml
+
+generators:
+  - secrets-generator.yaml
 
 helmCharts:
 - name: traefik
