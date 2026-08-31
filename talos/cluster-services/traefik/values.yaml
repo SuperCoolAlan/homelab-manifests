@@ -1,6 +1,28 @@
 service:
   type: LoadBalancer
 
+# CrowdSec bouncer plugin: enforces LAPI decisions on the tunnel entrypoint.
+# abortOnPluginFailure stays at the chart default (false) so a plugin fetch
+# failure degrades to "no bouncing" instead of taking traefik down.
+experimental:
+  plugins:
+    crowdsec-bouncer:
+      moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      version: v1.7.1
+
+# Bouncer API key, mounted as a file (the plugin reads *File variants) so the
+# key stays in SOPS instead of being inlined in the Middleware CRD.
+deployment:
+  additionalVolumes:
+    - name: crowdsec-bouncer-key
+      secret:
+        secretName: crowdsec-bouncer-key
+
+additionalVolumeMounts:
+  - name: crowdsec-bouncer-key
+    mountPath: /secrets/crowdsec
+    readOnly: true
+
 # Enable metrics and ServiceMonitor
 metrics:
   prometheus:
@@ -26,6 +48,9 @@ providers:
   kubernetesCRD:
     enabled: true
     allowExternalNameServices: true
+    # The app Ingresses live in their own namespaces but reference the single
+    # crowdsec-bouncer Middleware in the traefik namespace.
+    allowCrossNamespace: true
 
 # Ports configuration
 ports:
