@@ -120,6 +120,20 @@ Caveats (from research):
 
 ### 3. Cloudflare edge blocking (phase 3 — optional)
 
+> **Status 2026-08-31: origin-side enforcement DONE (Option B).** Tunnel
+> traffic now runs cloudflared → traefik `tunnel` entrypoint → app, and the
+> maxlerebourg bouncer plugin v1.7.1 enforces every LAPI decision on those
+> routers (own detections + CAPI + subscribed blocklists, ~26k). One
+> Middleware in the traefik namespace is shared by all four app Ingresses
+> (needs `kubernetesCRD.allowCrossNamespace`); the bouncer key is SOPS-
+> encrypted and read via `crowdsecLapiKeyFile`. Fail-open on purpose:
+> `abortOnPluginFailure: false` + `streamStartupBlock: false`, so plugin or
+> LAPI trouble degrades to "not bouncing" instead of an outage. Verified by
+> replaying banned vs clean IPs through the entrypoint with a spoofed
+> X-Forwarded-For from inside the pod network: banned → 403, clean → 200.
+> The Cloudflare Worker bouncer (Option A) is now redundant for blocking and
+> would only add edge-side bandwidth savings; still undeployed.
+
 The tunnel apps can only be *blocked* at Cloudflare's edge or by inserting
 a proxy in-cluster:
 
