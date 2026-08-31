@@ -509,6 +509,19 @@ configMapGenerator:
         grafana_folder: "NVIDIA"
     files:
       - dashboards/NVIDIA/nvidia-gpu-allocation.json
+
+  # VictoriaLogs Explorer (grafana.com id 22759 rev 9). Datasource is a template
+  # variable that auto-picks the victoriametrics-logs-datasource — don't hardcode a UID.
+  - name: dashboard-victorialogs-explorer
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "VictoriaLogs"
+    files:
+      - dashboards/VictoriaLogs/victorialogs-explorer.json
 # 
 #   # Starlink
 #   - name: dashboard-starlink
