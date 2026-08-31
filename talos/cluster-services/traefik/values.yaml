@@ -58,6 +58,10 @@ ports:
   tunnel:
     port: 8081
     exposedPort: 8081
+    # Without this the entrypoint exists in the pod but never lands on the
+    # Service, and cloudflared gets connection-refused -> 502.
+    expose:
+      default: true
     protocol: TCP
     forwardedHeaders:
       # Trust X-Forwarded-* from cloudflared pods so apps and access logs
