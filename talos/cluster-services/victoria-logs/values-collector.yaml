@@ -1,9 +1,10 @@
 # VictoriaLogs Collector values
 # Collects logs from all Kubernetes pods
 
-# Send logs to VictoriaLogs
+# Send logs to VictoriaLogs — must match the victoria-logs-single release's
+# actual Service name or ingestion silently drops after 1m retries
 remoteWrite:
-  - url: http://victoria-logs-server.monitoring.svc:9428/insert/jsonline
+  - url: http://victoria-logs-victoria-logs-single-server.monitoring.svc:9428/insert/jsonline
 
 # Run on all nodes
 tolerations:
