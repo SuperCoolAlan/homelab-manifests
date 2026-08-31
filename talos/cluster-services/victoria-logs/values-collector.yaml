@@ -7,6 +7,17 @@
 remoteWrite:
   - url: http://victoria-logs-victoria-logs-single-server.monitoring.svc:9428
 
+# The collector flattens JSON log lines into fields and looks for the message
+# among these keys. Authentik's JSON calls it `event`, so without that entry
+# its records land with no _msg at all and CrowdSec parses none of them
+# (3.9k hits / 0 parsed until 2026-08-31). The first three are the chart
+# defaults, restated because this list replaces rather than merges.
+msgField:
+  - message
+  - msg
+  - log
+  - event
+
 # Run on all nodes
 tolerations:
   - operator: Exists
