@@ -138,7 +138,7 @@
             "uid": "${DS_VICTORIALOGS}"
           },
           "editorMode": "code",
-          "expr": "_stream: {kubernetes.container_name=~\"$container\", kubernetes.pod_namespace=\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:=\"$app\" $query | stats count()",
+          "expr": "_stream: {kubernetes.container_name=~\"$container\", kubernetes.pod_namespace=~\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:~\"^$app$\" $query | stats count()",
           "legendFormat": "${namespace} ${container}",
           "queryType": "statsRange",
           "refId": "A"
@@ -204,7 +204,7 @@
             "uid": "${DS_VICTORIALOGS}"
           },
           "editorMode": "code",
-          "expr": "_stream: {kubernetes.container_name=~\"$container\", kubernetes.pod_namespace=\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:=\"$app\" $query | stats by (\"$count_by\") count() c | sort by (c desc) | limit 50",
+          "expr": "_stream: {kubernetes.container_name=~\"$container\", kubernetes.pod_namespace=~\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:~\"^$app$\" $query | stats by (\"$count_by\") count() c | sort by (c desc) | limit 50",
           "legendFormat": "{{$count_by}}",
           "queryType": "stats",
           "refId": "A"
@@ -244,7 +244,7 @@
             "uid": "${DS_VICTORIALOGS}"
           },
           "editorMode": "code",
-          "expr": "_stream: {kubernetes.container_name=~\"$container\", kubernetes.pod_namespace=\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:=\"$app\" $query | sort desc | limit $limit",
+          "expr": "_stream: {kubernetes.container_name=~\"$container\", kubernetes.pod_namespace=~\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:~\"^$app$\" $query | sort desc | limit $limit",
           "queryType": "range",
           "refId": "A"
         }
@@ -277,7 +277,7 @@
           "uid": "${DS_VICTORIALOGS}"
         },
         "definition": "",
-        "includeAll": false,
+        "includeAll": true,
         "name": "namespace",
         "options": [],
         "query": {
@@ -290,7 +290,8 @@
         "refresh": 2,
         "regex": "",
         "sort": 1,
-        "type": "query"
+        "type": "query",
+        "allValue": ".*"
       },
       {
         "current": {},
@@ -299,20 +300,21 @@
           "uid": "${DS_VICTORIALOGS}"
         },
         "definition": "{kubernetes.pod_namespace=\"$namespace\"}",
-        "includeAll": false,
+        "includeAll": true,
         "name": "app",
         "options": [],
         "query": {
           "field": "kubernetes.pod_labels.app.kubernetes.io/name",
           "limit": 0,
-          "query": "{kubernetes.pod_namespace=\"$namespace\"}",
+          "query": "{kubernetes.pod_namespace=~\"$namespace\"}",
           "refId": "VictoriaLogsVariableQueryEditor-VariableQuery",
           "type": "fieldValue"
         },
         "refresh": 2,
         "regex": "",
         "sort": 1,
-        "type": "query"
+        "type": "query",
+        "allValue": ".*"
       },
       {
         "current": {},
@@ -321,20 +323,21 @@
           "uid": "${DS_VICTORIALOGS}"
         },
         "definition": "{kubernetes.pod_namespace=\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:=\"$app\"",
-        "includeAll": false,
+        "includeAll": true,
         "name": "container",
         "options": [],
         "query": {
           "field": "kubernetes.container_name",
           "limit": 0,
-          "query": "{kubernetes.pod_namespace=\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:=\"$app\"",
+          "query": "{kubernetes.pod_namespace=~\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:~\"^$app$\"",
           "refId": "VictoriaLogsVariableQueryEditor-VariableQuery",
           "type": "fieldValue"
         },
         "refresh": 2,
         "regex": "",
         "sort": 1,
-        "type": "query"
+        "type": "query",
+        "allValue": ".*"
       },
       {
         "current": {},
@@ -349,7 +352,7 @@
         "query": {
           "field": "kubernetes.container_name",
           "limit": 25,
-          "query": "{kubernetes.pod_namespace=\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:=\"$app\"",
+          "query": "{kubernetes.pod_namespace=~\"$namespace\"} kubernetes.pod_labels.app.kubernetes.io/name:~\"^$app$\"",
           "refId": "VictoriaLogsVariableQueryEditor-VariableQuery",
           "type": "fieldName"
         },
