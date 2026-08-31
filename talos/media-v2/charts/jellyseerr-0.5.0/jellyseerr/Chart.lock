@@ -1,6 +1,0 @@
-dependencies:
-- name: media-servarr-base
-  repository: file://../..
-  version: 0.8.0
-digest: sha256:97e45f1591dc0d4f5c0ecf04a58b67a8a4d69d2729cc259351c36e64533b84df
-generated: "2025-06-11T20:20:07.713111888Z"
