@@ -11,6 +11,7 @@ grafana:
     kubernetes.io/hostname: talos-ramhaus
   plugins:
     - ae3e-plotly-panel
+    - victoriametrics-logs-datasource
   grafana.ini:
     server:
       root_url: https://grafana.local.asandov.com
@@ -151,6 +152,13 @@ defaultDatasources:
         isDefault: true
         url: http://vmsingle-vm-victoria-metrics-k8s-stack.monitoring.svc.cluster.local.:8428
 
+# VictoriaLogs lives in its own release (victoria-logs kustomization); giving the
+# chart its read URL makes it render the defaultDatasources.victorialogs entry.
+external:
+  vl:
+    read:
+      url: http://victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local.:9428
+
 # Alertmanager
 alertmanager:
   enabled: true
@@ -274,3 +282,8 @@ defaultDashboards:
   dashboards:
     node-exporter-full:
       enabled: true
+  sources:
+    # Gated on vlsingle.enabled by default, which is false here because
+    # VictoriaLogs runs as its own release — force it on.
+    victorialogs-single-node:
+      enabled: "true"
