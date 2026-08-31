@@ -76,7 +76,20 @@ Caveats (from research):
 
 ### 2. Oracle VPS: agent + firewall bouncer (phase 2 — highest value)
 
-> **Status 2026-08-31: agent DONE, bouncer pending.** crowdsec 1.7.8 (pinned
+> **Status 2026-08-31 (later): PHASE 2 COMPLETE — bouncer live.**
+> crowdsec-firewall-bouncer-nftables 0.0.36 registered as `oracle-fw`
+> against the central LAPI (same 10.100.0.2:8080 path), enforcing ~15k
+> decisions (3 Console blocklists + community list + local bans).
+> Lockout protection: LAPI centralized allowlist `trusted-admin` holds
+> home + office egress IPs (home is Starlink CGNAT and rotates — refresh
+> with `cscli allowlists add trusted-admin <ip>` when it changes), and the
+> k8s log processor carries a matching GitOps parser whitelist in
+> crowdsec/values.yaml. Verified: test decision propagated to the VPS
+> nftables set in ~15s; allowlisted IPs filtered from bouncer streams.
+> Recovery path if banned anyway: Twingate → kubectl exec →
+> `cscli decisions delete --ip <ip>` (VPS bans never affect cluster access).
+>
+> Original notes (agent): crowdsec 1.7.8 (pinned
 > to LAPI version) registered as `oracle-jellyfin-jumphost` via
 > 10.100.0.2:8080 (lapi-forwarder socat in the jellyfin-tunnel pod; wg0
 > egress rule for 8080 added live + in /etc/nftables.conf). Local API
