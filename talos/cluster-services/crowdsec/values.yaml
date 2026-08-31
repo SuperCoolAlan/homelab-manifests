@@ -19,7 +19,7 @@ lapi:
   # it's a no-op once accepted. Approve the engine at app.crowdsec.net.
   env:
     - name: ENROLL_INSTANCE_NAME
-      value: talos-dell
+      value: talos-ramhaus
   envFrom:
     - secretRef:
         name: crowdsec-console-enroll
