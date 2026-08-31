@@ -1,0 +1,26 @@
+# Enforces CrowdSec LAPI decisions on public (tunnel) traffic.
+#
+# stream mode keeps a local decision cache and refreshes it periodically, so
+# a brief LAPI outage does not stall requests. streamStartupBlock is off so
+# traefik serves normally during the window before the first fetch completes -
+# fail-open is the right trade here: a few unbounced seconds beats an outage.
+#
+# forwardedHeadersTrustedIPs must cover the pod network or the plugin bounces
+# on the cloudflared pod IP instead of the real client.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: crowdsec-bouncer
+  namespace: traefik
+spec:
+  plugin:
+    crowdsec-bouncer:
+      enabled: "true"
+      crowdsecMode: stream
+      streamStartupBlock: "false"
+      updateIntervalSeconds: "60"
+      crowdsecLapiScheme: http
+      crowdsecLapiHost: crowdsec-service.crowdsec.svc.cluster.local:8080
+      crowdsecLapiKeyFile: /secrets/crowdsec/lapi-key
+      forwardedHeadersTrustedIPs:
+        - 10.244.0.0/16
