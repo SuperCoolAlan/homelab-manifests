@@ -76,6 +76,20 @@ Caveats (from research):
 
 ### 2. Oracle VPS: agent + firewall bouncer (phase 2 — highest value)
 
+> **Status 2026-08-31: agent DONE, bouncer pending.** crowdsec 1.7.8 (pinned
+> to LAPI version) registered as `oracle-jellyfin-jumphost` via
+> 10.100.0.2:8080 (lapi-forwarder socat in the jellyfin-tunnel pod; wg0
+> egress rule for 8080 added live + in /etc/nftables.conf). Local API
+> disabled via config.yaml.local. Caddy upgraded 2.6.2 → 2.11.4 from the
+> official repo because the hub parser needs the `client_ip` log field
+> (2.7+); JSON access log enabled in the Caddyfile. Collections: linux,
+> caddy, http-cve (+ sshd, base-http-scenarios via deps). Verified: probe
+> burst raised http-probing/sensitive-files/admin-interface-probing alerts
+> on the central LAPI with true client IPs; ssh-bf already tracking live
+> internet noise. Also found and fixed: apt update hung since April holding
+> the lock — 4 months of security updates applied; **kernel update pending
+> reboot**.
+
 - Enable Caddy **JSON access logs** (default encoder — the
   `crowdsecurity/caddy` parser breaks on custom formats).
 - Install crowdsec (log processor only) + `crowdsecurity/caddy`,
