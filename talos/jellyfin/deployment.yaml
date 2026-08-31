@@ -38,8 +38,8 @@ spec:
         runAsUser: 1000
         runAsGroup: 3001
         fsGroup: 3001
-      # Stamp the git-managed transcoding settings into the config PVC before
-      # jellyfin reads them. See talos/jellyfin/config/encoding.xml.
+      # Stamp the git-managed transcoding + network settings into the config
+      # PVC before jellyfin reads them. See talos/jellyfin/config/*.xml.
       #
       # A copy, not a mount: jellyfin rewrites encoding.xml in place whenever
       # anything is saved from the dashboard, and it needs the whole
@@ -58,6 +58,7 @@ spec:
               set -e
               mkdir -p /config/config
               cp /seed/encoding.xml /config/config/encoding.xml
+              cp /seed/network.xml /config/config/network.xml
           volumeMounts:
             - name: config
               mountPath: /config
