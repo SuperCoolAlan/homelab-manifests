@@ -1,11 +1,14 @@
-# Public ingress for jellyseerr.asandov.com via Cloudflare Tunnel
+# Public host, reached via cloudflared -> traefik `tunnel` entrypoint
+# (see cluster-services/traefik/resources/public-tunnel-ingress.yaml).
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: jellyseerr-cloudflare
+  name: jellyseerr-public
   namespace: media-v2
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: tunnel
 spec:
-  ingressClassName: cloudflare-tunnel
+  ingressClassName: traefik
   rules:
   - host: jellyseerr.asandov.com
     http:

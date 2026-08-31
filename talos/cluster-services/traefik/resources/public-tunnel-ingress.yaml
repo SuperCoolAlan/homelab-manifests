@@ -1,0 +1,53 @@
+# All Cloudflare-Tunnel-published hosts route through traefik's `tunnel`
+# entrypoint so their traffic produces access logs for CrowdSec. Lives here
+# (not per-app) because an Ingress backend must be in its own namespace and
+# the backend for every host is the traefik Service. Per-app routing is done
+# by traefik-class Ingresses in each app's dir, matched on Host.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: public-tunnel
+  namespace: traefik
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: auth.asandov.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: traefik
+                port:
+                  number: 8081
+            path: /
+            pathType: Prefix
+    - host: photos.asandov.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: traefik
+                port:
+                  number: 8081
+            path: /
+            pathType: Prefix
+    - host: jellyseerr.asandov.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: traefik
+                port:
+                  number: 8081
+            path: /
+            pathType: Prefix
+    - host: status.asandov.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: traefik
+                port:
+                  number: 8081
+            path: /
+            pathType: Prefix

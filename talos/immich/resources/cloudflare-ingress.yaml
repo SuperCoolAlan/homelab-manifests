@@ -1,10 +1,14 @@
+# Public host, reached via cloudflared -> traefik `tunnel` entrypoint
+# (see cluster-services/traefik/resources/public-tunnel-ingress.yaml).
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: immich-cloudflare
+  name: immich-public
   namespace: immich
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: tunnel
 spec:
-  ingressClassName: cloudflare-tunnel
+  ingressClassName: traefik
   rules:
   - host: photos.asandov.com
     http:
