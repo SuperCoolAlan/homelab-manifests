@@ -1,0 +1,4 @@
+# Compiled files and directories
+*.tgz
+*.lock
+dist/
