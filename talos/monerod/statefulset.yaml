@@ -159,6 +159,8 @@ spec:
             # Full RPC stays loopback-only; only the exporter sidecar uses it. Never 0.0.0.0.
             - --rpc-bind-ip=127.0.0.1
             - --rpc-bind-port=18081
+            # Loopback counts as a public IP (default limit 3); the exporter's parallel collectors exceed it and get reset.
+            - --rpc-max-connections-per-public-ip=10
             # Oracle DNATs 18080 straight through, so the advertised port is the real one. No UPnP.
             - --no-igd
             # ~8 Mbit/s. Tunnel rides Starlink's ~10-17 Mbit/s uplink; higher starves Jellyfin, the priority service.
