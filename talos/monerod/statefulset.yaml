@@ -34,6 +34,8 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+        # Default "Always" re-chowns ~110GiB of LMDB on every mount.
+        fsGroupChangePolicy: OnRootMismatch
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
@@ -93,8 +95,8 @@ spec:
           image: osminogin/tor-simple:0.4.9.11
           # Native sidecar: starts before monerod and the startup probe gates it on the .onion existing.
           restartPolicy: Always
-          # Tor creates the HiddenServiceDir itself (0700) but not its parent; pre-create only `hs`.
-          command: ["/bin/sh", "-c", "mkdir -p /home/monero/.bitmonero/tor/hs && exec tor -f /etc/tor/torrc"]
+          # Tor refuses group-accessible key dirs; fsGroup can re-grant group perms on mount, so re-tighten every start.
+          command: ["/bin/sh", "-c", "mkdir -p /home/monero/.bitmonero/tor/hs && chmod -R go-rwx /home/monero/.bitmonero/tor && exec tor -f /etc/tor/torrc"]
           startupProbe:
             exec:
               command: ["test", "-s", "/home/monero/.bitmonero/tor/hs/monerod/hostname"]
