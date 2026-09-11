@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: monerod
+  namespace: monerod
+  labels:
+    app.kubernetes.io/name: monerod
+spec:
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: monerod
+      app.kubernetes.io/component: metrics
