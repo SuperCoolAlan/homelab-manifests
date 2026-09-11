@@ -95,11 +95,8 @@ spec:
               ip link add wg0 type wireguard
               wg setconf wg0 /tmp/wg.conf
               ip address add 10.100.0.2/32 dev wg0
-              # 1420 = 1500 - 80 for the WireGuard header. The pod network adds
-              # its own overhead, so leaving this at the 1500 default produces
-              # exactly the failure that is hardest to diagnose: handshakes fine,
-              # small requests fine, video stalls.
-              ip link set wg0 mtu 1420 up
+              # 1370 = flannel VXLAN eth0 (1450) - 80 WG overhead; higher fragments every full packet. Keep jumphost wg0 equal.
+              ip link set wg0 mtu 1370 up
               ip route add 10.100.0.1/32 dev wg0
               rm -f /tmp/wg.conf
               echo "wg0 configured:"
