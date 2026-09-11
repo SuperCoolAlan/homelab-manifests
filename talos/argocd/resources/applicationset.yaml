@@ -81,10 +81,6 @@ spec:
             - /status
             - /spec/conversion/webhook/clientConfig/caBundle
         - kind: Secret
-          name: vm-grafana
-          jsonPointers:
-            - /data/admin-password
-        - kind: Secret
           name: vm-victoria-metrics-operator-validation
           jsonPointers:
             - /data

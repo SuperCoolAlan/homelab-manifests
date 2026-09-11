@@ -7,6 +7,11 @@ grafana:
   replicas: 1  # Single replica for session affinity with OAuth
   revisionHistoryLimit: 5
   headlessService: true
+  # Fixed SOPS secret. Without it the chart re-randomizes adminPassword every render, and checksum/secret rolls Grafana on every sync.
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
   nodeSelector:
     kubernetes.io/hostname: talos-ramhaus
   plugins:
