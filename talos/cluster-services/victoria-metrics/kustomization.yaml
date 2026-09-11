@@ -549,6 +549,18 @@ configMapGenerator:
         grafana_folder: "Monero"
     files:
       - dashboards/Monero/monerod.json
+
+  # p2pool (hand-built). Metrics come from talos/p2pool json-exporter; gaps 14:00-19:00 Jun-Oct are the OG&E schedule.
+  - name: dashboard-p2pool
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Monero"
+    files:
+      - dashboards/Monero/p2pool.json
 #
 #   # Starlink
 #   - name: dashboard-starlink

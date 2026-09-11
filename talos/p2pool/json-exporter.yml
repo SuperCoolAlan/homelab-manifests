@@ -1,0 +1,67 @@
+# One module per p2pool data-api file; servicemonitor.yaml probes each. Field names are p2pool's, verified against v4.18.
+modules:
+  miner:
+    metrics:
+      - name: p2pool_miner_hashrate
+        path: '{ .current_hashrate }'
+        help: Built-in miner hashrate (H/s)
+      - name: p2pool_miner_total_hashes
+        path: '{ .total_hashes }'
+        help: Hashes since p2pool started (resets on restart)
+      - name: p2pool_miner_shares_found
+        path: '{ .shares_found }'
+        help: Sidechain shares found since p2pool started
+      - name: p2pool_miner_shares_failed
+        path: '{ .shares_failed }'
+        help: Shares rejected since p2pool started
+      - name: p2pool_miner_threads
+        path: '{ .threads }'
+        help: Mining threads
+      - name: p2pool_miner_reward_share_percent
+        path: '{ .block_reward_share_percent }'
+        help: Our share of the next Monero block reward in the PPLNS window (%)
+  p2p:
+    metrics:
+      - name: p2pool_p2p_connections
+        path: '{ .connections }'
+        help: Sidechain peer connections
+      - name: p2pool_p2p_incoming_connections
+        path: '{ .incoming_connections }'
+        help: Inbound sidechain peer connections
+      - name: p2pool_p2p_peer_list_size
+        path: '{ .peer_list_size }'
+        help: Known sidechain peers
+      - name: p2pool_p2p_uptime_seconds
+        path: '{ .uptime }'
+        help: p2pool uptime
+      - name: p2pool_zmq_last_active_seconds
+        path: '{ .zmq_last_active }'
+        help: Seconds since the last ZMQ message from monerod
+  pool:
+    metrics:
+      - name: p2pool_pool_hashrate
+        path: '{ .pool_statistics.hashRate }'
+        help: Whole sidechain hashrate (H/s)
+      - name: p2pool_pool_miners
+        path: '{ .pool_statistics.miners }'
+        help: Miners in the PPLNS window
+      - name: p2pool_pool_sidechain_difficulty
+        path: '{ .pool_statistics.sidechainDifficulty }'
+        help: Sidechain share difficulty
+      - name: p2pool_pool_sidechain_height
+        path: '{ .pool_statistics.sidechainHeight }'
+        help: Sidechain height
+      - name: p2pool_pool_blocks_found_total
+        path: '{ .pool_statistics.totalBlocksFound }'
+        help: Monero blocks found by the sidechain
+  network:
+    metrics:
+      - name: p2pool_network_difficulty
+        path: '{ .difficulty }'
+        help: Monero network difficulty
+      - name: p2pool_network_height
+        path: '{ .height }'
+        help: Monero chain height
+      - name: p2pool_network_reward_atomic
+        path: '{ .reward }'
+        help: Current block reward in atomic units (1e12 = 1 XMR)

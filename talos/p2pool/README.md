@@ -52,6 +52,14 @@ mines and roughly how much. Use a mining-only wallet and move funds out
 deliberately. p2pool's own P2P goes out from the home IP; only monerod uses the
 Oracle tunnel.
 
+## Metrics
+
+`stats-httpd` (busybox) serves p2pool's `--data-api` JSON on `127.0.0.1:8081`;
+`json-exporter` maps it to `p2pool_*` metrics per `json-exporter.yml`, scraped
+via the `p2pool` ServiceMonitor (one endpoint per file, labelled `module`).
+Grafana: **Monero → p2pool**. Expected-earnings panels are derived from
+hashrate, sidechain difficulty and network difficulty — estimates, not payouts.
+
 ## Verifying
 
 ```bash
