@@ -161,8 +161,8 @@ spec:
             - --rpc-bind-port=18081
             # Oracle DNATs 18080 straight through, so the advertised port is the real one. No UPnP.
             - --no-igd
-            # Default is 2048 kB/s; this is what serving syncing peers actually costs (Oracle egress).
-            - --limit-rate-up=8192
+            # ~8 Mbit/s. Tunnel rides Starlink's ~10-17 Mbit/s uplink; higher starves Jellyfin, the priority service.
+            - --limit-rate-up=1024
             # p2pool's block-template feed. Reachable only on the pod network (ClusterIP), never Oracle.
             - --zmq-pub=tcp://0.0.0.0:18083
             # Our own txs broadcast over Tor, never clearnet.
