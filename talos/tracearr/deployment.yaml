@@ -20,6 +20,8 @@ spec:
       containers:
         - name: tracearr
           image: ghcr.io/connorgallopo/tracearr:supervised
+          # 1 GiB image, ~8 min over Starlink; re-pulling on every restart/reboot keeps it down that long.
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
               name: http
