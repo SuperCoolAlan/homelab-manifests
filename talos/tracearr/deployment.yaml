@@ -7,6 +7,11 @@ metadata:
     app: tracearr
 spec:
   replicas: 1
+  # Recreate, not RollingUpdate: the RWO zfs volume and embedded Postgres can't be held by two pods at once.
+  strategy:
+    type: Recreate
+    # Explicit null clears the defaulted rollingUpdate block; SSA otherwise keeps it and the API rejects Recreate.
+    rollingUpdate: null
   selector:
     matchLabels:
       app: tracearr
