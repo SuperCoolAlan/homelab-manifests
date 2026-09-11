@@ -151,15 +151,17 @@ the pod's egress, so peers see `147.224.205.227` as the node's address.
 | Peer | `[Peer]` block in `/etc/wireguard/wg0.conf`, `AllowedIPs = 10.100.0.3/32`, `MTU = 1370` |
 | DNAT / masquerade / isolation | `/etc/nftables-monerod.nft` (table `ip monerod_gw`), the only thing `/etc/nftables.conf` includes |
 | INPUT / FORWARD accepts | `/etc/iptables/rules.v4` only, ahead of the image's reject |
-| OCI security list | ingress UDP 51820 and TCP 18080 from 0.0.0.0/0 (shared subnet list) |
+| OCI security list | ingress UDP 51820 and TCP 18080 from 0.0.0.0/0, TCP 8080 from `10.67.0.152/32` (shared subnet list) |
+| CrowdSec engine | LAPI on `10.67.0.60:8080` (`/etc/crowdsec/config.yaml.local`), serving both Oracle VPSes; see `talos/cluster-services/crowdsec/README.md` |
+| 8080 host rule | `-A INPUT -s 10.67.0.152/32 ... --dport 8080` in `/etc/iptables/rules.v4`; jelly-jumphost is the only remote client |
 
 `/etc/nftables.conf` must not `flush ruleset`: `netfilter-persistent` owns
 `table ip filter`, and a flush at boot would wipe the FORWARD accepts.
 
 `monerod_gw`'s forward chain drops `wg0 → wg0` and anything from `wg0` not
 sourced from `10.100.0.3`, so the box routes for the monerod pod and nothing
-else. Its output chain drops anything the VPS itself opens into `wg0`. No
-CrowdSec on this box; monerod does its own peer banning.
+else. Its output chain drops anything the VPS itself opens into `wg0`. The
+CrowdSec bouncer's forward-hook chain drops banned IPs on the 18080 path.
 
 The image's original firewall is at `/etc/iptables/rules.v4.bak-20260910`.
 
