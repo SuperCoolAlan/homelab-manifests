@@ -1,5 +1,5 @@
 # monerod - Monero node with a pruned blockchain. Public P2P on the Oracle VPS
-# (163.192.195.190:18080) via a WireGuard tunnel; anonymous tx relay via Tor.
+# (147.224.205.227:18080) via a WireGuard tunnel; anonymous tx relay via Tor.
 #
 # No operator: monerod is a single stateful process, so a StatefulSet plus a
 # volumeClaimTemplate is the whole deployment. cirocosta/monero-operator wraps
@@ -61,9 +61,9 @@ spec:
               PrivateKey = $(cat /secrets/privatekey)
 
               [Peer]
-              PublicKey = wmYukGZetdwvr7odYv0BoonsCdz3UmXSqsz9hrrvfXI=
+              PublicKey = rE+qZRl4LnX8iG4wUTUxj+jVRMhqLlvP8kpH8vrzMQM=
               AllowedIPs = 0.0.0.0/0
-              Endpoint = 163.192.195.190:51820
+              Endpoint = 147.224.205.227:51820
               PersistentKeepalive = 25
               EOF
               ip link del wg0 2>/dev/null || true
@@ -72,11 +72,11 @@ spec:
               rm -f /tmp/wg.conf
               # 10.100.0.3 is hardcoded in Oracle's DNAT/masquerade/FORWARD rules and wg0.conf peer.
               ip address add 10.100.0.3/32 dev wg0
-              # 1420 = 1500 - WireGuard overhead; at 1500 handshakes work but bulk block transfers stall.
-              ip link set wg0 mtu 1420 up
+              # 1370 = flannel VXLAN eth0 (1450) - 80 WG overhead; higher fragments every full packet. Keep jumphost wg0 equal.
+              ip link set wg0 mtu 1370 up
               # Cluster, LAN (kubelet probes) and the tunnel endpoint stay on eth0; without these the pod loses DNS/probes.
               ip route replace 10.0.0.0/8 via "$GW" dev eth0
-              ip route replace 163.192.195.190/32 via "$GW" dev eth0
+              ip route replace 147.224.205.227/32 via "$GW" dev eth0
               # All other egress exits Oracle so peers learn a dialable address. Fails closed if the tunnel is down.
               ip route replace default dev wg0
               wg show wg0

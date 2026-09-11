@@ -137,37 +137,36 @@ lateral path into the cluster.
 
 ## monerod P2P gateway
 
-Added 2026-09-10. A second WireGuard peer, `10.100.0.3` (pubkey
-`YZxLSdNUR3XK5Vo25Kqgp7VaBd/Z95KD70bQ2YDC/xM=`), is the `talos/monerod` pod.
-Unlike jellyfin this is a **router** role: the VPS DNATs inbound P2P to the pod
-and masquerades all of the pod's egress, so peers see `163.192.195.190` as the
-node's address.
+Runs on its own instance, `monero-jumphost-20260910` (`147.224.205.227`,
+A1.Flex 1 OCPU / 6 GB), separate from the jellyfin jumphost. Its only
+WireGuard peer is `10.100.0.3` (pubkey
+`YZxLSdNUR3XK5Vo25Kqgp7VaBd/Z95KD70bQ2YDC/xM=`), the `talos/monerod` pod; the
+server pubkey is `rE+qZRl4LnX8iG4wUTUxj+jVRMhqLlvP8kpH8vrzMQM=`. This is a
+**router** role: the VPS DNATs inbound P2P to the pod and masquerades all of
+the pod's egress, so peers see `147.224.205.227` as the node's address.
 
 | Piece | Where |
 |---|---|
-| Forwarding | `/etc/sysctl.d/99-monerod-gateway.conf` (`net.ipv4.ip_forward=1`) |
-| Peer | `[Peer]` block in `/etc/wireguard/wg0.conf`, `AllowedIPs = 10.100.0.3/32` |
-| DNAT / masquerade / isolation | `/etc/nftables-monerod.nft` (table `ip monerod_gw`), `include`d from `/etc/nftables.conf` |
-| FORWARD accepts | inserted ahead of the reject in **both** `/etc/iptables/rules.v4` and `/etc/nftables.conf` |
-| OCI security list | ingress TCP 18080 from 0.0.0.0/0 |
+| Forwarding | `/etc/sysctl.d/99-wg-forward.conf` (`net.ipv4.ip_forward=1`) |
+| Peer | `[Peer]` block in `/etc/wireguard/wg0.conf`, `AllowedIPs = 10.100.0.3/32`, `MTU = 1370` |
+| DNAT / masquerade / isolation | `/etc/nftables-monerod.nft` (table `ip monerod_gw`), the only thing `/etc/nftables.conf` includes |
+| INPUT / FORWARD accepts | `/etc/iptables/rules.v4` only, ahead of the image's reject |
+| OCI security list | ingress UDP 51820 and TCP 18080 from 0.0.0.0/0 (shared subnet list) |
 
-Both `netfilter-persistent` and `nftables` load `table ip filter` at boot (hence
-the duplicated INPUT rules). Any FORWARD change must go into both files, or
-whichever loads last silently wins.
+`/etc/nftables.conf` must not `flush ruleset`: `netfilter-persistent` owns
+`table ip filter`, and a flush at boot would wipe the FORWARD accepts.
 
 `monerod_gw`'s forward chain drops `wg0 → wg0` and anything from `wg0` not
-sourced from `10.100.0.3`. That keeps a compromised monerod pod from reaching
-the jellyfin peer, and the jellyfin peer from using the VPS as a router. The
-existing `wg_restrict` chain only filters traffic the VPS itself originates; it
-does not see forwarded packets. CrowdSec's bouncer has a forward-hook chain, so
-banned IPs are dropped on this path too.
+sourced from `10.100.0.3`, so the box routes for the monerod pod and nothing
+else. Its output chain drops anything the VPS itself opens into `wg0`. No
+CrowdSec on this box; monerod does its own peer banning.
 
-Pre-change copies of every edited file are at `*.bak-20260910`.
+The image's original firewall is at `/etc/iptables/rules.v4.bak-20260910`.
 
 ```bash
-ssh oracle 'sudo wg show wg0'                             # handshake for YZxL…
-ssh oracle 'sudo nft list table ip monerod_gw'            # dnat/masquerade counters
-nc -vz 163.192.195.190 18080                              # from anywhere outside
+ssh ubuntu@147.224.205.227 'sudo wg show wg0'                  # handshake for YZxL…
+ssh ubuntu@147.224.205.227 'sudo nft list table ip monerod_gw' # dnat/masquerade counters
+nc -vz 147.224.205.227 18080                                   # from anywhere outside
 ```
 
 ## DNS
