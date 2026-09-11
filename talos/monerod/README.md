@@ -23,7 +23,7 @@ versions exactly (`v0.18.5.1`). Renovate bumps the tag.
 | --- | --- |
 | Node | `talos-ramhaus` (pinned — the `ssd` ZFS pool is node-local) |
 | Storage | `ssd-array` (openebs-zfs-localpv), 250Gi, expandable |
-| P2P | 18080, public at `163.192.195.190:18080` via WireGuard (see below) |
+| P2P | 18080, public at `147.224.205.227:18080` via WireGuard (see below) |
 | Tor | `--tx-proxy` for our own txs; `.onion:18084` anonymous inbound (tx relay only) |
 | ZMQ | 18083, ClusterIP only — p2pool's block-template feed |
 | Restricted RPC | 18089, ClusterIP + `monerod.local.asandov.com` (LAN only) |
@@ -45,7 +45,7 @@ later requires either `monero-blockchain-prune` or a resync.
 ## Exposure
 
 ```
-internet :18080 ─► Oracle 163.192.195.190 ─DNAT─► wg0 10.100.0.3 (this pod) ─► monerod
+internet :18080 ─► Oracle 147.224.205.227 ─DNAT─► wg0 10.100.0.3 (this pod) ─► monerod
 monerod egress  ─► default route wg0 ─► Oracle masquerade ─► internet
 cluster / LAN   ─► eth0 (10.0.0.0/8 kept off the tunnel: DNS, probes, ingress, p2pool)
 ```
