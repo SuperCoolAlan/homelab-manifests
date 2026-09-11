@@ -1,31 +1,32 @@
 # CrowdSec
 
-Crowd-sourced intrusion detection and remediation. Detection runs here in the
-cluster and on the Oracle VPS; both report to one LAPI, and every bouncer
-enforces every decision regardless of which sensor raised it.
+Crowd-sourced intrusion detection and remediation, split across two engines
+(LAPIs): this cluster's, and one on the Oracle monero jumphost that serves both
+Oracle VPSes. Bans are not shared between the two engines; each gets CAPI plus
+its own Console blocklist subscriptions.
 
 Deployed 2026-08-31. Phased plan and rationale: `docs/crowdsec-plan.md`.
 
 ## Topology
 
 ```
-                        ┌──────────────────── cluster (ns: crowdsec) ────────┐
-                        │                                                    │
-  Oracle VPS            │   LAPI (crowdsec-lapi)                             │
-  ├─ agent  ────────────┼──►  :8080, SQLite on fast-array PVC                │
-  │  caddy + sshd       │      ▲              ▲                              │
-  └─ nftables bouncer ◄─┼──────┘              │                              │
-     (oracle-fw)        │                     │                              │
-        via WireGuard   │   log processor (crowdsec-agent)                   │
-        10.100.0.2:8080 │   VictoriaLogs datasource, 5 acquisition streams   │
-                        │                     │                              │
-                        │   traefik bouncer plugin ◄── enforces on tunnel    │
-                        └────────────────────────────────────────────────────┘
+  cluster (ns: crowdsec)                   Oracle VCN 10.67.0.0/24
+  ┌──────────────────────────────────┐     ┌─────────────────────────────────────┐
+  │ LAPI (crowdsec-lapi) :8080       │     │ monero-jumphost 10.67.0.60          │
+  │   SQLite on fast-array PVC       │     │   LAPI :8080, private IP only       │
+  │   ▲                              │     │   ├─ agent (sshd)                   │
+  │   ├─ log processor               │     │   └─ nftables bouncer               │
+  │   │  (VictoriaLogs, 5 streams)   │     │        ▲                            │
+  │   └─ traefik bouncer plugin      │     │ jelly-jumphost 10.67.0.152          │
+  │      enforces on tunnel apps     │     │   ├─ agent (caddy + sshd) ──► LAPI  │
+  └──────────────────────────────────┘     │   └─ nftables bouncer (oracle-fw)   │
+                                           └─────────────────────────────────────┘
 ```
 
-The VPS reaches LAPI through the `lapi-forwarder` socat container in the
-`jellyfin-tunnel` pod (`talos/jellyfin-tunnel/deployment.yaml`), which needs
-the wg0 egress rule for port 8080 in the VPS's `/etc/nftables.conf`.
+The Oracle LAPI accepts connections only from jelly-jumphost's private IP
+(OCI security-list rule plus `/etc/iptables/rules.v4` on monero-jumphost).
+Nothing CrowdSec-related crosses the WireGuard tunnels. Box-level details:
+`docs/oracle-wireguard-jumphost.md`.
 
 ## What is deployed
 
@@ -33,8 +34,10 @@ the wg0 egress rule for port 8080 in the VPS's `/etc/nftables.conf`.
 |---|---|---|
 | LAPI | this dir, `crowdsec-lapi` Deployment | live, enrolled in Console as `talos-ramhaus` |
 | Log processor | this dir, `crowdsec-agent` Deployment | live, reads VictoriaLogs (no DaemonSet) |
-| VPS agent | Oracle VPS, apt `crowdsec` 1.7.8 | live, machine `oracle-jellyfin-jumphost` |
-| VPS bouncer | Oracle VPS, `crowdsec-firewall-bouncer-nftables` | live, bouncer `oracle-fw` |
+| Oracle LAPI | monero-jumphost, apt `crowdsec` 1.7.8 (held) | live, enrolled in Console as `oracle-monero-jumphost` |
+| monero-jumphost agent + bouncer | local to the Oracle LAPI | live |
+| jelly-jumphost agent | apt `crowdsec` 1.7.8 (held) | live, machine `oracle-jellyfin-jumphost` on the Oracle LAPI |
+| jelly-jumphost bouncer | `crowdsec-firewall-bouncer-nftables` 0.0.36 (held) | live, bouncer `oracle-fw` on the Oracle LAPI |
 | Traefik bouncer | `cluster-services/traefik` (plugin + Middleware) | live, bouncer `traefik-bouncer` |
 | AppSec / WAF | — | not deployed |
 | Cloudflare Worker bouncer | — | not deployed (see Todo) |
@@ -45,8 +48,9 @@ the wg0 egress rule for port 8080 in the VPS's `/etc/nftables.conf`.
 | Source | Acquisition | Verified working |
 |---|---|---|
 | Traefik access logs (all tunnel apps) | `type: traefik` | yes — HTTP probing / CVE / scanners |
-| Caddy access logs (jellyfin) | file, on VPS | yes |
-| sshd (VPS) | journald, on VPS | yes — catches real brute force daily |
+| Caddy access logs (jellyfin) | file, on jelly-jumphost (Oracle LAPI) | yes |
+| sshd (jelly-jumphost) | journald (Oracle LAPI) | yes — catches real brute force daily |
+| sshd (monero-jumphost) | journald (Oracle LAPI) | **unverified** |
 | Jellyfin | `type: jellyfin` | yes — end-to-end, real client IP |
 | Immich | `type: immich` | yes — logs real client IP natively |
 | Jellyseerr | `type: jellyseerr` | **unverified** — local auth endpoints 500'd under test |
@@ -55,13 +59,17 @@ the wg0 egress rule for port 8080 in the VPS's `/etc/nftables.conf`.
 ### Enforcement
 
 - **Tunnel apps** (auth, photos, jellyseerr, status): traefik bouncer plugin.
-- **jellyfin.asandov.com + VPS sshd**: nftables bouncer on the VPS.
+- **jellyfin.asandov.com + VPS sshd**: nftables bouncer on each Oracle VPS,
+  fed by the Oracle LAPI. monero-jumphost's bouncer also drops banned IPs on
+  the forwarded monerod P2P path (18080).
 - **Home WAN**: nothing — no inbound forwards, default-deny already covers it.
 
-Decisions come from our own scenarios plus CAPI (community) and three
-subscribed blocklists (FireHOL GreenSnow, FireHOL BotScout, OTX honeypot).
-~26k enforced; roughly 24.5k are pre-emptive blocklist entries and a handful
-are live local detections.
+Cluster LAPI decisions come from our own scenarios plus CAPI (community) and
+three subscribed blocklists (FireHOL GreenSnow, FireHOL BotScout, OTX
+honeypot). ~26k enforced; roughly 24.5k are pre-emptive blocklist entries and
+a handful are live local detections. The Oracle LAPI gets CAPI plus whatever
+`oracle-monero-jumphost` is subscribed to in the Console; subscriptions are
+per engine, so the cluster's three do not carry over.
 
 ## Operating it
 
@@ -78,25 +86,31 @@ remote satellites can register.
 
 ### Lockout recovery
 
-If a ban ever catches your own IP, it only affects the VPS and the tunnel
-apps — never cluster access, which is Twingate → LAN and touches neither.
-So the fix is always reachable:
+If a ban ever catches your own IP, it only affects the Oracle VPSes or the
+tunnel apps — never cluster access, which is Twingate → LAN and touches
+neither. Delete it on the engine that issued it:
 
 ```
-kubectl exec -n crowdsec deploy/crowdsec-lapi -- cscli decisions delete --ip <ip>
+kubectl exec -n crowdsec deploy/crowdsec-lapi -- cscli decisions delete --ip <ip>   # tunnel apps
+ssh oracle-monero-jumphost sudo cscli decisions delete --ip <ip>                   # Oracle VPSes
 ```
 
-Bouncers pick that up within their poll interval (~60s), no git round-trip.
+Bouncers pick that up within their poll interval (~60s), no git round-trip. If
+an Oracle ban blocks SSH to both VPSes, use the OCI Console's instance console
+connection on monero-jumphost.
 
-Two allowlists guard against this, and they must be kept in sync by hand:
+Three allowlists guard against this, and they must be kept in sync by hand:
 
-1. **LAPI centralized** `trusted-admin` (`cscli allowlists inspect trusted-admin`)
-   — applies to all bouncers. Not GitOps-able; lives in the LAPI database.
-2. **Parser whitelist** in `values.yaml` (`config.parsers.s02-enrich`) — GitOps,
-   drops events before they can become alerts.
+1. **Cluster LAPI** `trusted-admin` (`cscli allowlists inspect trusted-admin`
+   in the LAPI pod) — applies to the traefik bouncer. Lives in the LAPI database.
+2. **Oracle LAPI** `trusted-admin`
+   (`ssh oracle-monero-jumphost sudo cscli allowlists inspect trusted-admin`)
+   — applies to both Oracle bouncers. Lives in that LAPI's database.
+3. **Parser whitelist** in `values.yaml` (`config.parsers.s02-enrich`) — GitOps,
+   drops cluster events before they can become alerts.
 
-Home egress is **Starlink CGNAT and rotates**; re-add it when it changes:
-`cscli allowlists add trusted-admin <ip> -d "home"`.
+Home egress is **Starlink CGNAT and rotates**; re-add it on **both** engines
+when it changes: `cscli allowlists add trusted-admin <ip> -d "home"`.
 
 ### Testing a bouncer without banning yourself
 

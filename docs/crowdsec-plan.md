@@ -102,6 +102,13 @@ Caveats (from research):
 > internet noise. Also found and fixed: apt update hung since April holding
 > the lock — 4 months of security updates applied; **kernel update pending
 > reboot**.
+>
+> **Status 2026-09-10: Oracle side on its own engine.** A LAPI on
+> monero-jumphost now serves both Oracle VPSes over the VCN private network;
+> jelly-jumphost's `oracle-jellyfin-jumphost` / `oracle-fw` moved to it and
+> were deleted from the cluster LAPI. The WireGuard 8080 path is gone. This
+> is the "standalone" fallback below, shared across both VPSes. Current
+> layout: `talos/cluster-services/crowdsec/README.md`.
 
 - Enable Caddy **JSON access logs** (default encoder — the
   `crowdsecurity/caddy` parser breaks on custom formats).
