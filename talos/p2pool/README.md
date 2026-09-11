@@ -40,10 +40,11 @@ Until then RandomX runs on normal pages at roughly half hashrate.
 
 ## Economics (2026-09 estimates — measure, don't trust)
 
-E5-1660 v4, 4 threads, turbo off, huge pages: ~1.5 kH/s at ~35–40 W extra.
-Network ~5.8 GH/s, XMR ~$515, 12.5–13.3¢/kWh → roughly 0.04 XMR/yr for ~$40/yr
-of power. Break-even ≈ $1,000/XMR. This runs for clean-origin coins and network
-support, not profit.
+E5-1660 v4, turbo off, huge pages. Measured 2026-09-10: 4 threads ≈ 2.1 kH/s.
+Now 8 threads (one per physical core; CPU request 4, limit 8 so it yields under
+contention) — expect roughly double, at ~70–80 W extra (unmeasured). Network
+~6.07 GH/s, XMR ~$515, 12.5–13.3¢/kWh → on the order of 0.1 XMR/yr for ~$80/yr
+of power. This runs for clean-origin coins and network support, not profit.
 
 ## Privacy
 
