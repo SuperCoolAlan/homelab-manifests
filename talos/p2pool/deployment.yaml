@@ -77,6 +77,8 @@ spec:
             - --local-api
             - --no-upnp
             - --no-color
+            # stdout already reaches VictoriaLogs; the on-disk log grows ~100 MB/day unrotated and would fill the PVC.
+            - --no-log-file
           ports:
             - name: stratum
               containerPort: 3333
@@ -161,6 +163,7 @@ spec:
         - name: json-exporter-config
           configMap:
             name: p2pool-json-exporter
-        # Sidechain cache only; p2pool resyncs from peers in minutes after a restart.
+        # Recreate strategy is required: RWO zfs-localpv refuses a second mount, so a rolling update would deadlock.
         - name: data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: p2pool-data

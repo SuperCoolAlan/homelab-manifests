@@ -54,6 +54,19 @@ mines and roughly how much. Use a mining-only wallet and move funds out
 deliberately. p2pool's own P2P goes out from the home IP; only monerod uses the
 Oracle tunnel.
 
+## Cache
+
+`/data` is the `p2pool-data` PVC (1Gi, `ssd-array`), not an emptyDir: it holds
+`p2pool.cache` (~453 MB fixed-size) and peer lists, so a replaced pod (push,
+reboot, 19:00 scale-up) resumes from the cached sidechain instead of
+re-downloading the 2160-block window. The daily 5 h pause still misses most of
+a ~6 h window, so evenings still fetch ~1800 blocks. `--no-log-file` keeps the
+unrotated on-disk log (~100 MB/day) off the PVC; stdout reaches VictoriaLogs.
+
+After a fresh start p2pool briefly mines a private startup chain (sidechain
+height counting from 0, difficulty 100000); shares from it are worthless and
+the dashboard's share panels spike until it adopts the real chain.
+
 ## Metrics
 
 `stats-httpd` (busybox) serves p2pool's `--data-api` JSON on `127.0.0.1:8081`;
