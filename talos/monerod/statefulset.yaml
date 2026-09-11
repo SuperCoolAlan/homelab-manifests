@@ -93,7 +93,8 @@ spec:
           image: osminogin/tor-simple:0.4.9.11
           # Native sidecar: starts before monerod and the startup probe gates it on the .onion existing.
           restartPolicy: Always
-          command: ["/bin/sh", "-c", "mkdir -p /home/monero/.bitmonero/tor && exec tor -f /etc/tor/torrc"]
+          # Tor creates the HiddenServiceDir itself (0700) but not its parent; pre-create only `hs`.
+          command: ["/bin/sh", "-c", "mkdir -p /home/monero/.bitmonero/tor/hs && exec tor -f /etc/tor/torrc"]
           startupProbe:
             exec:
               command: ["test", "-s", "/home/monero/.bitmonero/tor/hs/monerod/hostname"]
