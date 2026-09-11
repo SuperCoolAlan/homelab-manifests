@@ -67,9 +67,9 @@ spec:
             - --wallet
             - 44g6Qrx8kFHQY4NGAsnE2yPRfxT9pKVp8Nrk3Lc76oRb1KNxeESgaXu4V2aPbh5DnA49DWajByQCs46Yg5aNNsUxT31hZ6J
             - --mini
-            # 10 = L3 ceiling (20 MB / 2 MB per thread); beyond that threads evict each other's scratchpads.
+            # 8 = physical cores. 10 measured slower (3412 vs 3525 H/s) and never left the startup chain.
             - --start-mining
-            - "10"
+            - "8"
             - --data-dir
             - /data
             - --data-api
