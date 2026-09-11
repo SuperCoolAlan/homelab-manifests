@@ -7,3 +7,10 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - cronjob.yaml
+  - service.yaml
+  - servicemonitor.yaml
+
+configMapGenerator:
+  - name: p2pool-json-exporter
+    files:
+      - json-exporter.yml

@@ -1,0 +1,51 @@
+# One endpoint per json-exporter module. The `module` label keeps the five `up` series distinct.
+# No data during OG&E peak hours is expected: the Deployment is scaled to 0.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: p2pool
+  namespace: p2pool
+  labels:
+    app.kubernetes.io/name: p2pool
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: p2pool
+      app.kubernetes.io/component: metrics
+  endpoints:
+    - port: metrics
+      path: /probe
+      interval: 30s
+      params:
+        module: [miner]
+        target: ["http://127.0.0.1:8081/local/miner"]
+      relabelings:
+        - targetLabel: module
+          replacement: miner
+    - port: metrics
+      path: /probe
+      interval: 30s
+      params:
+        module: [p2p]
+        target: ["http://127.0.0.1:8081/local/p2p"]
+      relabelings:
+        - targetLabel: module
+          replacement: p2p
+    - port: metrics
+      path: /probe
+      interval: 60s
+      params:
+        module: [pool]
+        target: ["http://127.0.0.1:8081/pool/stats"]
+      relabelings:
+        - targetLabel: module
+          replacement: pool
+    - port: metrics
+      path: /probe
+      interval: 60s
+      params:
+        module: [network]
+        target: ["http://127.0.0.1:8081/network/stats"]
+      relabelings:
+        - targetLabel: module
+          replacement: network

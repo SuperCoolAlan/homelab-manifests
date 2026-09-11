@@ -112,7 +112,54 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+        - name: stats-httpd
+          # Serves p2pool's --data-api JSON to json-exporter. Loopback only; nothing else should read it.
+          image: busybox:1.37.0
+          command: ["httpd", "-f", "-p", "127.0.0.1:8081", "-h", "/data/api"]
+          resources:
+            requests:
+              cpu: 1m
+              memory: 4Mi
+            limits:
+              memory: 16Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+              readOnly: true
+        - name: json-exporter
+          # /probe takes an arbitrary ?target= URL; the Service must stay ClusterIP (flannel enforces no NetworkPolicy).
+          # renovate: datasource=docker depName=quay.io/prometheuscommunity/json-exporter
+          image: quay.io/prometheuscommunity/json-exporter:v0.8.0
+          args:
+            - --config.file=/config/json-exporter.yml
+            - --web.listen-address=:7979
+          ports:
+            - name: metrics
+              containerPort: 7979
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: json-exporter-config
+              mountPath: /config
+              readOnly: true
       volumes:
+        - name: json-exporter-config
+          configMap:
+            name: p2pool-json-exporter
         # Sidechain cache only; p2pool resyncs from peers in minutes after a restart.
         - name: data
           emptyDir: {}
