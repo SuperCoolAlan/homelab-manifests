@@ -94,14 +94,16 @@ spec:
             periodSeconds: 60
             failureThreshold: 5
           resources:
-            # TODO after ramhaus reboots (vm.nr_hugepages=1400 is already in its machine config):
-            # add hugepages-2Mi: 2800Mi to requests+limits. Until then RandomX falls back to normal pages at ~half hashrate.
+            # Must fit ramhaus's vm.nr_hugepages=1400 (2800Mi); larger and the pod never schedules.
+            # The RandomX dataset moves into huge pages, so memory drops accordingly.
             requests:
               cpu: "4"
-              memory: 3Gi
+              memory: 1Gi
+              hugepages-2Mi: 2800Mi
             limits:
               cpu: "4"
-              memory: 4Gi
+              memory: 2Gi
+              hugepages-2Mi: 2800Mi
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
