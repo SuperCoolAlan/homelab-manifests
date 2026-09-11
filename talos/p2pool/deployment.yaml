@@ -67,7 +67,7 @@ spec:
             - --wallet
             - 44g6Qrx8kFHQY4NGAsnE2yPRfxT9pKVp8Nrk3Lc76oRb1KNxeESgaXu4V2aPbh5DnA49DWajByQCs46Yg5aNNsUxT31hZ6J
             - --mini
-            # Must stay <= the CPU limit below, or threads just time-slice and waste power. 8 = physical cores; L3 caps useful at ~10.
+            # 8 = physical cores; L3 (20 MB / 2 MB per thread) caps useful threads near 10.
             - --start-mining
             - "8"
             - --data-dir
@@ -96,13 +96,13 @@ spec:
           resources:
             # Must fit ramhaus's vm.nr_hugepages=1400 (2800Mi); larger and the pod never schedules.
             # The RandomX dataset moves into huge pages, so memory drops accordingly.
-            # Request < limit on purpose: mining soaks idle CPU but yields to everything else on ramhaus under contention.
+            # No CPU limit: a quota at thread count throttled ~69% of periods (miner + p2pool housekeeping).
+            # The request still sets the contention share, so mining yields to other ramhaus workloads.
             requests:
               cpu: "4"
               memory: 1Gi
               hugepages-2Mi: 2800Mi
             limits:
-              cpu: "8"
               memory: 2Gi
               hugepages-2Mi: 2800Mi
           securityContext:
