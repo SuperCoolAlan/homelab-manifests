@@ -32,3 +32,7 @@ spec:
     - name: rpc
       port: 18089
       targetPort: rpc
+    # p2pool uses the same host for RPC and ZMQ; keep both on this Service.
+    - name: zmq
+      port: 18083
+      targetPort: zmq

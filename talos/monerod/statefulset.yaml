@@ -1,4 +1,5 @@
-# monerod - private, outbound-only Monero node with a pruned blockchain.
+# monerod - Monero node with a pruned blockchain. Public P2P on the Oracle VPS
+# (163.192.195.190:18080) via a WireGuard tunnel; anonymous tx relay via Tor.
 #
 # No operator: monerod is a single stateful process, so a StatefulSet plus a
 # volumeClaimTemplate is the whole deployment. cirocosta/monero-operator wraps
@@ -14,6 +15,7 @@ metadata:
   namespace: monerod
 spec:
   serviceName: monerod-headless
+  # Exactly one: a second pod would present the same WireGuard key and Oracle would flap between them.
   replicas: 1
   selector:
     matchLabels:
@@ -35,6 +37,86 @@ spec:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
+      initContainers:
+        - name: wg-up
+          # Used only for `wg` and `ip`; the s6 entrypoint is bypassed.
+          image: linuxserver/wireguard:1.0.20260223
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            capabilities:
+              add: ["NET_ADMIN"]
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              umask 077
+              GW=$(ip -4 route show default | awk '{print $3}')
+              # Only the private key is secret; the rest is public and stays readable here.
+              cat > /tmp/wg.conf <<EOF
+              [Interface]
+              PrivateKey = $(cat /secrets/privatekey)
+
+              [Peer]
+              PublicKey = wmYukGZetdwvr7odYv0BoonsCdz3UmXSqsz9hrrvfXI=
+              AllowedIPs = 0.0.0.0/0
+              Endpoint = 163.192.195.190:51820
+              PersistentKeepalive = 25
+              EOF
+              ip link del wg0 2>/dev/null || true
+              ip link add wg0 type wireguard
+              wg setconf wg0 /tmp/wg.conf
+              rm -f /tmp/wg.conf
+              # 10.100.0.3 is hardcoded in Oracle's DNAT/masquerade/FORWARD rules and wg0.conf peer.
+              ip address add 10.100.0.3/32 dev wg0
+              # 1420 = 1500 - WireGuard overhead; at 1500 handshakes work but bulk block transfers stall.
+              ip link set wg0 mtu 1420 up
+              # Cluster, LAN (kubelet probes) and the tunnel endpoint stay on eth0; without these the pod loses DNS/probes.
+              ip route replace 10.0.0.0/8 via "$GW" dev eth0
+              ip route replace 163.192.195.190/32 via "$GW" dev eth0
+              # All other egress exits Oracle so peers learn a dialable address. Fails closed if the tunnel is down.
+              ip route replace default dev wg0
+              wg show wg0
+          volumeMounts:
+            - name: wg-key
+              mountPath: /secrets
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+        - name: tor
+          # renovate: datasource=docker depName=osminogin/tor-simple versioning=loose
+          image: osminogin/tor-simple:0.4.9.11
+          # Native sidecar: starts before monerod and the startup probe gates it on the .onion existing.
+          restartPolicy: Always
+          command: ["/bin/sh", "-c", "mkdir -p /home/monero/.bitmonero/tor && exec tor -f /etc/tor/torrc"]
+          startupProbe:
+            exec:
+              command: ["test", "-s", "/home/monero/.bitmonero/tor/hs/monerod/hostname"]
+            periodSeconds: 5
+            failureThreshold: 60
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: bitmonero
+              mountPath: /home/monero/.bitmonero
+            - name: torrc
+              mountPath: /etc/tor/torrc
+              subPath: torrc
+              readOnly: true
       containers:
         - name: monerod
           # Monero tags are 4-component (v0.18.5.1), which docker versioning
@@ -52,7 +134,13 @@ spec:
           # Volume ownership is handled by fsGroup instead. The entrypoint's
           # only other job is a numactl prefix, and numactl is not in the image.
           # --non-interactive is the one flag it added, so pass it explicitly.
-          command: ["monerod"]
+          #
+          # sh only to read the .onion at start; args below arrive as "$@". 18084 must match torrc.
+          command:
+            - /bin/sh
+            - -c
+            - exec monerod "$@" --anonymous-inbound="$(cat /home/monero/.bitmonero/tor/hs/monerod/hostname):18084,127.0.0.1:18084,64"
+            - monerod
           args:
             - --non-interactive
             # HOME is not reliably set by the runtime, and monerod derives its
@@ -65,11 +153,14 @@ spec:
             # unbound - it exposes admin methods with no auth.
             - --rpc-restricted-bind-ip=0.0.0.0
             - --rpc-restricted-bind-port=18089
-            # Outbound-only: no inbound peers reach us, so don't advertise a
-            # port other nodes cannot dial, and don't try to punch one via UPnP.
-            - --hide-my-port
+            # Oracle DNATs 18080 straight through, so the advertised port is the real one. No UPnP.
             - --no-igd
-            - --no-zmq
+            # Default is 2048 kB/s; this is what serving syncing peers actually costs (Oracle egress).
+            - --limit-rate-up=8192
+            # p2pool's block-template feed. Reachable only on the pod network (ClusterIP), never Oracle.
+            - --zmq-pub=tcp://0.0.0.0:18083
+            # Our own txs broadcast over Tor, never clearnet.
+            - --tx-proxy=tor,127.0.0.1:9050,16
             # Ships in the image at this path.
             - --enable-dns-blocklist
             - --ban-list=/home/monero/ban_list.txt
@@ -78,6 +169,8 @@ spec:
               containerPort: 18080
             - name: rpc
               containerPort: 18089
+            - name: zmq
+              containerPort: 18083
           # Opening a large LMDB after an unclean shutdown can take minutes, so
           # the startup probe is generous: up to 30m before the pod is failed.
           startupProbe:
@@ -110,11 +203,21 @@ spec:
               memory: 6Gi
           securityContext:
             allowPrivilegeEscalation: false
+            # Every write (LMDB, log, p2pstate, rpc_ssl) lands in the data dir mount.
+            readOnlyRootFilesystem: true
             capabilities:
               drop: ["ALL"]
           volumeMounts:
             - name: bitmonero
               mountPath: /home/monero/.bitmonero
+      volumes:
+        - name: wg-key
+          secret:
+            secretName: monerod-wg-key
+            defaultMode: 0400
+        - name: torrc
+          configMap:
+            name: monerod-torrc
       # LMDB writes are memory-mapped and random; a slow drain here means an
       # unclean shutdown and a long recovery on the next start.
       terminationGracePeriodSeconds: 300

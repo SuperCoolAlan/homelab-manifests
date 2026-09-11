@@ -48,8 +48,10 @@ spec:
           - path: talos/unifi
           # Immich (photo management)
           - path: talos/immich
-          # Monero node (private, outbound-only)
+          # Monero node (P2P via Oracle, tx relay via Tor)
           - path: talos/monerod
+          # P2Pool mini + built-in miner, off-peak schedule
+          - path: talos/p2pool
           # Security scanning
           - path: talos/security/*
           # Virtual machines (KubeVirt)
