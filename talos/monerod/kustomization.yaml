@@ -8,6 +8,7 @@ resources:
   - statefulset.yaml
   - service.yaml
   - local-asandov-ingress.yaml
+  - servicemonitor.yaml
 
 configMapGenerator:
   - name: monerod-torrc

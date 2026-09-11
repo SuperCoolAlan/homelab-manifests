@@ -156,6 +156,9 @@ spec:
             # unbound - it exposes admin methods with no auth.
             - --rpc-restricted-bind-ip=0.0.0.0
             - --rpc-restricted-bind-port=18089
+            # Full RPC stays loopback-only; only the exporter sidecar uses it. Never 0.0.0.0.
+            - --rpc-bind-ip=127.0.0.1
+            - --rpc-bind-port=18081
             # Oracle DNATs 18080 straight through, so the advertised port is the real one. No UPnP.
             - --no-igd
             # Default is 2048 kB/s; this is what serving syncing peers actually costs (Oracle egress).
@@ -213,6 +216,27 @@ spec:
           volumeMounts:
             - name: bitmonero
               mountPath: /home/monero/.bitmonero
+        - name: exporter
+          # cirocosta/monero-exporter built by lalanza808/docker-monero-node. Needs the full RPC, hence localhost.
+          # renovate: datasource=docker depName=lalanza808/exporter
+          image: lalanza808/exporter:1.0.0
+          args:
+            - --monero-addr=http://127.0.0.1:18081
+            - --bind-addr=:9000
+          ports:
+            - name: metrics
+              containerPort: 9000
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
       volumes:
         - name: wg-key
           secret:

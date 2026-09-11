@@ -36,3 +36,21 @@ spec:
     - name: zmq
       port: 18083
       targetPort: zmq
+---
+# Scrape target for servicemonitor.yaml; the label is what it selects on.
+apiVersion: v1
+kind: Service
+metadata:
+  name: monerod-metrics
+  namespace: monerod
+  labels:
+    app.kubernetes.io/name: monerod
+    app.kubernetes.io/component: metrics
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: monerod
+  ports:
+    - name: metrics
+      port: 9000
+      targetPort: metrics

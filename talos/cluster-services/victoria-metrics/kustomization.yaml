@@ -536,7 +536,20 @@ configMapGenerator:
         grafana_folder: "Security"
     files:
       - dashboards/Security/crowdsec-overview.json
-# 
+
+  # monerod (lalanza808/docker-monero-node node_stats.json). GeoIP map panels
+  # dropped (need their nodemapper); datasource uid rewritten to "prometheus".
+  - name: dashboard-monerod
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Monero"
+    files:
+      - dashboards/Monero/monerod.json
+#
 #   # Starlink
 #   - name: dashboard-starlink
 #     namespace: monitoring

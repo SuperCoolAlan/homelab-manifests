@@ -27,7 +27,8 @@ versions exactly (`v0.18.5.1`). Renovate bumps the tag.
 | Tor | `--tx-proxy` for our own txs; `.onion:18084` anonymous inbound (tx relay only) |
 | ZMQ | 18083, ClusterIP only — p2pool's block-template feed |
 | Restricted RPC | 18089, ClusterIP + `monerod.local.asandov.com` (LAN only) |
-| Unrestricted RPC | **never bound** — 18081 exposes unauthenticated admin methods |
+| Unrestricted RPC | `127.0.0.1:18081` only — unauthenticated admin methods; used solely by the exporter sidecar |
+| Metrics | exporter sidecar `:9000`, ServiceMonitor `monerod`, Grafana folder "Monero" |
 
 Initial sync of a pruned chain is on the order of a day depending on peers and
 disk. `--prune-blockchain` only takes effect on a *fresh* data dir; changing it
