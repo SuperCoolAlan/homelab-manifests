@@ -1,0 +1,7 @@
+# Paths live on the bitmonero PVC so the .onion address survives restarts.
+SocksPort 127.0.0.1:9050
+DataDirectory /home/monero/.bitmonero/tor/data
+HiddenServiceDir /home/monero/.bitmonero/tor/hs/monerod
+# Must match the --anonymous-inbound port in statefulset.yaml.
+HiddenServicePort 18084 127.0.0.1:18084
+Log notice stdout

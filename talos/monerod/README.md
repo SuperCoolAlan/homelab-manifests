@@ -1,6 +1,8 @@
 # monerod
 
-A private, outbound-only Monero node with a pruned blockchain.
+A Monero node with a pruned blockchain. Public P2P through the Oracle VPS,
+anonymous transaction relay through Tor, and the block-template feed for
+[`talos/p2pool`](../p2pool/README.md).
 
 ## Why not an operator
 
@@ -21,7 +23,9 @@ versions exactly (`v0.18.5.1`). Renovate bumps the tag.
 | --- | --- |
 | Node | `talos-ramhaus` (pinned — the `ssd` ZFS pool is node-local) |
 | Storage | `ssd-array` (openebs-zfs-localpv), 250Gi, expandable |
-| P2P | 18080, outbound only, not advertised (`--hide-my-port`) |
+| P2P | 18080, public at `163.192.195.190:18080` via WireGuard (see below) |
+| Tor | `--tx-proxy` for our own txs; `.onion:18084` anonymous inbound (tx relay only) |
+| ZMQ | 18083, ClusterIP only — p2pool's block-template feed |
 | Restricted RPC | 18089, ClusterIP + `monerod.local.asandov.com` (LAN only) |
 | Unrestricted RPC | **never bound** — 18081 exposes unauthenticated admin methods |
 
@@ -39,27 +43,45 @@ later requires either `monero-blockchain-prune` or a resync.
 
 ## Exposure
 
-Nothing here is reachable from the internet. The node makes its own ~12
-outbound peer connections and syncs fine with zero inbound ports.
+```
+internet :18080 ─► Oracle 163.192.195.190 ─DNAT─► wg0 10.100.0.3 (this pod) ─► monerod
+monerod egress  ─► default route wg0 ─► Oracle masquerade ─► internet
+cluster / LAN   ─► eth0 (10.0.0.0/8 kept off the tunnel: DNS, probes, ingress, p2pool)
+```
 
-### If we later want a public node
+All of monerod's internet traffic leaves via Oracle, not just replies. If it
+dialled out from home, peers would record the home address — which nobody can
+dial — and inbound would never arrive. Home is behind Starlink, so there is no
+port-forward alternative.
 
-Do **not** port-forward on OPNsense. Extend the existing Oracle jumphost
-instead — see [`docs/oracle-wireguard-jumphost.md`](../../docs/oracle-wireguard-jumphost.md).
-The sketch, deliberately not implemented yet:
+The `wg-up` init container builds the tunnel in the pod's own netns (same
+pattern as `talos/jellyfin-tunnel`) and is why the namespace is `privileged`.
+If the tunnel is down the default route blackholes: monerod loses peers rather
+than falling back to the home IP.
 
-1. Add a **second** WireGuard peer on Oracle, `10.100.0.3/32`, alongside the
-   existing TrueNAS peer at `10.100.0.2`. Do not route monerod through TrueNAS.
-2. Bring up the tunnel as a **native sidecar** in this pod (an init container
-   with `restartPolicy: Always`, `NET_ADMIN`) — the same pattern as gluetun in
-   SABnzbd. monerod then binds inside the tunnel's netns with no Talos machine
-   config change and no node-level firewall rules.
-3. On Oracle, DNAT `tcp/18080` to `10.100.0.3:18080`. Caddy is not usable here:
-   Monero P2P is raw TCP, not HTTP.
-4. Extend the `wg_restrict` nftables chain to allow `oifname "wg0" tcp dport
-   18080` to `10.100.0.3` only, so a compromised VPS still cannot reach
-   anything else through the tunnel.
-5. Drop `--hide-my-port` and add `--p2p-external-port=18080`.
+The Oracle side (DNAT, masquerade, peer isolation, OCI security list) is in
+[`docs/oracle-wireguard-jumphost.md`](../../docs/oracle-wireguard-jumphost.md#monerod-p2p-gateway).
 
-Publishing the **RPC** publicly is a separate and larger decision — restricted
-RPC only, and it would want rate limiting on the Caddy side.
+### Tor
+
+Tor inbound is **not** for block sync — monerod only relays transactions over
+anonymity networks. Serving blocks to syncing peers is the Oracle path's job.
+The onion key lives on the PVC (`tor/hs/monerod`), so the address is stable;
+deleting that directory mints a new one.
+
+### Public RPC
+
+Not published. Doing so is a separate and larger decision — restricted RPC
+only, behind Caddy with rate limiting.
+
+## Verifying
+
+```bash
+kubectl -n monerod logs monerod-0 -c wg-up                  # tunnel + routes
+kubectl -n monerod logs monerod-0 -c tor | tail             # "Bootstrapped 100%"
+curl -s https://monerod.local.asandov.com/get_info | jq '{incoming_connections_count, outgoing_connections_count, synchronized}'
+ssh oracle 'sudo wg show wg0'                                # handshake on YZxL…/xM=
+```
+
+`incoming_connections_count` climbing above 0 within an hour or so means the
+Oracle path works end to end.
