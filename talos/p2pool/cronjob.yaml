@@ -1,0 +1,110 @@
+# OG&E Time-of-Day: on-peak is 14:00-19:00 Central, June-October only. Outside
+# those months the start job never fires a stop, so mining runs around the clock.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: p2pool-scheduler
+  namespace: p2pool
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: p2pool-scheduler
+  namespace: p2pool
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments", "deployments/scale"]
+    resourceNames: ["p2pool"]
+    verbs: ["get", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: p2pool-scheduler
+  namespace: p2pool
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: p2pool-scheduler
+subjects:
+  - kind: ServiceAccount
+    name: p2pool-scheduler
+    namespace: p2pool
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: p2pool-peak-stop
+  namespace: p2pool
+spec:
+  schedule: "0 14 * 6-10 *"
+  timeZone: America/Chicago
+  concurrencyPolicy: Replace
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          serviceAccountName: p2pool-scheduler
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: scale
+              image: registry.k8s.io/kubectl:v1.33.13
+              args: ["scale", "deployment/p2pool", "--replicas=0"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: p2pool-peak-start
+  namespace: p2pool
+spec:
+  schedule: "0 19 * 6-10 *"
+  timeZone: America/Chicago
+  concurrencyPolicy: Replace
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          serviceAccountName: p2pool-scheduler
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: scale
+              image: registry.k8s.io/kubectl:v1.33.13
+              args: ["scale", "deployment/p2pool", "--replicas=1"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi

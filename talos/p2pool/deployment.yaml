@@ -1,0 +1,116 @@
+# P2Pool mini sidechain node plus its built-in RandomX miner, mining against our
+# own monerod. One process, one 2 GiB dataset - no separate xmrig.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p2pool
+  namespace: p2pool
+spec:
+  # No `replicas`: cronjob.yaml owns it. Adding it here makes Argo selfHeal undo every scheduled stop.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: p2pool
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: p2pool
+    spec:
+      # The turbo toggle and the economics in README.md are for this CPU (E5-1660 v4).
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: turbo-off
+          image: busybox:1.37.0
+          # Native sidecar: stops after p2pool, so the restore runs last. Node-wide - turbo is off only while mining.
+          restartPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+            - |
+              f=/sys/devices/system/cpu/intel_pstate/no_turbo
+              echo 1 > "$f" && echo "turbo off"
+              trap 'echo 0 > "$f"; echo "turbo restored"; exit 0' TERM INT
+              while :; do sleep 3600 & wait $!; done
+          securityContext:
+            privileged: true
+            runAsUser: 0
+            runAsNonRoot: false
+          resources:
+            requests:
+              cpu: 1m
+              memory: 4Mi
+            limits:
+              memory: 16Mi
+      containers:
+        - name: p2pool
+          # renovate: datasource=docker depName=ghcr.io/sethforprivacy/p2pool
+          image: ghcr.io/sethforprivacy/p2pool:v4.18
+          workingDir: /data
+          command: ["/bin/sh", "-c", "mkdir -p /data/api && exec p2pool \"$@\"", "p2pool"]
+          args:
+            - --host
+            - monerod-rpc.monerod.svc.cluster.local
+            - --rpc-port
+            - "18089"
+            - --zmq-port
+            - "18083"
+            # Public by design. Shares publish it on the p2pool sidechain, so use a mining-only wallet.
+            - --wallet
+            - 44g6Qrx8kFHQY4NGAsnE2yPRfxT9pKVp8Nrk3Lc76oRb1KNxeESgaXu4V2aPbh5DnA49DWajByQCs46Yg5aNNsUxT31hZ6J
+            - --mini
+            # Must stay <= the CPU limit below, or threads just time-slice and waste power.
+            - --start-mining
+            - "4"
+            - --data-dir
+            - /data
+            - --data-api
+            - /data/api
+            - --local-api
+            - --no-upnp
+            - --no-color
+          ports:
+            - name: stratum
+              containerPort: 3333
+            - name: p2p
+              containerPort: 37888
+          # Dataset init takes a minute or two before stratum binds.
+          startupProbe:
+            tcpSocket:
+              port: stratum
+            periodSeconds: 10
+            failureThreshold: 60
+          livenessProbe:
+            tcpSocket:
+              port: stratum
+            periodSeconds: 60
+            failureThreshold: 5
+          resources:
+            # TODO after ramhaus reboots (vm.nr_hugepages=1400 is already in its machine config):
+            # add hugepages-2Mi: 2800Mi to requests+limits. Until then RandomX falls back to normal pages at ~half hashrate.
+            requests:
+              cpu: "4"
+              memory: 3Gi
+            limits:
+              cpu: "4"
+              memory: 4Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        # Sidechain cache only; p2pool resyncs from peers in minutes after a restart.
+        - name: data
+          emptyDir: {}

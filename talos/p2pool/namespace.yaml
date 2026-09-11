@@ -1,9 +1,8 @@
-# Privileged only for the wg-up init container's NET_ADMIN. monerod and tor
-# still drop all capabilities; keep new containers unprivileged.
+# Privileged only for the turbo-off sidecar, which writes node sysfs. p2pool itself runs unprivileged.
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: monerod
+  name: p2pool
   labels:
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/audit: privileged
