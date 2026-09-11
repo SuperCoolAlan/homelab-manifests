@@ -1,0 +1,14 @@
+# p2pool.cache (~453 MB fixed-size) + peer lists. Persisted so a replaced pod resumes the real sidechain
+# instead of re-downloading the PPLNS window. Declared in git or Argo prunes it. ssd-array allows expansion.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: p2pool-data
+  namespace: p2pool
+spec:
+  accessModes: ["ReadWriteOnce"]
+  # ssd pool is node-local to talos-ramhaus, matching the Deployment's nodeSelector.
+  storageClassName: ssd-array
+  resources:
+    requests:
+      storage: 1Gi

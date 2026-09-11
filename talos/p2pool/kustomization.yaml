@@ -5,6 +5,7 @@ namespace: p2pool
 
 resources:
   - namespace.yaml
+  - pvc.yaml
   - deployment.yaml
   - cronjob.yaml
   - service.yaml
