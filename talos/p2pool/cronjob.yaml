@@ -50,14 +50,34 @@ spec:
         spec:
           serviceAccountName: p2pool-scheduler
           restartPolicy: OnFailure
+          # no_turbo is per-node sysfs; this must land on the node p2pool mines on.
+          nodeSelector:
+            kubernetes.io/hostname: talos-ramhaus
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
             seccompProfile:
               type: RuntimeDefault
+          initContainers:
+            # The only privileged code in p2pool: a few seconds twice a day. Talos machine.sysfs sets no_turbo=1 at boot.
+            - name: turbo-on
+              # renovate: datasource=docker depName=busybox
+              image: busybox:1.37.0@sha256:9db7b59979c38555a39def84a31fb98b5296952f9e3afd4f6f11f05b07adfab0
+              command: ["/bin/sh", "-c", "echo 0 > /sys/devices/system/cpu/intel_pstate/no_turbo && echo turbo on"]
+              securityContext:
+                privileged: true
+                runAsUser: 0
+                runAsNonRoot: false
+              resources:
+                requests:
+                  cpu: 1m
+                  memory: 4Mi
+                limits:
+                  memory: 16Mi
           containers:
             - name: scale
-              image: registry.k8s.io/kubectl:v1.33.13
+              # renovate: datasource=docker depName=registry.k8s.io/kubectl
+              image: registry.k8s.io/kubectl:v1.33.13@sha256:a179e6c6f0b87263426fe2a793412c422999d55ffb06d7bc069635468aba3324
               args: ["scale", "deployment/p2pool", "--replicas=0"]
               securityContext:
                 allowPrivilegeEscalation: false
@@ -89,14 +109,33 @@ spec:
         spec:
           serviceAccountName: p2pool-scheduler
           restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: talos-ramhaus
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
             seccompProfile:
               type: RuntimeDefault
+          initContainers:
+            # Runs before the scale-up so mining never starts with turbo on.
+            - name: turbo-off
+              # renovate: datasource=docker depName=busybox
+              image: busybox:1.37.0@sha256:9db7b59979c38555a39def84a31fb98b5296952f9e3afd4f6f11f05b07adfab0
+              command: ["/bin/sh", "-c", "echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo && echo turbo off"]
+              securityContext:
+                privileged: true
+                runAsUser: 0
+                runAsNonRoot: false
+              resources:
+                requests:
+                  cpu: 1m
+                  memory: 4Mi
+                limits:
+                  memory: 16Mi
           containers:
             - name: scale
-              image: registry.k8s.io/kubectl:v1.33.13
+              # renovate: datasource=docker depName=registry.k8s.io/kubectl
+              image: registry.k8s.io/kubectl:v1.33.13@sha256:a179e6c6f0b87263426fe2a793412c422999d55ffb06d7bc069635468aba3324
               args: ["scale", "deployment/p2pool", "--replicas=1"]
               securityContext:
                 allowPrivilegeEscalation: false

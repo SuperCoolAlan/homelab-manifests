@@ -138,10 +138,12 @@ lateral path into the cluster.
 ## monerod P2P gateway
 
 Runs on its own instance, `monero-jumphost-20260910` (`147.224.205.227`,
-A1.Flex 1 OCPU / 6 GB), separate from the jellyfin jumphost. Its only
-WireGuard peer is `10.100.0.3` (pubkey
-`YZxLSdNUR3XK5Vo25Kqgp7VaBd/Z95KD70bQ2YDC/xM=`), the `talos/monerod` pod; the
-server pubkey is `rE+qZRl4LnX8iG4wUTUxj+jVRMhqLlvP8kpH8vrzMQM=`. This is a
+A1.Flex 1 OCPU / 6 GB), separate from the jellyfin jumphost. Its WireGuard
+peers are `10.100.0.3` (pubkey `YZxLSdNUR3XK5Vo25Kqgp7VaBd/Z95KD70bQ2YDC/xM=`),
+the `talos/monerod` pod, and `10.100.0.4`, the `talos/p2pool` pod (see
+[p2pool P2P gateway](#p2pool-p2p-gateway)); the server pubkey is
+`rE+qZRl4LnX8iG4wUTUxj+jVRMhqLlvP8kpH8vrzMQM=`. SSH needs the `momscloset` key
+(the one in the instance's OCI metadata). This is a
 **router** role: the VPS DNATs inbound P2P to the pod and masquerades all of
 the pod's egress, so peers see `147.224.205.227` as the node's address.
 
@@ -149,9 +151,10 @@ the pod's egress, so peers see `147.224.205.227` as the node's address.
 |---|---|
 | Forwarding | `/etc/sysctl.d/99-wg-forward.conf` (`net.ipv4.ip_forward=1`) |
 | Peer | `[Peer]` block in `/etc/wireguard/wg0.conf`, `AllowedIPs = 10.100.0.3/32`, `MTU = 1370` |
-| DNAT / masquerade / isolation | `/etc/nftables-monerod.nft` (table `ip monerod_gw`), the only thing `/etc/nftables.conf` includes |
+| DNAT / masquerade / isolation | `/etc/nftables-monerod.nft` (table `ip monerod_gw`) and `/etc/nftables-p2pool.nft` (table `ip p2pool_gw`), both `include`d from `/etc/nftables.conf` |
 | INPUT / FORWARD accepts | `/etc/iptables/rules.v4` only, ahead of the image's reject |
-| OCI security list | ingress UDP 51820 and TCP 18080 from 0.0.0.0/0, TCP 8080 from `10.67.0.152/32` (shared subnet list) |
+| OCI NSG `monero-jumphost` | ingress TCP 18080 and TCP 37888 from 0.0.0.0/0; attached to this instance's VNIC only |
+| OCI security list (shared with jellyfin box) | UDP 51820 from 0.0.0.0/0, TCP 8080 from `10.67.0.152/32`. 18080 was removed from it 2026-09-13 so the jellyfin box is closed on it at the cloud layer; previous rules backed up before the change |
 | CrowdSec engine | LAPI on `10.67.0.60:8080` (`/etc/crowdsec/config.yaml.local`), serving both Oracle VPSes; see `talos/cluster-services/crowdsec/README.md` |
 | 8080 host rule | `-A INPUT -s 10.67.0.152/32 ... --dport 8080` in `/etc/iptables/rules.v4`; jelly-jumphost is the only remote client |
 
@@ -159,9 +162,10 @@ the pod's egress, so peers see `147.224.205.227` as the node's address.
 `table ip filter`, and a flush at boot would wipe the FORWARD accepts.
 
 `monerod_gw`'s forward chain drops `wg0 → wg0` and anything from `wg0` not
-sourced from `10.100.0.3`, so the box routes for the monerod pod and nothing
-else. Its output chain drops anything the VPS itself opens into `wg0`. The
-CrowdSec bouncer's forward-hook chain drops banned IPs on the 18080 path.
+sourced from `{ 10.100.0.3, 10.100.0.4 }`, so the box routes for exactly those
+two pods and they cannot reach each other through it. Its output chain drops
+anything the VPS itself opens into `wg0`. The CrowdSec bouncer's forward-hook
+chain drops banned IPs on both the 18080 and 37888 paths.
 
 The image's original firewall is at `/etc/iptables/rules.v4.bak-20260910`.
 
@@ -169,6 +173,28 @@ The image's original firewall is at `/etc/iptables/rules.v4.bak-20260910`.
 ssh ubuntu@147.224.205.227 'sudo wg show wg0'                  # handshake for YZxL…
 ssh ubuntu@147.224.205.227 'sudo nft list table ip monerod_gw' # dnat/masquerade counters
 nc -vz 147.224.205.227 18080                                   # from anywhere outside
+```
+
+## p2pool P2P gateway
+
+Added 2026-09-13 on the same box. Peer `10.100.0.4` (pubkey
+`ZJQ62XdacI/gbLZs9x2IXg391K2SmorhH52feLQYXyk=`) is the `talos/p2pool` pod. It
+is stricter than monerod's path because p2pool only ever speaks TCP:
+
+| Rule | Where |
+|---|---|
+| DNAT `enp0s6` tcp/37888 → `10.100.0.4` | `p2pool_gw` prerouting |
+| Masquerade only `ip saddr 10.100.0.4` **TCP** out `enp0s6` | `p2pool_gw` postrouting |
+| Drop any non-TCP from `10.100.0.4` | `p2pool_gw` forward (priority filter - 5) |
+| Accept `enp0s6→wg0` tcp/37888 to .4; accept `wg0→enp0s6` TCP from .4 | `/etc/iptables/rules.v4` FORWARD, ahead of the reject |
+
+Both peers' isolation lives in `monerod_gw` (above). Pre-change copies of every
+edited file are `*.bak-20260913`.
+
+```bash
+ssh oracle-monero-jumphost 'sudo wg show wg0'                    # handshake for ZJQ6…
+ssh oracle-monero-jumphost 'sudo nft list table ip p2pool_gw'    # dnat/masquerade
+nc -vz 147.224.205.227 37888                                     # from anywhere outside
 ```
 
 ## DNS
