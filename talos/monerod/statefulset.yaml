@@ -42,7 +42,8 @@ spec:
       initContainers:
         - name: wg-up
           # Used only for `wg` and `ip`; the s6 entrypoint is bypassed.
-          image: linuxserver/wireguard:1.0.20260223
+          # renovate: datasource=docker depName=linuxserver/wireguard versioning=loose
+          image: linuxserver/wireguard:1.0.20260223@sha256:dca67384e3e9a5bcc288461fa983e6fcb0e248e5a2d8e5b3e5d3f753bfac3e35
           securityContext:
             runAsUser: 0
             runAsNonRoot: false
@@ -92,7 +93,7 @@ spec:
               memory: 64Mi
         - name: tor
           # renovate: datasource=docker depName=osminogin/tor-simple versioning=loose
-          image: osminogin/tor-simple:0.4.9.11
+          image: osminogin/tor-simple:0.4.9.11@sha256:7aef2e7d957e2236d5fac7fca8e67c15fe65e6349eb90099da1cdc26bc4caa69
           # Native sidecar: starts before monerod and the startup probe gates it on the .onion existing.
           restartPolicy: Always
           # Tor refuses group-accessible key dirs; fsGroup can re-grant group perms on mount, so re-tighten every start.
@@ -125,7 +126,7 @@ spec:
           # Monero tags are 4-component (v0.18.5.1), which docker versioning
           # does not parse - loose does.
           # renovate: datasource=docker depName=ghcr.io/sethforprivacy/simple-monerod versioning=loose
-          image: ghcr.io/sethforprivacy/simple-monerod:v0.18.5.1
+          image: ghcr.io/sethforprivacy/simple-monerod:v0.18.5.1@sha256:d8929c733eb3eeb8baff4b0ab8424391874fa1e7278520b8e2096390b85a27b9
           # Bypass the image's /entrypoint.sh, which ends in `exec fixuid -q
           # monerod --non-interactive "$@"`. fixuid is setuid-root and needs
           # NoNewPrivileges disabled, so it aborts under
@@ -221,7 +222,7 @@ spec:
         - name: exporter
           # cirocosta/monero-exporter built by lalanza808/docker-monero-node. Needs the full RPC, hence localhost.
           # renovate: datasource=docker depName=lalanza808/exporter
-          image: lalanza808/exporter:1.0.0
+          image: lalanza808/exporter:1.0.0@sha256:82b6946ee54abb97cf2633b94f6273feb64506953d99a286b237e4ddaba5476c
           args:
             - --monero-addr=http://127.0.0.1:18081
             - --bind-addr=:9000
