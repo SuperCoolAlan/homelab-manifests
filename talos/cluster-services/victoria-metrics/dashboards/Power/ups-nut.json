@@ -96,7 +96,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "network_ups_tools_ups_status{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"} == 1",
+          "expr": "network_ups_tools_ups_status{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"} == 1",
           "interval": "",
           "legendFormat": "{{flag}}",
           "range": true,
@@ -166,7 +166,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_device_info{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_device_info{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "{{mfr}}",
           "refId": "A"
@@ -235,7 +235,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_device_info{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_device_info{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "{{model}}",
           "refId": "A"
@@ -312,7 +312,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_battery_charge{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_battery_charge{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "instant": false,
           "interval": "",
           "legendFormat": "",
@@ -417,7 +417,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_battery_runtime{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_battery_runtime{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "{{ups}}",
           "refId": "A"
@@ -517,7 +517,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_ups_load{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_ups_load{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "{{ups}}",
           "refId": "A"
@@ -583,7 +583,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_battery_runtime{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_battery_runtime{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -657,7 +657,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_input_voltage{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_input_voltage{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -757,7 +757,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_input_voltage{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_input_voltage{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "{{ups}}",
           "range": true,
@@ -838,7 +838,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_battery_voltage{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_battery_voltage{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "__auto",
           "refId": "A"
@@ -848,7 +848,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_battery_voltage_low{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_battery_voltage_low{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "voltage",
           "refId": "B"
@@ -858,7 +858,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "voltage",
           "refId": "C"
@@ -868,7 +868,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "voltage",
           "refId": "D"
@@ -1018,7 +1018,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "network_ups_tools_battery_voltage{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_battery_voltage{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "{{ups}}",
           "refId": "A"
@@ -1029,7 +1029,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "network_ups_tools_battery_voltage_low{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_battery_voltage_low{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "voltage",
           "refId": "B"
@@ -1040,7 +1040,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}*1.1",
+          "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}*1.1",
           "interval": "",
           "legendFormat": "voltage",
           "refId": "C"
@@ -1051,7 +1051,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=~\"$ups\"}",
           "interval": "",
           "legendFormat": "voltage",
           "refId": "D"
@@ -1107,13 +1107,21 @@
   "templating": {
     "list": [
       {
-        "current": {},
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
         "datasource": {
           "type": "prometheus",
           "uid": "prometheus"
         },
         "definition": "label_values(network_ups_tools_device_info,instance)",
-        "includeAll": false,
+        "includeAll": true,
         "label": "Instance",
         "name": "instance",
         "options": [],
@@ -1122,19 +1130,28 @@
           "query": "label_values(network_ups_tools_device_info,instance)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "sort": 1,
-        "type": "query"
+        "type": "query",
+        "allValue": ".*"
       },
       {
-        "current": {},
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
         "datasource": {
           "type": "prometheus",
           "uid": "prometheus"
         },
         "definition": "label_values(network_ups_tools_device_info,job)",
-        "includeAll": false,
+        "includeAll": true,
         "label": "Job",
         "name": "job",
         "options": [],
@@ -1143,10 +1160,11 @@
           "query": "label_values(network_ups_tools_device_info,job)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "sort": 1,
-        "type": "query"
+        "type": "query",
+        "allValue": ".*"
       },
       {
         "datasource": {
@@ -1154,14 +1172,24 @@
           "uid": "prometheus"
         },
         "definition": "label_values(network_ups_tools_device_info,ups)",
-        "includeAll": false,
+        "includeAll": true,
         "label": "UPS",
         "name": "ups",
         "options": [],
         "query": "label_values(network_ups_tools_device_info,ups)",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
-        "type": "query"
+        "type": "query",
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
       }
     ]
   },
