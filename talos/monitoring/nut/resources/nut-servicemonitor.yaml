@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nut
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: nut
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nut
+  endpoints:
+    - port: metrics
+      path: /ups_metrics
+      interval: 30s
+      params:
+        ups: [cp1000]
+    - port: metrics
+      path: /metrics
+      interval: 60s
