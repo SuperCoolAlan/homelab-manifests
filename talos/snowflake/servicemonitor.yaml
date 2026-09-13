@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: snowflake
+  namespace: snowflake
+  labels:
+    app.kubernetes.io/name: snowflake
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: snowflake
+  endpoints:
+    - port: metrics
+      path: /internal/metrics
+      interval: 60s

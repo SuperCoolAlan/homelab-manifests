@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snowflake
+  namespace: snowflake
+  labels:
+    app.kubernetes.io/name: snowflake
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: snowflake
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: snowflake
+      annotations:
+        # Enforced by Cilium's bandwidth manager; keeps Jellyfin ahead on the Starlink uplink (p95 ~2.2 Mbit/s).
+        kubernetes.io/egress-bandwidth: "2M"
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: proxy
+          # renovate: datasource=docker depName=containers.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake
+          image: containers.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake:v2.14.1@sha256:1ded2a9bbb5d67d41f3c11f6b392b8a2735964e7b070e1bcb1278fddf28f90a4
+          args:
+            # More clients than the 2M cap can carry just makes every client slow.
+            - -capacity=10
+            - -metrics
+            # Default is localhost, which vmagent can't scrape.
+            - -metrics-address=0.0.0.0
+            - -metrics-port=9999
+          ports:
+            - name: metrics
+              containerPort: 9999
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: metrics
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]

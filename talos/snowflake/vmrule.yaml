@@ -1,0 +1,27 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: snowflake
+  namespace: snowflake
+spec:
+  groups:
+    - name: snowflake.alerts
+      rules:
+        - alert: SnowflakeProxyDown
+          expr: absent_over_time(up{namespace="snowflake"}[10m]) or max(up{namespace="snowflake"}) == 0
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Snowflake proxy is down
+            description: The Tor Snowflake proxy in namespace snowflake has not been scraped successfully for 15m.
+        - alert: SnowflakeProxyNoClients
+          expr: increase(tor_snowflake_proxy_connections_total[6h]) == 0
+          for: 1h
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Snowflake proxy served no clients in 6h
+            description: The proxy is up but the broker has handed it no clients; check its logs for NAT type and broker errors.
