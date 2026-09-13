@@ -1,0 +1,84 @@
+# Routed to the Monero Discord channel by `alertgroup: monero`. Rules gated on replicas > 0 stay quiet during the
+# 14:00-19:00 Jun-Oct pause; removing that guard makes every scheduled stop page.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: monero-p2pool
+  namespace: p2pool
+spec:
+  groups:
+    - name: p2pool.alerts
+      rules:
+        - alert: P2PoolDown
+          expr: absent(up{namespace="p2pool",module="miner"} == 1) and on() max(kube_deployment_spec_replicas{namespace="p2pool",deployment="p2pool"}) > 0
+          for: 15m
+          labels:
+            severity: critical
+            alertgroup: monero
+          annotations:
+            summary: p2pool is scaled up but its miner stats are not being scraped
+            description: The p2pool Deployment wants replicas but up{module="miner"} has not been 1 for 15m. Pod crash, tunnel init failure, or json-exporter down.
+        - alert: P2PoolStuckOnStartupChain
+          expr: max(p2pool_pool_sidechain_height{namespace="p2pool"}) < 1e7 and on() max(kube_deployment_spec_replicas{namespace="p2pool",deployment="p2pool"}) > 0
+          for: 30m
+          labels:
+            severity: warning
+            alertgroup: monero
+          annotations:
+            summary: p2pool has been on its private startup chain for 30m; shares are worthless
+            description: Sidechain height is {{ $value }} (real mini chain is ~14.7M+). Sync from an empty cache takes 15-30 min; with the PVC cache it should be ~2 min.
+        - alert: P2PoolFewPeers
+          expr: max(p2pool_p2p_connections{namespace="p2pool"}) < 4
+          for: 30m
+          labels:
+            severity: warning
+            alertgroup: monero
+          annotations:
+            summary: p2pool has only {{ $value }} sidechain peers
+            description: Egress goes through the monero jumphost (wg peer 10.100.0.4) and fails closed, so a peer collapse usually means the tunnel is down.
+        - alert: P2PoolNoIncomingPeers
+          expr: max(p2pool_p2p_incoming_connections{namespace="p2pool"}) == 0
+          for: 2h
+          labels:
+            severity: info
+            alertgroup: monero
+          annotations:
+            summary: p2pool has had no inbound sidechain peers for 2h
+            description: Check the jumphost DNAT for tcp/37888 (table p2pool_gw) and the OCI NSG monero-jumphost.
+        - alert: P2PoolHashrateLow
+          expr: max(p2pool_miner_hashrate{namespace="p2pool"}) < 2000
+          for: 30m
+          labels:
+            severity: warning
+            alertgroup: monero
+          annotations:
+            summary: p2pool hashrate is {{ $value }} H/s (expected ~3500 on 8 threads)
+            description: Likely causes are missing huge pages after a reboot, thermal throttling, or CPU contention on ramhaus.
+        - alert: P2PoolNoRealShares48h
+          # The count guard requires p2pool to have reported for most of the window, or a fresh deploy fires immediately.
+          expr: max_over_time((max(p2pool_miner_shares_found{namespace="p2pool"}) and on() max(p2pool_pool_sidechain_height{namespace="p2pool"}) > 1e7)[48h:5m]) < 1 and on() count_over_time(max(p2pool_miner_hashrate{namespace="p2pool"})[48h:1h]) >= 36
+          for: 1h
+          labels:
+            severity: info
+            alertgroup: monero
+          annotations:
+            summary: No real p2pool shares in 48h
+            description: At ~1.3 expected shares/day this happens by luck about 7% of the time. Check the dashboard's hashrate and sidechain panels before assuming a fault.
+        - alert: P2PoolScheduleJobFailed
+          expr: max by (job_name) (kube_job_status_failed{namespace="p2pool"}) > 0
+          for: 5m
+          labels:
+            severity: warning
+            alertgroup: monero
+          annotations:
+            summary: p2pool schedule job {{ $labels.job_name }} failed
+            description: The 14:00/19:00 CronJobs set turbo and scale p2pool. A failure can leave mining running on-peak or turbo in the wrong state.
+        - alert: RamhausCPUHot
+          expr: max(node_hwmon_temp_celsius{instance="10.0.1.12:9100",chip=~"platform_coretemp.*"}) > 85
+          for: 10m
+          labels:
+            severity: warning
+            alertgroup: monero
+          annotations:
+            summary: ramhaus CPU core at {{ $value }}°C for 10m (warning 85, critical 95)
+            description: Steady 8-thread mining ran ~78°C. Check the fan idle mode setting, airflow, and ambient temperature; drop mining threads if it persists.
