@@ -1,0 +1,19 @@
+# Keep ClusterIP: upsd accepts reads without auth, and the exporter's server/ups query params are caller-controlled.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nut
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: nut
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: nut
+  ports:
+    - name: metrics
+      port: 9199
+      targetPort: metrics
+    - name: nut
+      port: 3493
+      targetPort: nut

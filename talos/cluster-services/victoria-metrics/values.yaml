@@ -173,7 +173,8 @@ alertmanager:
     # Operator mounts each at /etc/vm/secrets/<name>/; the discord receiver's webhook_url_file depends on that path.
     secrets:
       - alertmanager-discord-monero
-  # Raw Alertmanager config (useManagedConfig: false). Only alertgroup=monero reaches Discord; everything else stays
+      - alertmanager-discord-homelab
+  # Raw Alertmanager config (useManagedConfig: false). Only labeled alertgroups reach Discord; everything else stays
   # blackholed as before, so adding a receiver here does not start paging for the chart's default rules.
   config:
     route:
@@ -186,11 +187,18 @@ alertmanager:
         - receiver: discord-monero
           matchers:
             - alertgroup="monero"
+        - receiver: discord-homelab
+          matchers:
+            - alertgroup="homelab"
     receivers:
       - name: blackhole
       - name: discord-monero
         discord_configs:
           - webhook_url_file: /etc/vm/secrets/alertmanager-discord-monero/webhook_url
+            send_resolved: true
+      - name: discord-homelab
+        discord_configs:
+          - webhook_url_file: /etc/vm/secrets/alertmanager-discord-homelab/webhook_url
             send_resolved: true
 
 # Operator settings - convert Prometheus ServiceMonitors
