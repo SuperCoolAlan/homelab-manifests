@@ -164,6 +164,13 @@ spec:
             - --rpc-max-connections-per-public-ip=10
             # Oracle DNATs 18080 straight through, so the advertised port is the real one. No UPnP.
             - --no-igd
+            # p2pool README's recommended node settings: faster block/tx propagation means fewer stale p2pool shares.
+            # Upload stays bounded by --limit-rate-up below, so more peers do not cost Jellyfin uplink.
+            - --out-peers=32
+            - --in-peers=64
+            - --add-priority-node=p2pmd.xmrvsbeast.com:18080
+            - --add-priority-node=nodes.hashvault.pro:18080
+            - --enforce-dns-checkpointing
             # ~8 Mbit/s. Tunnel rides Starlink's ~10-17 Mbit/s uplink; higher starves Jellyfin, the priority service.
             - --limit-rate-up=1024
             # p2pool's block-template feed. Reachable only on the pod network (ClusterIP), never Oracle.
