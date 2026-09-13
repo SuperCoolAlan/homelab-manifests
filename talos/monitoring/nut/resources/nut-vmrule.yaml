@@ -1,0 +1,63 @@
+# Routed to the homelab Discord channel by `alertgroup: homelab`.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: homelab-ups
+  namespace: monitoring
+spec:
+  groups:
+    - name: ups.alerts
+      rules:
+        - alert: UPSOnBattery
+          expr: max(network_ups_tools_ups_status{flag="OB"}) == 1
+          for: 30s
+          labels:
+            severity: critical
+            alertgroup: homelab
+          annotations:
+            summary: UPS is on battery ({{ with query "max(network_ups_tools_battery_charge)" }}{{ . | first | value }}{{ end }}% charge)
+            description: Mains power is out at ramhaus. Nothing shuts the nodes down automatically yet.
+        - alert: UPSLowBattery
+          expr: max(network_ups_tools_ups_status{flag="LB"}) == 1
+          labels:
+            severity: critical
+            alertgroup: homelab
+          annotations:
+            summary: UPS reports low battery; load will drop soon
+            description: The UPS has crossed its low-battery threshold. Shut down ramhaus and blackbox by hand if mains is still out.
+        - alert: UPSBatteryRuntimeLow
+          expr: max(network_ups_tools_battery_runtime) < 600 and max(network_ups_tools_ups_status{flag="OL"}) == 1
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: UPS runtime at current load is only {{ $value | humanizeDuration }}
+            description: On mains but under 10 minutes of runtime, from rising load or a weak battery.
+        - alert: UPSReplaceBattery
+          expr: max(network_ups_tools_ups_status{flag="RB"}) == 1
+          for: 1h
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: UPS says the battery needs replacing
+            description: The UPS failed its battery self-test.
+        - alert: UPSOverloaded
+          expr: max(network_ups_tools_ups_status{flag="OVER"}) == 1 or max(network_ups_tools_ups_load) > 80
+          for: 5m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: UPS load is high
+            description: Above 80% load, runtime collapses and a mains blip can trip the overload cutoff.
+        - alert: UPSMetricsMissing
+          expr: absent_over_time(network_ups_tools_ups_status{flag="OL"}[10m])
+          for: 5m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: No UPS metrics for 10m
+            description: The nut pod in monitoring is down, or upsd lost the USB device. Every other UPS alert is blind until this clears.
