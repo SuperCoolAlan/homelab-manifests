@@ -170,6 +170,28 @@ alertmanager:
   spec:
     nodeSelector:
       kubernetes.io/hostname: talos-ramhaus
+    # Operator mounts each at /etc/vm/secrets/<name>/; the discord receiver's webhook_url_file depends on that path.
+    secrets:
+      - alertmanager-discord-monero
+  # Raw Alertmanager config (useManagedConfig: false). Only alertgroup=monero reaches Discord; everything else stays
+  # blackholed as before, so adding a receiver here does not start paging for the chart's default rules.
+  config:
+    route:
+      receiver: blackhole
+      group_by: ["alertname"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      routes:
+        - receiver: discord-monero
+          matchers:
+            - alertgroup="monero"
+    receivers:
+      - name: blackhole
+      - name: discord-monero
+        discord_configs:
+          - webhook_url_file: /etc/vm/secrets/alertmanager-discord-monero/webhook_url
+            send_resolved: true
 
 # Operator settings - convert Prometheus ServiceMonitors
 victoria-metrics-operator:

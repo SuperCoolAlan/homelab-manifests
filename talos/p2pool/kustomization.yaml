@@ -10,6 +10,7 @@ resources:
   - cronjob.yaml
   - service.yaml
   - servicemonitor.yaml
+  - vmrule.yaml
 
 generators:
   - secrets-generator.yaml

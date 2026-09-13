@@ -9,6 +9,7 @@ resources:
   - service.yaml
   - local-asandov-ingress.yaml
   - servicemonitor.yaml
+  - vmrule.yaml
 
 configMapGenerator:
   - name: monerod-torrc
