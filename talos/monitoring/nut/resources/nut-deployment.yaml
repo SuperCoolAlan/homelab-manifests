@@ -38,6 +38,9 @@ spec:
             # Monitoring only: never let the driver power off the UPS.
             - name: SDORDER
               value: "-1"
+            # Tests only. Never add load.off/shutdown.*: the API user's password is in the pod, and those cut ramhaus's power.
+            - name: INSTCMDS
+              value: test.battery.start.quick,test.battery.stop
           ports:
             - name: nut
               containerPort: 3493
