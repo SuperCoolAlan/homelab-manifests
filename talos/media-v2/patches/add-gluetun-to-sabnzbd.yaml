@@ -30,8 +30,9 @@
       value: "off"
     - name: FIREWALL_OUTBOUND_SUBNETS
       value: "10.0.0.0/8"
+    # Every in-pod listener reached from outside must be here (9707 = exportarr probes/scrape); Cilium gives the pod a /32, so gluetun's local-subnet accept covers nothing.
     - name: FIREWALL_INPUT_PORTS
-      value: "8080,8888"
+      value: "8080,8888,9707"
     - name: HTTPPROXY
       value: "on"
     - name: HTTPPROXY_LOG
