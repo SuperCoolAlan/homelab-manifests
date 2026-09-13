@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ingress.yaml
+
+helmCharts:
+  - name: cilium
+    repo: https://helm.cilium.io
+    version: 1.20.1
+    releaseName: cilium
+    namespace: kube-system
+    valuesFile: values.yaml
+    # Chart's ServiceMonitors hard-fail unless this capability is advertised; plain kustomize (CI, bootstrap) needs it declared.
+    apiVersions:
+      - monitoring.coreos.com/v1

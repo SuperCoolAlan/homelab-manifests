@@ -1,0 +1,88 @@
+# Talos requirements: https://docs.siderolabs.com/kubernetes-guides/cni/deploying-cilium
+# Pods keep the node podCIDRs (10.244.x.0/24) the controller-manager already assigned.
+ipam:
+  mode: kubernetes
+
+# kube-proxy (nftables mode) still owns Services; replacing it is a separate change.
+kubeProxyReplacement: false
+
+# KubePrism, so the agent reaches the apiserver without depending on kube-proxy or the pod network.
+k8sServiceHost: localhost
+k8sServicePort: 7445
+
+# Talos forbids SYS_MODULE (it drops the chart default's SYS_MODULE and SYSLOG).
+securityContext:
+  capabilities:
+    ciliumAgent:
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    cleanCiliumState:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+
+# Talos already mounts cgroup2; letting Cilium mount it fails.
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+
+# Enforces kubernetes.io/egress-bandwidth, which keeps uploaders (snowflake) below Jellyfin on Starlink.
+bandwidthManager:
+  enabled: true
+
+# bpf.masquerade must stay off: with Talos forwardKubeDNSToHost (on for ramhaus) it breaks CoreDNS.
+
+hubble:
+  tls:
+    auto:
+      # helm regenerates certs on every render, which Argo does on every sync.
+      method: cronJob
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+  metrics:
+    enabled:
+      - dns
+      - drop
+      - tcp
+      - flow
+      - icmp
+    serviceMonitor:
+      enabled: true
+    dashboards:
+      enabled: true
+      namespace: monitoring
+      annotations:
+        grafana_folder: Cilium
+
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+operator:
+  prometheus:
+    serviceMonitor:
+      enabled: true
+  dashboards:
+    enabled: true
+    namespace: monitoring
+    annotations:
+      grafana_folder: Cilium
+
+dashboards:
+  enabled: true
+  namespace: monitoring
+  annotations:
+    grafana_folder: Cilium
