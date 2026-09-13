@@ -15,6 +15,12 @@ spec:
       interval: 30s
       params:
         ups: [cp1000]
+      # nut_exporter 3.3.0 sets no ups label, and instance would change with each pod IP; the dashboard filters on both.
+      relabelings:
+        - targetLabel: ups
+          replacement: cp1000
+        - targetLabel: instance
+          replacement: cp1000
     - port: metrics
       path: /metrics
       interval: 60s
