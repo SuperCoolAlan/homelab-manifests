@@ -52,6 +52,8 @@ spec:
           - path: talos/monerod
           # P2Pool mini + built-in miner, off-peak schedule
           - path: talos/p2pool
+          # Tor Snowflake proxy (anti-censorship), egress locked to the internet
+          - path: talos/snowflake
           # Security scanning
           - path: talos/security/*
           # Virtual machines (KubeVirt)
