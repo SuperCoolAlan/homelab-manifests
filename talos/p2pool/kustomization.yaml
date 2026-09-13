@@ -11,6 +11,9 @@ resources:
   - service.yaml
   - servicemonitor.yaml
 
+generators:
+  - secrets-generator.yaml
+
 configMapGenerator:
   - name: p2pool-json-exporter
     files:

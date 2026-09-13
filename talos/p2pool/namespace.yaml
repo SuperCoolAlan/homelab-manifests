@@ -1,4 +1,4 @@
-# Privileged only for the turbo-off sidecar, which writes node sysfs. p2pool itself runs unprivileged.
+# Privileged only for the CronJobs' turbo init containers (node sysfs, seconds per run). p2pool itself runs unprivileged.
 apiVersion: v1
 kind: Namespace
 metadata:

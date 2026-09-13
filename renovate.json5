@@ -25,6 +25,11 @@
       commitMessageTopic: 'helm chart {{depName}}',
     },
     {
+      // kubectl must stay within one minor of the cluster (1.33); bump this ceiling with the cluster, not before.
+      matchPackageNames: ['registry.k8s.io/kubectl'],
+      allowedVersions: '<1.34.0',
+    },
+    {
       // Majors get their own PR and a loud label — read the release notes
       // in the PR body before merging these.
       matchUpdateTypes: ['major'],
@@ -59,7 +64,8 @@
       customType: 'regex',
       managerFilePatterns: ['/talos/.*\\.ya?ml$/'],
       matchStrings: [
-        '# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s*\\n\\s*image:\\s*"?\\S+:(?<currentValue>[^"\\s@]+)',
+        // Non-greedy name so `@sha256:` is never read as part of the tag; digest is optional but must be captured when present or bumps leave it stale.
+        '# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\s*\\n\\s*image:\\s*"?\\S+?:(?<currentValue>[^"\\s@]+)(@(?<currentDigest>sha256:[a-f0-9]+))?',
       ],
       versioningTemplate: '{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}',
     },

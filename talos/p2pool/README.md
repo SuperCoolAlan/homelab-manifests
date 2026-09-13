@@ -21,12 +21,17 @@ selfHeal, a `replicas` in git would undo every scheduled stop.
 
 ## Turbo
 
-`turbo-off` is a privileged native sidecar that writes `1` to
-`/sys/devices/system/cpu/intel_pstate/no_turbo` on start and `0` on stop.
-Sidecars terminate after the main container, so turbo is off exactly while
-mining. It is **node-wide** — everything on ramhaus runs at base clock (3.2 GHz)
-during mining hours. If the pod dies uncleanly turbo stays off until the next
-clean stop or reboot. There is no RAPL on this kernel, so no power cap.
+`/sys/devices/system/cpu/intel_pstate/no_turbo` is **node-wide** and has no
+long-running owner:
+
+- ramhaus's Talos machine config sets `machine.sysfs` `no_turbo=1` at boot, so a
+  fresh node starts in the mining state (reboots outside Jun–Oct included).
+- `p2pool-peak-stop` (14:00) runs a privileged `turbo-on` init container, then
+  scales to 0; `p2pool-peak-start` (19:00) runs `turbo-off`, then scales to 1.
+
+So privileged code runs for seconds, twice a day, in season. Everything on
+ramhaus runs at base clock (3.2 GHz) while turbo is off. There is no RAPL on
+this kernel, so no power cap.
 
 ## Huge pages — pending a reboot
 
@@ -66,6 +71,16 @@ unrotated on-disk log (~100 MB/day) off the PVC; stdout reaches VictoriaLogs.
 After a fresh start p2pool briefly mines a private startup chain (sidechain
 height counting from 0, difficulty 100000); shares from it are worthless and
 the dashboard's share panels spike until it adopts the real chain.
+
+## Inbound P2P
+
+Sidechain P2P (tcp/37888) is public at `147.224.205.227:37888` through the
+monero jumphost, as WireGuard peer `10.100.0.4` (key in SOPS
+`secrets/p2pool-wg-key.enc.yaml`). The `wg-up` init container sends all egress
+except 10.0.0.0/8 through the tunnel, so peers learn a dialable address; it
+fails closed if the tunnel is down. monerod RPC/ZMQ, DNS, probes and scrapes
+stay on eth0. The jumphost side (DNAT, TCP-only masquerade, peer isolation,
+OCI NSG) is in `docs/oracle-wireguard-jumphost.md#p2pool-p2p-gateway`.
 
 ## Metrics
 
