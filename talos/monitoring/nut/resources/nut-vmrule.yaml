@@ -1,4 +1,5 @@
-# Routed to the homelab Discord channel by `alertgroup: homelab`.
+# Routed to the homelab Discord channel by `alertgroup: homelab`. The UPS battery feeds the network gear only;
+# ramhaus is on its surge-only side, so an outage stops ramhaus (and this Alertmanager) at once.
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMRule
 metadata:
@@ -16,7 +17,7 @@ spec:
             alertgroup: homelab
           annotations:
             summary: UPS is on battery ({{ with query "max(network_ups_tools_battery_charge)" }}{{ . | first | value }}{{ end }}% charge)
-            description: Mains power is out at ramhaus. Nothing shuts the nodes down automatically yet.
+            description: Mains is out and the network gear is on battery. ramhaus is not battery-backed, so this usually only fires for a test or a sub-second blip.
         - alert: UPSLowBattery
           expr: max(network_ups_tools_ups_status{flag="LB"}) == 1
           labels:
@@ -24,7 +25,7 @@ spec:
             alertgroup: homelab
           annotations:
             summary: UPS reports low battery; load will drop soon
-            description: The UPS has crossed its low-battery threshold. Shut down ramhaus and blackbox by hand if mains is still out.
+            description: The UPS has crossed its low-battery threshold; the network gear on its battery side will lose power soon.
         - alert: UPSBatteryRuntimeLow
           expr: max(network_ups_tools_battery_runtime) < 600 and max(network_ups_tools_ups_status{flag="OL"}) == 1
           for: 15m
