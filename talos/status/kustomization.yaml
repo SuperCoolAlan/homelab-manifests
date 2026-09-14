@@ -8,18 +8,6 @@ resources:
   - ingress.yaml
   - pvc-ssd.yaml
 
-# The API rejects type Recreate while the live rollingUpdate block remains; the chart can't emit this null.
-patches:
-  - target:
-      kind: Deployment
-      name: gatus
-    patch: |
-      - op: replace
-        path: /spec/strategy
-        value:
-          type: Recreate
-          rollingUpdate: null
-
 helmCharts:
   - name: gatus
     repo: https://twin.github.io/helm-charts
