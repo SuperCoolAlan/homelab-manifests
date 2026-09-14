@@ -197,6 +197,41 @@ ssh oracle-monero-jumphost 'sudo nft list table ip p2pool_gw'    # dnat/masquera
 nc -vz 147.224.205.227 37888                                     # from anywhere outside
 ```
 
+## Snowflake proxy
+
+Added 2026-09-14 on its own instance, `snowflake-jumphost-20260914`
+(`170.9.244.226`, A1.Flex 1 OCPU / 4 GB, SSH alias `oracle-snowflake-jumphost`,
+`momscloset` key). Unlike the other boxes this is not a router: the Tor
+Snowflake proxy runs **on the VPS itself**. From home it tested `NAT type:
+restricted` behind Starlink CGNAT and got almost no clients; here it tests
+`unrestricted`. Nothing from home is reachable through it.
+
+WireGuard serves only metrics: peer `10.100.0.7` (pubkey
+`WzQX0m95K/hilamomP3f3DFyA7OL1jFQx5tIyTPWG18=`) is the `talos/snowflake` socat
+pod; server pubkey `B31LFquE549qd8JW4zGS7b1XsVNIPI/mS29xFVhRDkA=`.
+
+| Piece | Where |
+|---|---|
+| Proxy | `snowflake-proxy.service` running `/usr/local/bin/snowflake-proxy` (static binary + geoip extracted from the image digest in the unit; checksums in `/usr/local/share/snowflake`), `DynamicUser`, `NoNewPrivileges`, systemd sandboxing. Not podman: with `no-new-privileges` Ubuntu 24.04 stacks crun's AppArmor profile, which denies inet sockets |
+| Upgrading | `crane export --platform linux/arm64 <image@digest> - \| tar -xf - bin/proxy usr/share/tor/geoip usr/share/tor/geoip6`, copy to the paths above, update the digest comment, restart |
+| Ports | `-ephemeral-ports-range 32768:60999`; must match the NSG and `rules.v4` or the NAT test falls back to restricted |
+| Metrics | `-metrics-address 10.100.0.1` (wg0 only), `:9999` |
+| OCI NSG `snowflake-jumphost` | ingress UDP 32768-60999 from 0.0.0.0/0; UDP 51820 comes from the shared security list |
+| INPUT accepts | `/etc/iptables/rules.v4`: UDP 51820, UDP 32768:60999, TCP 9999 from `10.100.0.7` on wg0 |
+| wg0 output | `/etc/nftables-wg-restrict.nft` (table `ip wg_restrict`): VPS may only reply into wg0 |
+| Egress cap | `egress-cap.service`: `tc ... cake bandwidth 20mbit` on `enp0s6` (max ~6.5 TB/month) |
+| Egress guard | `snowflake-egress-guard.timer` every 15 min: stops the proxy once vnstat shows 7 TB tx this month, restarts it next month |
+
+Both the cap and the guard exist to keep the tenancy inside the free 10 TB/month
+outbound; the account is Pay-As-You-Go, so overage bills. Pre-change copies are
+`*.bak-20260914`.
+
+```bash
+ssh oracle-snowflake-jumphost 'sudo journalctl -u snowflake-proxy -o cat | grep -E "NAT type|In the last"'
+ssh oracle-snowflake-jumphost 'vnstat -m -i enp0s6; tc -s qdisc show dev enp0s6 | head -3'
+ssh oracle-snowflake-jumphost 'sudo wg show wg0'               # handshake for WzQX…
+```
+
 ## DNS
 
 `jellyfin.asandov.com` → `163.192.195.190` in Cloudflare, **DNS Only** (grey

@@ -1,4 +1,4 @@
-# Strangers' traffic flows through this pod; it must never reach the LAN, the cluster, or the Starlink/CGNAT side.
+# This forwarder is the only path to the Oracle proxy's metrics; admit just vmagent.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -13,7 +13,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: snowflake-proxy
+  name: snowflake-metrics
   namespace: snowflake
 spec:
   podSelector:
@@ -33,29 +33,11 @@ spec:
       ports:
         - port: metrics
           protocol: TCP
+  # WireGuard UDP is the only egress; metrics ride inside it.
   egress:
     - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-          podSelector:
-            matchLabels:
-              k8s-app: kube-dns
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
-          protocol: TCP
-    # WebRTC to clients uses arbitrary UDP ports, so egress can only be limited by destination.
-    - to:
         - ipBlock:
-            cidr: 0.0.0.0/0
-            except:
-              - 10.0.0.0/8
-              - 100.64.0.0/10
-              - 127.0.0.0/8
-              - 169.254.0.0/16
-              - 172.16.0.0/12
-              - 192.168.0.0/16
-              - 224.0.0.0/4
-              - 240.0.0.0/4
+            cidr: 170.9.244.226/32
+      ports:
+        - port: 51820
+          protocol: UDP

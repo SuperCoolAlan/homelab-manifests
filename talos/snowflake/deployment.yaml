@@ -1,3 +1,5 @@
+# The proxy runs on Oracle (docs/oracle-wireguard-jumphost.md#snowflake-proxy); this pod only carries its metrics.
+# vmagent -> Service -> socat -> wg0 -> 10.100.0.1:9999. Peer IP .7 is hardcoded in the VPS's wg0.conf and its 9999 INPUT accept.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,7 +8,10 @@ metadata:
   labels:
     app.kubernetes.io/name: snowflake
 spec:
+  # Exactly one: two pods presenting the same key would flap the VPS's single peer endpoint.
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: snowflake
@@ -14,45 +19,75 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: snowflake
-      annotations:
-        # Enforced by Cilium's bandwidth manager; keeps Jellyfin ahead on the Starlink uplink (p95 ~2.2 Mbit/s).
-        kubernetes.io/egress-bandwidth: "2M"
     spec:
       automountServiceAccountToken: false
       enableServiceLinks: false
-      securityContext:
-        runAsUser: 65534
-        runAsGroup: 65534
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
+      initContainers:
+        - name: wg-up
+          image: linuxserver/wireguard:1.0.20260223
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              umask 077
+              cat > /tmp/wg.conf <<EOF
+              [Interface]
+              PrivateKey = $(cat /secrets/private-key)
+
+              [Peer]
+              PublicKey = B31LFquE549qd8JW4zGS7b1XsVNIPI/mS29xFVhRDkA=
+              AllowedIPs = 10.100.0.1/32
+              Endpoint = 170.9.244.226:51820
+              PersistentKeepalive = 25
+              EOF
+              # Not wg-quick: it rewrites resolv.conf and routes, breaking cluster networking in the pod.
+              ip link add wg0 type wireguard
+              wg setconf wg0 /tmp/wg.conf
+              ip address add 10.100.0.7/32 dev wg0
+              ip link set wg0 mtu 1370 up
+              ip route add 10.100.0.1/32 dev wg0
+              rm -f /tmp/wg.conf
+              wg show wg0
+          volumeMounts:
+            - name: wg-key
+              mountPath: /secrets
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
       containers:
-        - name: proxy
-          # renovate: datasource=docker depName=containers.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake
-          image: containers.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake:v2.14.1@sha256:1ded2a9bbb5d67d41f3c11f6b392b8a2735964e7b070e1bcb1278fddf28f90a4
+        - name: forwarder
+          image: alpine/socat:1.8.1.3
           args:
-            # More clients than the 2M cap can carry just makes every client slow.
-            - -capacity=10
-            - -metrics
-            # Default is localhost, which vmagent can't scrape.
-            - -metrics-address=0.0.0.0
-            - -metrics-port=9999
+            - -d
+            - TCP-LISTEN:9999,fork,reuseaddr
+            - TCP:10.100.0.1:9999
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
           ports:
             - name: metrics
               containerPort: 9999
               protocol: TCP
-          livenessProbe:
-            tcpSocket:
-              port: metrics
-            periodSeconds: 30
           resources:
             requests:
-              cpu: 50m
-              memory: 64Mi
+              cpu: 5m
+              memory: 16Mi
             limits:
-              memory: 256Mi
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop: ["ALL"]
+              memory: 64Mi
+      volumes:
+        - name: wg-key
+          secret:
+            secretName: snowflake-wg-key
+            defaultMode: 0400
