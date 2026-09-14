@@ -37,6 +37,7 @@ helmCharts:
         ui:
           title: "asandov.com Status"
           header: "Service Status"
+          default-sort-by: group
         endpoints:
           # Public services
           - name: Authentik
