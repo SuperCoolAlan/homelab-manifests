@@ -154,9 +154,8 @@ the pod's egress, so peers see `147.224.205.227` as the node's address.
 | DNAT / masquerade / isolation | `/etc/nftables-monerod.nft` (table `ip monerod_gw`) and `/etc/nftables-p2pool.nft` (table `ip p2pool_gw`), both `include`d from `/etc/nftables.conf` |
 | INPUT / FORWARD accepts | `/etc/iptables/rules.v4` only, ahead of the image's reject |
 | OCI NSG `monero-jumphost` | ingress TCP 18080 and TCP 37888 from 0.0.0.0/0; attached to this instance's VNIC only |
-| OCI security list (shared with jellyfin box) | UDP 51820 from 0.0.0.0/0, TCP 8080 from `10.67.0.152/32`. 18080 was removed from it 2026-09-13 so the jellyfin box is closed on it at the cloud layer; previous rules backed up before the change |
-| CrowdSec engine | LAPI on `10.67.0.60:8080` (`/etc/crowdsec/config.yaml.local`), serving both Oracle VPSes; see `talos/cluster-services/crowdsec/README.md` |
-| 8080 host rule | `-A INPUT -s 10.67.0.152/32 ... --dport 8080` in `/etc/iptables/rules.v4`; jelly-jumphost is the only remote client |
+| OCI security list (shared with jellyfin box) | UDP 51820 from 0.0.0.0/0. 18080 was removed from it 2026-09-13 so the jellyfin box is closed on it at the cloud layer; previous rules backed up before the change |
+| CrowdSec engine | LAPI on `127.0.0.1:8080` (`/etc/crowdsec/config.yaml.local`), this VPS only; jelly-jumphost runs its own since 2026-09-14. See `talos/cluster-services/crowdsec/README.md` |
 
 `/etc/nftables.conf` must not `flush ruleset`: `netfilter-persistent` owns
 `table ip filter`, and a flush at boot would wipe the FORWARD accepts.

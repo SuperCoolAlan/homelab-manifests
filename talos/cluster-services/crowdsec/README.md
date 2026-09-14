@@ -1,9 +1,9 @@
 # CrowdSec
 
-Crowd-sourced intrusion detection and remediation, split across two engines
-(LAPIs): this cluster's, and one on the Oracle monero jumphost that serves both
-Oracle VPSes. Bans are not shared between the two engines; each gets CAPI plus
-its own Console blocklist subscriptions.
+Crowd-sourced intrusion detection and remediation, split across three engines
+(LAPIs): this cluster's, and one on each Oracle VPS (monero-jumphost and
+jelly-jumphost), because their exposure differs. Bans are not shared between
+engines; each gets CAPI plus its own Console blocklist subscriptions.
 
 Deployed 2026-08-31. Phased plan and rationale: `docs/crowdsec-plan.md`.
 
@@ -13,19 +13,19 @@ Deployed 2026-08-31. Phased plan and rationale: `docs/crowdsec-plan.md`.
   cluster (ns: crowdsec)                   Oracle VCN 10.67.0.0/24
   ┌──────────────────────────────────┐     ┌─────────────────────────────────────┐
   │ LAPI (crowdsec-lapi) :8080       │     │ monero-jumphost 10.67.0.60          │
-  │   SQLite on fast-array PVC       │     │   LAPI :8080, private IP only       │
+  │   SQLite on fast-array PVC       │     │   LAPI 127.0.0.1:8080               │
   │   ▲                              │     │   ├─ agent (sshd)                   │
   │   ├─ log processor               │     │   └─ nftables bouncer               │
-  │   │  (VictoriaLogs, 5 streams)   │     │        ▲                            │
+  │   │  (VictoriaLogs, 5 streams)   │     ├─────────────────────────────────────┤
   │   └─ traefik bouncer plugin      │     │ jelly-jumphost 10.67.0.152          │
-  │      enforces on tunnel apps     │     │   ├─ agent (caddy + sshd) ──► LAPI  │
-  └──────────────────────────────────┘     │   └─ nftables bouncer (oracle-fw)   │
+  │      enforces on tunnel apps     │     │   LAPI 127.0.0.1:8080               │
+  └──────────────────────────────────┘     │   ├─ agent (caddy + sshd)           │
+                                           │   └─ nftables bouncer (oracle-fw)   │
                                            └─────────────────────────────────────┘
 ```
 
-The Oracle LAPI accepts connections only from jelly-jumphost's private IP
-(OCI security-list rule plus `/etc/iptables/rules.v4` on monero-jumphost).
-Nothing CrowdSec-related crosses the WireGuard tunnels. Box-level details:
+Each Oracle engine is self-contained and binds to localhost only; nothing
+CrowdSec-related crosses the VCN or the WireGuard tunnels. Box-level details:
 `docs/oracle-wireguard-jumphost.md`.
 
 ## What is deployed
@@ -34,10 +34,8 @@ Nothing CrowdSec-related crosses the WireGuard tunnels. Box-level details:
 |---|---|---|
 | LAPI | this dir, `crowdsec-lapi` Deployment | live, enrolled in Console as `talos-ramhaus` |
 | Log processor | this dir, `crowdsec-agent` Deployment | live, reads VictoriaLogs (no DaemonSet) |
-| Oracle LAPI | monero-jumphost, apt `crowdsec` 1.7.8 (held) | live, enrolled in Console as `oracle-monero-jumphost` |
-| monero-jumphost agent + bouncer | local to the Oracle LAPI | live |
-| jelly-jumphost agent | apt `crowdsec` 1.7.8 (held) | live, machine `oracle-jellyfin-jumphost` on the Oracle LAPI |
-| jelly-jumphost bouncer | `crowdsec-firewall-bouncer-nftables` 0.0.36 (held) | live, bouncer `oracle-fw` on the Oracle LAPI |
+| monero engine | monero-jumphost, apt `crowdsec` 1.7.8 + `crowdsec-firewall-bouncer-nftables` 0.0.36 (held) | live, Console `oracle-monero-jumphost`, bouncer `cs-firewall-bouncer-monero` |
+| jelly engine | jelly-jumphost, same packages (held) | live since 2026-09-14, Console `oracle-jellyfin-jumphost`, bouncer `oracle-fw` |
 | Traefik bouncer | `cluster-services/traefik` (plugin + Middleware) | live, bouncer `traefik-bouncer` |
 | AppSec / WAF | — | not deployed |
 | Cloudflare Worker bouncer | — | not deployed (see Todo) |
@@ -48,9 +46,9 @@ Nothing CrowdSec-related crosses the WireGuard tunnels. Box-level details:
 | Source | Acquisition | Verified working |
 |---|---|---|
 | Traefik access logs (all tunnel apps) | `type: traefik` | yes — HTTP probing / CVE / scanners |
-| Caddy access logs (jellyfin) | file, on jelly-jumphost (Oracle LAPI) | yes |
-| sshd (jelly-jumphost) | journald (Oracle LAPI) | yes — catches real brute force daily |
-| sshd (monero-jumphost) | journald (Oracle LAPI) | **unverified** |
+| Caddy access logs (jellyfin) | file, jelly engine | yes |
+| sshd (jelly-jumphost) | journald, jelly engine | yes — catches real brute force daily |
+| sshd (monero-jumphost) | journald, monero engine | **unverified** |
 | Jellyfin | `type: jellyfin` | yes — end-to-end, real client IP |
 | Immich | `type: immich` | yes — logs real client IP natively |
 | Jellyseerr | `type: jellyseerr` | **unverified** — local auth endpoints 500'd under test |
@@ -60,16 +58,16 @@ Nothing CrowdSec-related crosses the WireGuard tunnels. Box-level details:
 
 - **Tunnel apps** (auth, photos, jellyseerr, status): traefik bouncer plugin.
 - **jellyfin.asandov.com + VPS sshd**: nftables bouncer on each Oracle VPS,
-  fed by the Oracle LAPI. monero-jumphost's bouncer also drops banned IPs on
-  the forwarded monerod P2P path (18080).
+  fed by that VPS's own LAPI. monero-jumphost's bouncer also drops banned IPs
+  on the forwarded monerod P2P path (18080).
 - **Home WAN**: nothing — no inbound forwards, default-deny already covers it.
 
 Cluster LAPI decisions come from our own scenarios plus CAPI (community) and
 three subscribed blocklists (FireHOL GreenSnow, FireHOL BotScout, OTX
 honeypot). ~26k enforced; roughly 24.5k are pre-emptive blocklist entries and
-a handful are live local detections. The Oracle LAPI gets CAPI plus whatever
-`oracle-monero-jumphost` is subscribed to in the Console; subscriptions are
-per engine, so the cluster's three do not carry over.
+a handful are live local detections. Each Oracle engine gets CAPI plus whatever
+it is subscribed to in the Console; subscriptions are per engine, so nothing
+carries over between the three.
 
 ## Operating it
 
@@ -92,24 +90,25 @@ neither. Delete it on the engine that issued it:
 
 ```
 kubectl exec -n crowdsec deploy/crowdsec-lapi -- cscli decisions delete --ip <ip>   # tunnel apps
-ssh oracle-monero-jumphost sudo cscli decisions delete --ip <ip>                   # Oracle VPSes
+ssh oracle-monero-jumphost sudo cscli decisions delete --ip <ip>                   # monero VPS
+ssh oracle-jellyfin-jumphost sudo cscli decisions delete --ip <ip>                 # jellyfin VPS
 ```
 
 Bouncers pick that up within their poll interval (~60s), no git round-trip. If
-an Oracle ban blocks SSH to both VPSes, use the OCI Console's instance console
-connection on monero-jumphost.
+a ban blocks SSH to a VPS, use the OCI Console's instance console connection on
+that VPS (or SSH from the other one over the VCN).
 
-Three allowlists guard against this, and they must be kept in sync by hand:
+Three LAPI allowlists guard against this, kept in sync by hand. Admin IPs are
+never committed to git — they live only in each LAPI's database:
 
 1. **Cluster LAPI** `trusted-admin` (`cscli allowlists inspect trusted-admin`
    in the LAPI pod) — applies to the traefik bouncer. Lives in the LAPI database.
-2. **Oracle LAPI** `trusted-admin`
-   (`ssh oracle-monero-jumphost sudo cscli allowlists inspect trusted-admin`)
-   — applies to both Oracle bouncers. Lives in that LAPI's database.
-3. **Parser whitelist** in `values.yaml` (`config.parsers.s02-enrich`) — GitOps,
-   drops cluster events before they can become alerts.
+2. **monero engine** `trusted-admin`
+   (`ssh oracle-monero-jumphost sudo cscli allowlists inspect trusted-admin`).
+3. **jelly engine** `trusted-admin`
+   (`ssh oracle-jellyfin-jumphost sudo cscli allowlists inspect trusted-admin`).
 
-Home egress is **Starlink CGNAT and rotates**; re-add it on **both** engines
+Home egress is **Starlink CGNAT and rotates**; re-add it on **every** engine
 when it changes: `cscli allowlists add trusted-admin <ip> -d "home"`.
 
 ### Testing a bouncer without banning yourself
@@ -139,6 +138,8 @@ Banned → 403, clean → 200.
   newer than 1.7.8; it is pinned deliberately.
 - **New VMServiceScrapes need a vmagent restart** — its Role can't hot-reload
   and the CR status lies about it.
+- **`cscli bouncers delete <name>` also deletes every `<name>@<ip>` row**, which
+  revokes the key for the live bouncer too. Delete stale `@ip` rows by full name.
 
 ## Known issues
 
