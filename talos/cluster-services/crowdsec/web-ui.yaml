@@ -1,0 +1,193 @@
+# crowdsec-web-ui: one dashboard over the cluster LAPI and both Oracle LAPIs (via crowdsec-lapi-tunnel).
+# Keep the authentik forward-auth middleware: it gates the app's first-run admin setup page.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: crowdsec-web-ui-data
+spec:
+  storageClassName: fast-array
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crowdsec-web-ui
+  labels:
+    app.kubernetes.io/name: crowdsec-web-ui
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crowdsec-web-ui
+  template:
+    metadata:
+      labels:
+        # Matched by crowdsec-lapi-tunnel's NetworkPolicy; renaming cuts off the Oracle engines.
+        app.kubernetes.io/name: crowdsec-web-ui
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: crowdsec-web-ui
+          image: ghcr.io/theduffman85/crowdsec-web-ui:2026.8.3
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: CONFIG_UPDATES_ENABLED
+              value: "false"
+            - name: CONFIG_AUTH_ENABLED
+              value: "true"
+            - name: CONFIG_AUTH_SESSION_SECRET_FILE
+              value: /run/secrets/crowdsec-web-ui/session-secret
+            - name: CONFIG_AUTH_OIDC_ISSUER_URL
+              # Public auth host so the OIDC redirect also works for browsers on crowdsec.asandov.com.
+              value: https://auth.asandov.com/application/o/crowdsec-web-ui/
+            - name: CONFIG_AUTH_OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: crowdsec-web-ui
+                  key: oidc-client-id
+            - name: CONFIG_AUTH_OIDC_CLIENT_SECRET_FILE
+              value: /run/secrets/crowdsec-web-ui/oidc-client-secret
+            - name: CONFIG_AUTH_OIDC_ADMIN_GROUPS_0
+              value: ArgoCD Admins
+            # Instance IDs are the app's database identity for imported history; never rename or reuse them.
+            - name: CONFIG_INSTANCES_0_ID
+              value: cluster
+            - name: CONFIG_INSTANCES_0_NAME
+              value: talos-ramhaus
+            - name: CONFIG_INSTANCES_0_LAPI_URL
+              value: http://crowdsec-service.crowdsec.svc.cluster.local:8080
+            - name: CONFIG_INSTANCES_0_LAPI_AUTH_USERNAME
+              value: crowdsec-web-ui
+            - name: CONFIG_INSTANCES_0_LAPI_AUTH_PASSWORD_FILE
+              value: /run/secrets/crowdsec-web-ui/lapi-password-cluster
+            - name: CONFIG_INSTANCES_1_ID
+              value: jelly
+            - name: CONFIG_INSTANCES_1_NAME
+              value: oracle-jellyfin-jumphost
+            - name: CONFIG_INSTANCES_1_LAPI_URL
+              value: http://jelly.crowdsec-lapi-tunnel.svc.cluster.local:8080
+            - name: CONFIG_INSTANCES_1_LAPI_AUTH_USERNAME
+              value: crowdsec-web-ui
+            - name: CONFIG_INSTANCES_1_LAPI_AUTH_PASSWORD_FILE
+              value: /run/secrets/crowdsec-web-ui/lapi-password-jelly
+            - name: CONFIG_INSTANCES_2_ID
+              value: monero
+            - name: CONFIG_INSTANCES_2_NAME
+              value: oracle-monero-jumphost
+            - name: CONFIG_INSTANCES_2_LAPI_URL
+              value: http://monero.crowdsec-lapi-tunnel.svc.cluster.local:8080
+            - name: CONFIG_INSTANCES_2_LAPI_AUTH_USERNAME
+              value: crowdsec-web-ui
+            - name: CONFIG_INSTANCES_2_LAPI_AUTH_PASSWORD_FILE
+              value: /run/secrets/crowdsec-web-ui/lapi-password-monero
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: secrets
+              mountPath: /run/secrets/crowdsec-web-ui
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: crowdsec-web-ui-data
+        - name: secrets
+          secret:
+            secretName: crowdsec-web-ui
+            defaultMode: 0440
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crowdsec-web-ui
+spec:
+  selector:
+    app.kubernetes.io/name: crowdsec-web-ui
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: crowdsec-web-ui
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+    external-dns.alpha.kubernetes.io/target: 10.0.7.200
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: crowdsec.local.asandov.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: crowdsec-web-ui
+                port:
+                  name: http
+  tls:
+    - secretName: crowdsec-web-ui-local-tls
+      hosts:
+        - crowdsec.local.asandov.com
+---
+# Public host via cloudflared -> traefik `tunnel` entrypoint (traefik/resources/public-tunnel-ingress.yaml).
+# Must use the public-proxy outpost middleware: the embedded outpost redirects to auth.local, unreachable from the internet.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: crowdsec-web-ui-public
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: tunnel
+    traefik.ingress.kubernetes.io/router.middlewares: traefik-crowdsec-bouncer@kubernetescrd,authentik-ak-outpost-public-proxy@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: crowdsec.asandov.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: crowdsec-web-ui
+                port:
+                  name: http
