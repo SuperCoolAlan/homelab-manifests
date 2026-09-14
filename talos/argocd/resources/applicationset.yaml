@@ -32,6 +32,8 @@ spec:
           # PodSecurity-privileged namespace for NET_ADMIN, and jellyfin itself
           # should stay on baseline.
           - path: talos/jellyfin-tunnel
+          # WireGuard peers letting crowdsec-web-ui reach the Oracle LAPIs (privileged ns for NET_ADMIN)
+          - path: talos/crowdsec-lapi-tunnel
           - path: talos/media-v2
           - path: talos/qbittorrent
           # Tracearr

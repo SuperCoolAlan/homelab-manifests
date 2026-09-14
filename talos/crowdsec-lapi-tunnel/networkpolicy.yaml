@@ -1,0 +1,78 @@
+# These forwarders are the only path into the Oracle LAPIs; admit just crowdsec-web-ui and gatus.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: from-crowdsec-web-ui
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: crowdsec-lapi-tunnel
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: crowdsec
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: crowdsec-web-ui
+        # Gatus probes /health on each Oracle LAPI.
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: status
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: gatus
+      ports:
+        - port: lapi
+          protocol: TCP
+---
+# WireGuard UDP is the only egress; LAPI traffic rides inside it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jelly-wireguard-egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: crowdsec-lapi-tunnel
+      app.kubernetes.io/instance: jelly
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 163.192.195.190/32
+      ports:
+        - port: 51820
+          protocol: UDP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: monero-wireguard-egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: crowdsec-lapi-tunnel
+      app.kubernetes.io/instance: monero
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 147.224.205.227/32
+      ports:
+        - port: 51820
+          protocol: UDP

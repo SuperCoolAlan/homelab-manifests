@@ -5,6 +5,7 @@ namespace: crowdsec
 
 resources:
   - namespace.yaml
+  - web-ui.yaml
 
 generators:
   - secrets-generator.yaml
