@@ -1,0 +1,115 @@
+# Logs arrive inside wg0 and never touch these rules; they govern only the pod network side.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: telemetry
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: oracle-telemetry
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: vmagent
+      ports:
+        - port: node-metrics
+          protocol: TCP
+  egress:
+    # nginx re-resolves VictoriaLogs' headless Service.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: victoria-logs-single
+              app.kubernetes.io/instance: victoria-logs
+      ports:
+        - port: 9428
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jelly-wireguard-egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: oracle-telemetry
+      app.kubernetes.io/instance: jelly
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 163.192.195.190/32
+      ports:
+        - port: 51820
+          protocol: UDP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: monero-wireguard-egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: oracle-telemetry
+      app.kubernetes.io/instance: monero
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 147.224.205.227/32
+      ports:
+        - port: 51820
+          protocol: UDP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: snowflake-wireguard-egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: oracle-telemetry
+      app.kubernetes.io/instance: snowflake
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 170.9.244.226/32
+      ports:
+        - port: 51820
+          protocol: UDP

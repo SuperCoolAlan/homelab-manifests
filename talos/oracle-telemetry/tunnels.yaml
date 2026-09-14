@@ -1,0 +1,418 @@
+# One pod per Oracle VPS (all of them are 10.100.0.1 on wg0, so one netns can't route to more than one).
+#   metrics: vmagent -> Service :9100 -> socat -> wg0 -> VPS node-exporter at 10.100.0.1:9100
+#   logs:    VPS systemd-journal-upload -> wg0 -> nginx :9428 (insert-only) -> VictoriaLogs
+# Peer IPs (.8 jelly, .9 monero, .10 snowflake) are hardcoded in each VPS's wg0.conf, journal-upload URL,
+# 9100 INPUT accept and 9428 wg0 output accept.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jelly
+  labels:
+    app.kubernetes.io/name: oracle-telemetry
+    app.kubernetes.io/instance: jelly
+spec:
+  # Exactly one: two pods presenting the same key would flap the VPS's single peer endpoint.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oracle-telemetry
+      app.kubernetes.io/instance: jelly
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oracle-telemetry
+        app.kubernetes.io/instance: jelly
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      initContainers:
+        - name: wg-up
+          image: linuxserver/wireguard:1.0.20260223
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              umask 077
+              cat > /tmp/wg.conf <<EOF
+              [Interface]
+              PrivateKey = $(cat /secrets/jelly)
+
+              [Peer]
+              PublicKey = wmYukGZetdwvr7odYv0BoonsCdz3UmXSqsz9hrrvfXI=
+              AllowedIPs = 10.100.0.1/32
+              Endpoint = 163.192.195.190:51820
+              PersistentKeepalive = 25
+              EOF
+              # Not wg-quick: it rewrites resolv.conf and routes, breaking cluster DNS in the pod.
+              ip link add wg0 type wireguard
+              wg setconf wg0 /tmp/wg.conf
+              ip address add 10.100.0.8/32 dev wg0
+              ip link set wg0 mtu 1370 up
+              ip route add 10.100.0.1/32 dev wg0
+              rm -f /tmp/wg.conf
+              wg show wg0
+          volumeMounts:
+            - name: wg-keys
+              mountPath: /secrets
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: node-metrics
+          image: alpine/socat:1.8.1.3
+          args:
+            - -d
+            - TCP-LISTEN:9100,fork,reuseaddr
+            - TCP:10.100.0.1:9100
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+          ports:
+            - name: node-metrics
+              containerPort: 9100
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+        - name: journald-ingest
+          image: nginxinc/nginx-unprivileged:1.30.4-alpine@sha256:adf5042a17f4ecdd200c595fa9ffd1be37efb18f89a830bd1a00e4ab4d59d42c
+          # Skip the image entrypoint scripts; they try to rewrite config on a read-only root.
+          command: ["nginx", "-g", "daemon off;"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 101
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: wg-keys
+          secret:
+            secretName: oracle-telemetry-wg-keys
+            defaultMode: 0400
+        - name: nginx-conf
+          configMap:
+            name: journald-ingest
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monero
+  labels:
+    app.kubernetes.io/name: oracle-telemetry
+    app.kubernetes.io/instance: monero
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oracle-telemetry
+      app.kubernetes.io/instance: monero
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oracle-telemetry
+        app.kubernetes.io/instance: monero
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      initContainers:
+        - name: wg-up
+          image: linuxserver/wireguard:1.0.20260223
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              umask 077
+              cat > /tmp/wg.conf <<EOF
+              [Interface]
+              PrivateKey = $(cat /secrets/monero)
+
+              [Peer]
+              PublicKey = rE+qZRl4LnX8iG4wUTUxj+jVRMhqLlvP8kpH8vrzMQM=
+              AllowedIPs = 10.100.0.1/32
+              Endpoint = 147.224.205.227:51820
+              PersistentKeepalive = 25
+              EOF
+              ip link add wg0 type wireguard
+              wg setconf wg0 /tmp/wg.conf
+              ip address add 10.100.0.9/32 dev wg0
+              ip link set wg0 mtu 1370 up
+              ip route add 10.100.0.1/32 dev wg0
+              rm -f /tmp/wg.conf
+              wg show wg0
+          volumeMounts:
+            - name: wg-keys
+              mountPath: /secrets
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: node-metrics
+          image: alpine/socat:1.8.1.3
+          args:
+            - -d
+            - TCP-LISTEN:9100,fork,reuseaddr
+            - TCP:10.100.0.1:9100
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+          ports:
+            - name: node-metrics
+              containerPort: 9100
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+        - name: journald-ingest
+          image: nginxinc/nginx-unprivileged:1.30.4-alpine@sha256:adf5042a17f4ecdd200c595fa9ffd1be37efb18f89a830bd1a00e4ab4d59d42c
+          command: ["nginx", "-g", "daemon off;"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 101
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: wg-keys
+          secret:
+            secretName: oracle-telemetry-wg-keys
+            defaultMode: 0400
+        - name: nginx-conf
+          configMap:
+            name: journald-ingest
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snowflake
+  labels:
+    app.kubernetes.io/name: oracle-telemetry
+    app.kubernetes.io/instance: snowflake
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oracle-telemetry
+      app.kubernetes.io/instance: snowflake
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oracle-telemetry
+        app.kubernetes.io/instance: snowflake
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      initContainers:
+        - name: wg-up
+          image: linuxserver/wireguard:1.0.20260223
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              umask 077
+              cat > /tmp/wg.conf <<EOF
+              [Interface]
+              PrivateKey = $(cat /secrets/snowflake)
+
+              [Peer]
+              PublicKey = B31LFquE549qd8JW4zGS7b1XsVNIPI/mS29xFVhRDkA=
+              AllowedIPs = 10.100.0.1/32
+              Endpoint = 170.9.244.226:51820
+              PersistentKeepalive = 25
+              EOF
+              ip link add wg0 type wireguard
+              wg setconf wg0 /tmp/wg.conf
+              ip address add 10.100.0.10/32 dev wg0
+              ip link set wg0 mtu 1370 up
+              ip route add 10.100.0.1/32 dev wg0
+              rm -f /tmp/wg.conf
+              wg show wg0
+          volumeMounts:
+            - name: wg-keys
+              mountPath: /secrets
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: node-metrics
+          image: alpine/socat:1.8.1.3
+          args:
+            - -d
+            - TCP-LISTEN:9100,fork,reuseaddr
+            - TCP:10.100.0.1:9100
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+          ports:
+            - name: node-metrics
+              containerPort: 9100
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+        - name: journald-ingest
+          image: nginxinc/nginx-unprivileged:1.30.4-alpine@sha256:adf5042a17f4ecdd200c595fa9ffd1be37efb18f89a830bd1a00e4ab4d59d42c
+          command: ["nginx", "-g", "daemon off;"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 101
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: wg-keys
+          secret:
+            secretName: oracle-telemetry-wg-keys
+            defaultMode: 0400
+        - name: nginx-conf
+          configMap:
+            name: journald-ingest
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jelly
+  labels:
+    app.kubernetes.io/name: oracle-telemetry
+    app.kubernetes.io/instance: jelly
+spec:
+  selector:
+    app.kubernetes.io/name: oracle-telemetry
+    app.kubernetes.io/instance: jelly
+  ports:
+    - name: node-metrics
+      port: 9100
+      targetPort: node-metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: monero
+  labels:
+    app.kubernetes.io/name: oracle-telemetry
+    app.kubernetes.io/instance: monero
+spec:
+  selector:
+    app.kubernetes.io/name: oracle-telemetry
+    app.kubernetes.io/instance: monero
+  ports:
+    - name: node-metrics
+      port: 9100
+      targetPort: node-metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snowflake
+  labels:
+    app.kubernetes.io/name: oracle-telemetry
+    app.kubernetes.io/instance: snowflake
+spec:
+  selector:
+    app.kubernetes.io/name: oracle-telemetry
+    app.kubernetes.io/instance: snowflake
+  ports:
+    - name: node-metrics
+      port: 9100
+      targetPort: node-metrics

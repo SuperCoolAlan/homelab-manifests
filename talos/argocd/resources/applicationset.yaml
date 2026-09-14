@@ -56,6 +56,8 @@ spec:
           - path: talos/p2pool
           # Tor Snowflake proxy (anti-censorship), egress locked to the internet
           - path: talos/snowflake
+          # Oracle VPS node metrics (pulled) and journald (pushed, insert-only) over WireGuard (privileged ns for NET_ADMIN)
+          - path: talos/oracle-telemetry
           # Security scanning
           - path: talos/security/*
           # Virtual machines (KubeVirt)
