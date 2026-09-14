@@ -155,7 +155,8 @@ the pod's egress, so peers see `147.224.205.227` as the node's address.
 | INPUT / FORWARD accepts | `/etc/iptables/rules.v4` only, ahead of the image's reject |
 | OCI NSG `monero-jumphost` | ingress TCP 18080 and TCP 37888 from 0.0.0.0/0; attached to this instance's VNIC only |
 | OCI security list (shared with jellyfin box) | UDP 51820 from 0.0.0.0/0. 18080 was removed from it 2026-09-13 so the jellyfin box is closed on it at the cloud layer; previous rules backed up before the change |
-| CrowdSec engine | LAPI on `127.0.0.1:8080` (`/etc/crowdsec/config.yaml.local`), this VPS only; jelly-jumphost runs its own since 2026-09-14. See `talos/cluster-services/crowdsec/README.md` |
+| CrowdSec engine | LAPI on `0.0.0.0:8080` (`/etc/crowdsec/config.yaml.local`), this VPS only; jelly-jumphost runs its own since 2026-09-14. See `talos/cluster-services/crowdsec/README.md` |
+| crowdsec-web-ui peer | wg0 `[Peer]` `10.100.0.6/32` (talos/crowdsec-lapi-tunnel) and `-A INPUT -s 10.100.0.6/32 -i wg0 ... --dport 8080 -j ACCEPT` in `rules.v4`. jelly-jumphost has the same with `10.100.0.5`, in both `rules.v4` and `/etc/nftables.conf`. Removing either rule blanks that engine in the web UI |
 
 `/etc/nftables.conf` must not `flush ruleset`: `netfilter-persistent` owns
 `table ip filter`, and a flush at boot would wipe the FORWARD accepts.

@@ -37,6 +37,8 @@ CrowdSec-related crosses the VCN or the WireGuard tunnels. Box-level details:
 | monero engine | monero-jumphost, apt `crowdsec` 1.7.8 + `crowdsec-firewall-bouncer-nftables` 0.0.36 (held) | live, Console `oracle-monero-jumphost`, bouncer `cs-firewall-bouncer-monero` |
 | jelly engine | jelly-jumphost, same packages (held) | live since 2026-09-14, Console `oracle-jellyfin-jumphost`, bouncer `oracle-fw` |
 | Traefik bouncer | `cluster-services/traefik` (plugin + Middleware) | live, bouncer `traefik-bouncer` |
+| Web UI | this dir, `web-ui.yaml` (crowdsec-web-ui) | `crowdsec.local.asandov.com`, machine `crowdsec-web-ui` on all three LAPIs |
+| LAPI tunnel peers | `talos/crowdsec-lapi-tunnel` | WG peers `10.100.0.5` (jelly) / `10.100.0.6` (monero); only path into the Oracle LAPIs |
 | AppSec / WAF | — | not deployed |
 | Cloudflare Worker bouncer | — | not deployed (see Todo) |
 | OPNsense satellite | — | not deployed |
@@ -71,8 +73,20 @@ carries over between the three.
 
 ## Operating it
 
-There is **no web UI** in chart 0.24.x — the old Metabase dashboard is gone.
-Visibility comes from three places:
+**crowdsec-web-ui** at `crowdsec.local.asandov.com` and `crowdsec.asandov.com`
+shows all three engines in one place (authentik forward-auth, then OIDC via
+auth.asandov.com; "ArgoCD Admins" get admin). The public host's forward-auth
+comes from the authentik-managed `public-proxy` outpost (provider
+`crowdsec-public`, deployment `ak-outpost-public-proxy`, not in git) because
+the embedded outpost redirects browsers to auth.local.asandov.com. It
+reaches the Oracle LAPIs through `talos/crowdsec-lapi-tunnel`: one WireGuard
+peer pod per VPS, a NetworkPolicy that admits only the web-ui pod, and a VPS
+INPUT rule that accepts 8080 only from that peer. The Oracle LAPIs listen on
+`0.0.0.0:8080`; the host firewall and the OCI security list (no 8080 rule) are
+what keep them off the internet. Alert deletion from the UI is intentionally
+unavailable (no `trusted_ips` entry); decisions work.
+
+Visibility also comes from:
 
 - **Grafana** → Security → CrowdSec Overview (ServiceMonitors feed VM).
 - **Console** at app.crowdsec.net — alerts with geo/AS enrichment.

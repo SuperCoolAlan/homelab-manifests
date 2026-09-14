@@ -1,0 +1,9 @@
+# Privileged only because wg-up needs NET_ADMIN; keep the forwarders themselves unprivileged.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: crowdsec-lapi-tunnel
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
