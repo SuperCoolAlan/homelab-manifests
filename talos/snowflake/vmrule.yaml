@@ -15,7 +15,7 @@ spec:
             alertgroup: homelab
           annotations:
             summary: Snowflake proxy is down
-            description: The Tor Snowflake proxy in namespace snowflake has not been scraped successfully for 15m.
+            description: The Oracle Snowflake proxy has not been scraped for 15m. Check the wg0 handshake, then snowflake-proxy and snowflake-egress-guard on oracle-snowflake-jumphost.
         - alert: SnowflakeProxyNoClients
           expr: increase(tor_snowflake_proxy_connections_total[6h]) == 0
           for: 1h
@@ -24,4 +24,4 @@ spec:
             alertgroup: homelab
           annotations:
             summary: Snowflake proxy served no clients in 6h
-            description: The proxy is up but the broker has handed it no clients; check its logs for NAT type and broker errors.
+            description: The proxy is up but the broker has handed it no clients; check its journal on oracle-snowflake-jumphost for NAT type and broker errors.
