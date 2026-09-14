@@ -8,6 +8,18 @@ resources:
   - ingress.yaml
   - pvc-ssd.yaml
 
+# The API rejects type Recreate while the live rollingUpdate block remains; the chart can't emit this null.
+patches:
+  - target:
+      kind: Deployment
+      name: gatus
+    patch: |
+      - op: replace
+        path: /spec/strategy
+        value:
+          type: Recreate
+          rollingUpdate: null
+
 helmCharts:
   - name: gatus
     repo: https://twin.github.io/helm-charts
@@ -15,6 +27,9 @@ helmCharts:
     releaseName: gatus
     namespace: status
     valuesInline:
+      # RWO ZFS volume: a RollingUpdate surge pod can never mount it while the old pod holds it.
+      deployment:
+        strategy: Recreate
       nodeSelector:
         kubernetes.io/hostname: talos-ramhaus
       persistence:
