@@ -1,0 +1,9 @@
+# Privileged only because wg-up needs NET_ADMIN; the forwarders themselves stay unprivileged.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oracle-telemetry
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged

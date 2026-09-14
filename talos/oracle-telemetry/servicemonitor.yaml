@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: oracle-node
+  labels:
+    app.kubernetes.io/name: oracle-telemetry
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oracle-telemetry
+  endpoints:
+    - port: node-metrics
+      interval: 60s
+      relabelings:
+        # Every VPS scrapes as the same socat target shape; name series after the VPS, not the pod.
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: instance
+        - targetLabel: job
+          replacement: oracle-node

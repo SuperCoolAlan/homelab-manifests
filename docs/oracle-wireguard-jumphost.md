@@ -232,6 +232,54 @@ ssh oracle-snowflake-jumphost 'vnstat -m -i enp0s6; tc -s qdisc show dev enp0s6 
 ssh oracle-snowflake-jumphost 'sudo wg show wg0'               # handshake for WzQX…
 ```
 
+## Oracle telemetry (all three boxes)
+
+Added 2026-09-14. Each VPS gets one more WireGuard peer, a pod in
+`talos/oracle-telemetry`:
+
+| VPS | Peer | Pod pubkey |
+|---|---|---|
+| jelly-jumphost | `10.100.0.8` | `7nkSNZABpwn43FYr07Ge7RJAIjRywELaSWdC31a2n2s=` |
+| monero-jumphost | `10.100.0.9` | `z95Kwa4GhiMI707V78rbRIc00IoxuFxoOMSQ4SriQRE=` |
+| snowflake-jumphost | `10.100.0.10` | `OPglLmGEvHQjLidsCRnXIloKlXtbNApHUMly5CIT4WQ=` |
+
+**Metrics (pull).** `prometheus-node-exporter` listens on `10.100.0.1:9100`
+only (`/etc/default/prometheus-node-exporter`, drop-in ordering it after
+`wg-quick@wg0`). vmagent scrapes the pod's socat, `job="oracle-node"`,
+`instance` = jelly / monero / snowflake. INPUT accepts 9100 from the peer only:
+`rules.v4` on all boxes, plus `/etc/nftables.conf` on jelly.
+
+**Logs (push).** `systemd-journal-upload` sends the whole journal to
+`http://<peer>:9428/insert/journald`
+(`/etc/systemd/journal-upload.conf.d/victorialogs.conf`). This is the one place
+a VPS may open a connection into wg0, and only to its own peer on 9428:
+
+| VPS | wg0 output accept |
+|---|---|
+| jelly | `/etc/nftables.conf`, table `wg_restrict` |
+| monero | `/etc/nftables-monerod.nft`, table `monerod_gw` output chain |
+| snowflake | `/etc/nftables-wg-restrict.nft` |
+
+On the pod side nginx accepts only `POST /insert/journald/upload` from
+`10.100.0.1` and 403s everything else, because VictoriaLogs' 9428 also serves the
+query and delete APIs. A compromised VPS can append logs but not read or delete
+them. VictoriaLogs stays ClusterIP; nothing is published.
+
+journal-upload keeps its cursor in `/var/lib/private/systemd/journal-upload/state`
+and resumes after tunnel outages. That file was seeded with the journal tail at
+setup: without a cursor journal-upload ships the entire journal from the start
+(2 GB on jelly). Delete it only if you want that backfill.
+
+`systemd-journal-remote.service`/`.socket` from the same package stay masked;
+nothing here listens for remote journals. Pre-change copies are `*.bak-20260914`.
+
+```bash
+kubectl -n oracle-telemetry get pods
+ssh oracle-monero-jumphost 'systemctl status systemd-journal-upload --no-pager | tail -3'
+ssh oracle-monero-jumphost 'curl -s -o /dev/null -w "%{http_code}\n" http://10.100.0.9:9428/select/logsql/query'  # expect 403
+# VictoriaLogs: _stream:{_HOSTNAME="monero-jumphost-20260910"}   VictoriaMetrics: up{job="oracle-node"}
+```
+
 ## DNS
 
 `jellyfin.asandov.com` → `163.192.195.190` in Cloudflare, **DNS Only** (grey
