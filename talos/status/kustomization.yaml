@@ -53,7 +53,7 @@ helmCharts:
               - "[STATUS] == 200"
           # Lands on the authentik login after the forward-auth redirect.
           - name: CrowdSec
-            group: Public
+            group: CrowdSec
             url: https://crowdsec.asandov.com
             interval: 60s
             conditions:
@@ -67,28 +67,28 @@ helmCharts:
             interval: 60s
             conditions:
               - "[STATUS] == 200"
-          # Security. Oracle LAPIs are reached through talos/crowdsec-lapi-tunnel, whose
+          # CrowdSec. Oracle LAPIs are reached through talos/crowdsec-lapi-tunnel, whose
           # NetworkPolicy must keep admitting gatus or these read as down.
           - name: CrowdSec Web UI
-            group: Security
+            group: CrowdSec
             url: http://crowdsec-web-ui.crowdsec.svc.cluster.local:3000/api/health
             interval: 60s
             conditions:
               - "[STATUS] == 200"
           - name: CrowdSec LAPI (cluster)
-            group: Security
+            group: CrowdSec
             url: http://crowdsec-service.crowdsec.svc.cluster.local:8080/health
             interval: 60s
             conditions:
               - "[STATUS] == 200"
           - name: CrowdSec LAPI (jellyfin jumphost)
-            group: Security
+            group: CrowdSec
             url: http://jelly.crowdsec-lapi-tunnel.svc.cluster.local:8080/health
             interval: 60s
             conditions:
               - "[STATUS] == 200"
           - name: CrowdSec LAPI (monero jumphost)
-            group: Security
+            group: CrowdSec
             url: http://monero.crowdsec-lapi-tunnel.svc.cluster.local:8080/health
             interval: 60s
             conditions:
