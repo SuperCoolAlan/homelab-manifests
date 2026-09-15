@@ -1,8 +1,0 @@
-# TEMPORARY: holds the volume unmounted for the ssd->fast copy; namespace is required or kustomize fails.
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: maintainerr
-  namespace: maintainerr
-spec:
-  replicas: 0

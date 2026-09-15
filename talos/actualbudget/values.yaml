@@ -7,10 +7,8 @@ image:
 
 persistence:
   enabled: true
-  # Migrated off TrueNAS 2026-08-09. The old PV was reclaimPolicy Delete and was
-  # patched to Retain first, so rollback (pointing back at actualbudget-data)
-  # still has its data.
-  existingClaim: actualbudget-data-ssd
+  # On fast-array since 2026-09-15; actualbudget-data-ssd is the rollback until dropped.
+  existingClaim: actualbudget-data-fast
   accessModes:
     - ReadWriteOnce
   size: 5Gi
