@@ -16,25 +16,7 @@ env:
   PGID: "3001"
   TZ: "America/Chicago"
 
-# Use chart's built-in gluetun, patch adds envFrom for secrets
-gluetun:
-  enabled: true
-  image:
-    tag: "v3.41.0"
-  env:
-    DOT: "off"
-    BLOCK_MALICIOUS: "off"
-    BLOCK_SURVEILLANCE: "off"
-    BLOCK_ADS: "off"
-    TZ: "America/Chicago"
-    VPN_SERVICE_PROVIDER: "custom"
-    VPN_TYPE: "wireguard"
-    HEALTH_VPN_DURATION_INITIAL: "10s"
-    HEALTH_VPN_DURATION_ADDITION: "5s"
-    FIREWALL: "off"
-    FIREWALL_OUTBOUND_SUBNETS: "10.0.0.0/8"
-    FIREWALL_INPUT_PORTS: "8080,12802"
-    FIREWALL_VPN_INPUT_PORTS: "12802"
+# VPN sidecar lives in patches/gluetun-secrets-dns.yaml; chart 2.x ignores a top-level gluetun: block.
 
 # Persistence
 persistence:
