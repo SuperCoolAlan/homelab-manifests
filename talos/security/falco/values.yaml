@@ -37,3 +37,8 @@ customRules:
       condition: (container.id = runtime and proc.pname = containerd and proc.exepath startswith /opt/cni/bin/)
       override:
         condition: replace
+    # nvidia-container-toolkit's runtime hook runs ldconfig from a memfd while starting every GPU container.
+    - macro: known_memfd_execution_processes
+      condition: or (container.id = runtime and proc.pname = "nvidia-containe" and proc.exepath = "memfd:/usr/local/glibc/sbin/ldconfig")
+      override:
+        condition: append
