@@ -585,6 +585,18 @@ configMapGenerator:
         grafana_folder: "Tor"
     files:
       - dashboards/Tor/snowflake.json
+
+  # Tor obfs4 bridge + Psiphon Conduit (hand-built), both on snowflake-jumphost via talos/snowflake's forwarders.
+  - name: dashboard-tor-bridge-conduit
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Tor"
+    files:
+      - dashboards/Tor/bridge-conduit.json
 #
 #   # Starlink
 #   - name: dashboard-starlink

@@ -1,0 +1,378 @@
+{
+  "title": "Tor Bridge & Conduit",
+  "uid": "tor-bridge-conduit",
+  "tags": ["tor", "psiphon", "conduit"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "time": { "from": "now-24h", "to": "now" },
+  "refresh": "1m",
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [
+    { "title": "Tor Snowflake", "type": "link", "url": "/d/tor-snowflake/tor-snowflake", "icon": "dashboard" }
+  ],
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Psiphon Conduit",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "panels": []
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Connected now",
+      "description": "Psiphon users relaying through Conduit right now.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 4, "x": 0, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(conduit_connected_clients{job=\"conduit\"})", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value", "justifyMode": "center" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Relayed",
+      "description": "Bytes Conduit relayed (download + upload) over the selected range. Conduit's byte gauges restart at zero with the service; increase() absorbs that.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 5, "x": 4, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(increase(conduit_bytes_downloaded{job=\"conduit\"}[$__range])) + sum(increase(conduit_bytes_uploaded{job=\"conduit\"}[$__range]))", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value", "justifyMode": "center" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 2, "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Countries reached",
+      "description": "Regions with Conduit traffic over the selected range.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 5, "x": 9, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "count(sum by (region) (increase(conduit_region_bytes_downloaded{job=\"conduit\"}[$__range])) > 0)", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value", "justifyMode": "center" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Relaying now",
+      "description": "Conduit throughput, both directions, 5m average. Conduit is capped at 10 Mbit/s (--bandwidth 10).",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 5, "x": 14, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "(sum(rate(conduit_bytes_downloaded{job=\"conduit\"}[5m])) + sum(rate(conduit_bytes_uploaded{job=\"conduit\"}[5m]))) * 8", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "value", "graphMode": "none", "textMode": "value", "justifyMode": "center" },
+      "fieldConfig": { "defaults": { "unit": "bps", "decimals": 1, "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Broker",
+      "description": "Whether Conduit is connected to the Psiphon broker.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 5, "x": 19, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "max(conduit_is_live{job=\"conduit\"})", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value", "justifyMode": "center" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "Offline", "color": "red" }, "1": { "text": "Live", "color": "green" } } },
+            { "type": "special", "options": { "match": "null", "result": { "text": "No data", "color": "red" } } }
+          ],
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Clients",
+      "description": "Connected clients are relaying; connecting clients are mid-handshake.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(conduit_connected_clients{job=\"conduit\"})", "legendFormat": "connected", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(conduit_connecting_clients{job=\"conduit\"})", "legendFormat": "connecting", "refId": "B" }
+      ],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "min": 0, "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "showPoints": "never", "spanNulls": true }, "color": { "mode": "palette-classic" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "connected" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "connecting" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Conduit throughput",
+      "description": "5m average. Download is plotted above the axis, upload below.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(rate(conduit_bytes_downloaded{job=\"conduit\"}[5m])) * 8", "legendFormat": "download", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "-sum(rate(conduit_bytes_uploaded{job=\"conduit\"}[5m])) * 8", "legendFormat": "upload", "refId": "B" }
+      ],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "fieldConfig": {
+        "defaults": { "unit": "bps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 25, "gradientMode": "opacity", "showPoints": "never", "spanNulls": true }, "color": { "mode": "palette-classic" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "download" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }] },
+          { "matcher": { "id": "byName", "options": "upload" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "type": "geomap",
+      "title": "Where Conduit traffic goes",
+      "description": "Bytes relayed per client region over the selected range.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 12, "w": 16, "x": 0, "y": 14 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (region) (increase(conduit_region_bytes_downloaded{job=\"conduit\"}[$__range]) + increase(conduit_region_bytes_uploaded{job=\"conduit\"}[$__range])) > 0", "format": "table", "instant": true, "refId": "A" }
+      ],
+      "transformations": [ { "id": "organize", "options": { "excludeByName": { "Time": true } } } ],
+      "options": {
+        "view": { "id": "zero", "lat": 20, "lon": 30, "zoom": 1.3 },
+        "controls": { "showZoom": true, "mouseWheelZoom": false, "showAttribution": false },
+        "basemap": {
+          "type": "esri-xyz",
+          "name": "Basemap",
+          "config": {
+            "server": "custom",
+            "url": "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+            "attribution": "Tiles © Esri"
+          }
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "Relayed",
+            "location": { "mode": "lookup", "lookup": "region", "gazetteer": "public/gazetteer/countries.json" },
+            "config": {
+              "showLegend": true,
+              "style": {
+                "size": { "field": "Value", "fixed": 5, "min": 4, "max": 30 },
+                "color": { "field": "Value" },
+                "opacity": 0.6,
+                "symbol": { "mode": "fixed", "fixed": "img/icons/marker/circle.svg" }
+              }
+            },
+            "tooltip": true
+          }
+        ],
+        "tooltip": { "mode": "details" }
+      },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1, "color": { "mode": "continuous-BlPu" } }, "overrides": [] }
+    },
+    {
+      "id": 9,
+      "type": "bargauge",
+      "title": "Top regions",
+      "description": "Bytes relayed per client region over the selected range.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 12, "w": 8, "x": 16, "y": 14 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sort_desc(topk(15, sum by (region) (increase(conduit_region_bytes_downloaded{job=\"conduit\"}[$__range]) + increase(conduit_region_bytes_uploaded{job=\"conduit\"}[$__range])) > 0))", "legendFormat": "{{region}}", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "orientation": "horizontal", "displayMode": "gradient", "showUnfilled": true, "valueMode": "color", "namePlacement": "left", "sizing": "auto" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1, "min": 0, "color": { "mode": "continuous-BlPu" } }, "overrides": [] }
+    },
+    {
+      "id": 101,
+      "type": "row",
+      "title": "Tor obfs4 bridge",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 },
+      "panels": []
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Bridge",
+      "description": "Whether tor's MetricsPort answers. BridgeDB hands a new bridge out gradually, so expect little traffic in its first weeks.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 4, "x": 0, "y": 27 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "max(up{job=\"tor-bridge\"})", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value", "justifyMode": "center" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "Down", "color": "red" }, "1": { "text": "Up", "color": "green" } } },
+            { "type": "special", "options": { "match": "null", "result": { "text": "No data", "color": "red" } } }
+          ],
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Relayed",
+      "description": "Bytes the bridge read plus wrote over the selected range.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 5, "x": 4, "y": 27 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(increase(tor_relay_traffic_bytes{job=\"tor-bridge\"}[$__range]))", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value", "justifyMode": "center" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 2, "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] }
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "Open circuits",
+      "description": "Circuits currently open through the bridge (tor_relay_circuits_total is a gauge despite the name).",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 5, "x": 9, "y": 27 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(tor_relay_circuits_total{job=\"tor-bridge\", state=\"opened\"})", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value", "justifyMode": "center" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "Client connections",
+      "description": "Inbound connections open on the bridge: obfs4 users arrive as Extended OR, plain ORPort as OR.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 5, "x": 14, "y": 27 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(tor_relay_connections{job=\"tor-bridge\", type=~\"OR|Extended OR\", direction=\"received\", state=\"opened\"})", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value", "justifyMode": "center" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "Relaying now",
+      "description": "Bridge throughput, read plus written, 5m average.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 5, "x": 19, "y": 27 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(rate(tor_relay_traffic_bytes{job=\"tor-bridge\"}[5m])) * 8", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "value", "graphMode": "none", "textMode": "value", "justifyMode": "center" },
+      "fieldConfig": { "defaults": { "unit": "bps", "decimals": 1, "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] }
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Bridge throughput",
+      "description": "5m average. Written is plotted above the axis, read below.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(rate(tor_relay_traffic_bytes{job=\"tor-bridge\", direction=\"written\"}[5m])) * 8", "legendFormat": "written", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "-sum(rate(tor_relay_traffic_bytes{job=\"tor-bridge\", direction=\"read\"}[5m])) * 8", "legendFormat": "read", "refId": "B" }
+      ],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "fieldConfig": {
+        "defaults": { "unit": "bps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 25, "gradientMode": "opacity", "showPoints": "never", "spanNulls": true }, "color": { "mode": "palette-classic" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "written" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }] },
+          { "matcher": { "id": "byName", "options": "read" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] }
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "Circuits and client connections",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(tor_relay_circuits_total{job=\"tor-bridge\", state=\"opened\"})", "legendFormat": "open circuits", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(tor_relay_connections{job=\"tor-bridge\", type=~\"OR|Extended OR\", direction=\"received\", state=\"opened\"})", "legendFormat": "client connections", "refId": "B" }
+      ],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "min": 0, "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "showPoints": "never", "spanNulls": true }, "color": { "mode": "palette-classic" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "open circuits" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "client connections" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] }
+        ]
+      }
+    },
+    {
+      "id": 102,
+      "type": "row",
+      "title": "snowflake-jumphost egress (all three relays)",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 40 },
+      "panels": []
+    },
+    {
+      "id": 17,
+      "type": "timeseries",
+      "title": "Box egress vs 20 Mbit/s cap",
+      "description": "Everything enp0s6 transmits: Snowflake, the bridge and Conduit share the tc cake cap (dashed line).",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 41 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(rate(node_network_transmit_bytes_total{job=\"oracle-node\", instance=\"snowflake\", device=\"enp0s6\"}[$__rate_interval])) * 8", "legendFormat": "box egress", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(rate(conduit_bytes_downloaded{job=\"conduit\"}[5m]) + rate(conduit_bytes_uploaded{job=\"conduit\"}[5m])) * 8", "legendFormat": "conduit (both directions)", "refId": "B" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(rate(tor_relay_traffic_bytes{job=\"tor-bridge\"}[5m])) * 8", "legendFormat": "tor bridge (both directions)", "refId": "C" }
+      ],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never", "spanNulls": true, "thresholdsStyle": { "mode": "dashed" } },
+          "color": { "mode": "palette-classic" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "transparent", "value": null }, { "color": "red", "value": 20000000 } ] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "box egress" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }, { "id": "custom.lineWidth", "value": 2 }] },
+          { "matcher": { "id": "byName", "options": "conduit (both directions)" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "tor bridge (both directions)" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] }
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "type": "gauge",
+      "title": "Box egress, last 30d",
+      "description": "enp0s6 transmit on the Oracle instance. snowflake-egress-guard stops all three relays at 7 TB in a calendar month; this is a rolling 30 days.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 41 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(increase(node_network_transmit_bytes_total{job=\"oracle-node\", instance=\"snowflake\", device=\"enp0s6\"}[30d]))", "instant": true, "refId": "A" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdMarkers": true, "showThresholdLabels": false },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes",
+          "decimals": 2,
+          "min": 0,
+          "max": 7000000000000,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 5000000000000 }, { "color": "red", "value": 6500000000000 } ] }
+        },
+        "overrides": []
+      }
+    }
+  ]
+}

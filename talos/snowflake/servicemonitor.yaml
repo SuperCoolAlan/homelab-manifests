@@ -18,11 +18,13 @@ spec:
       path: /metrics
       interval: 60s
       relabelings:
-        - targetLabel: job
+        - action: replace
+          targetLabel: job
           replacement: tor-bridge
     - port: conduit-metrics
       path: /metrics
       interval: 60s
       relabelings:
-        - targetLabel: job
+        - action: replace
+          targetLabel: job
           replacement: conduit
