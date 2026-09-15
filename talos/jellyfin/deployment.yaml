@@ -50,6 +50,7 @@ spec:
       # on the node, so this adds no pull and no second image to track.
       initContainers:
         - name: seed-encoding-config
+          # renovate: datasource=docker depName=jellyfin/jellyfin versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
           image: jellyfin/jellyfin:10.11.5
           command:
             - /bin/sh
@@ -75,6 +76,7 @@ spec:
         - name: jellyfin
           # Pinned to what TrueNAS was running, so the config database is opened
           # by the same version that wrote it. Upgrade deliberately, afterwards.
+          # renovate: datasource=docker depName=jellyfin/jellyfin versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
           image: jellyfin/jellyfin:10.11.5
           ports:
             - name: http

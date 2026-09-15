@@ -36,6 +36,7 @@ spec:
           # downgrade, and a .unf backup restores cleanly only into the same or
           # a newer version — so match first, upgrade deliberately afterwards.
           # This image bundles MongoDB; there is no separate database pod.
+          # renovate: datasource=docker depName=goofball222/unifi
           image: goofball222/unifi:9.3.43
           ports:
             - name: inform
