@@ -12,11 +12,6 @@ resources:
 generators:
   - secrets-generator.yaml
 
-patches:
-  - target:
-      kind: Deployment
-      name: actualbudget
-    path: quiesce.yaml
 
 helmCharts:
   - name: actualbudget
