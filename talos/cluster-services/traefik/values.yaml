@@ -88,6 +88,10 @@ ports:
     expose:
       default: true
     protocol: TCP
+    transport:
+      respondingTimeouts:
+        # Multi-GB Immich video uploads outlast any fixed read timeout; Caddy and cloudflared sit in front.
+        readTimeout: "0s"
     forwardedHeaders:
       # Trust X-Forwarded-* from cloudflared pods so apps and access logs
       # see the real client IP, not the pod IP. CrowdSec detection is blind
