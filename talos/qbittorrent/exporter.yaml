@@ -1,0 +1,88 @@
+# Per-torrent metrics. No credentials: qbt's AuthSubnetWhitelist (10.244.0.0/16) answers auth/login with "Ok." for pod IPs.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent-exporter
+  namespace: qbittorrent
+  labels:
+    app.kubernetes.io/name: qbittorrent-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qbittorrent-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: qbittorrent-exporter
+    spec:
+      containers:
+        - name: exporter
+          image: ghcr.io/martabal/qbittorrent-exporter:v2.0.3@sha256:bc4fa09481634ee894ebfb4d47c8aa239a32a12567b043afa01fa42a3075d1a5
+          env:
+            - name: QBITTORRENT_BASE_URL
+              value: http://qbittorrent-webui.qbittorrent.svc.cluster.local
+            # Tracker metrics cost one extra API call per torrent per scrape.
+            - name: ENABLE_TRACKER
+              value: "false"
+            - name: EXPORTER_PORT
+              value: "8090"
+          ports:
+            - name: metrics
+              containerPort: 8090
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent-exporter
+  namespace: qbittorrent
+  labels:
+    app.kubernetes.io/name: qbittorrent-exporter
+spec:
+  selector:
+    app.kubernetes.io/name: qbittorrent-exporter
+  ports:
+    - name: metrics
+      port: 8090
+      targetPort: metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: qbittorrent-exporter
+  namespace: qbittorrent
+  labels:
+    app.kubernetes.io/name: qbittorrent-exporter
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qbittorrent-exporter
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 60s
+      relabelings:
+        - action: replace
+          targetLabel: job
+          replacement: qbittorrent
