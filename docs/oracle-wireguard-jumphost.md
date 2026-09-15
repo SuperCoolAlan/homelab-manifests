@@ -218,11 +218,18 @@ pod; server pubkey `B31LFquE549qd8JW4zGS7b1XsVNIPI/mS29xFVhRDkA=`.
 | Metrics | `-metrics-address 10.100.0.1` (wg0 only), `:9999` |
 | Verbose logging | Temporary drop-in `snowflake-proxy.service.d/verbose.conf` adds `-verbose` (IPs stay scrubbed); delete it and `daemon-reload` + restart to revert |
 | OCI NSG `snowflake-jumphost` | ingress UDP 32768-60999 from 0.0.0.0/0; UDP 51820 comes from the shared security list |
-| INPUT accepts | `/etc/iptables/rules.v4`: UDP 51820, UDP 32768:60999, TCP 9999 from `10.100.0.7` on wg0 |
+| Tor obfs4 bridge | `tor@default` from `deb.torproject.org` (`/etc/apt/sources.list.d/tor.sources`) + Ubuntu `obfs4proxy`; `/etc/tor/torrc`: `BridgeRelay 1`, ORPort 9443, obfs4 on 8443, nickname `chicagoobfs4`, no ContactInfo. Drop-in `tor@default.service.d/wg0.conf` orders it after wg0 |
+| Tor metrics | `MetricsPort 10.100.0.1:9035` + `MetricsPortPolicy accept 10.100.0.7`; scraped as `job="tor-bridge"`. Never widen the policy: tor's own manual warns public metrics endanger users |
+| Psiphon Conduit | `conduit.service` running `/usr/local/bin/conduit start --data-dir /var/lib/conduit --metrics-addr 10.100.0.1:9090 --bandwidth 10` (release-cli-2.0.0 arm64, checksum in `/usr/local/share/conduit/VERSION`), `DynamicUser`, same sandboxing as the proxy. WebRTC ports fall inside the existing 32768:60999 accept. Scraped as `job="conduit"` |
+| Upgrading Conduit | download the new `conduit-linux-arm64`, verify against the release `checksums.txt`, `install -m 0755` over the binary, update `VERSION`, restart |
+| OCI NSG `snowflake-jumphost` (bridge) | ingress TCP 9443 and TCP 8443 from 0.0.0.0/0 |
+| INPUT accepts | `/etc/iptables/rules.v4`: UDP 51820, UDP 32768:60999, TCP 9443 + 8443, TCP 9999/9035/9090 from `10.100.0.7` on wg0, TCP 8080 from `10.100.0.11` on wg0 |
+| CrowdSec engine | apt `crowdsec` 1.7.8 + `crowdsec-firewall-bouncer-nftables` 0.0.36 (held), LAPI `0.0.0.0:8080` (`config.yaml.local`), sshd via journald (`acquis.d/sshd-journal.yaml`). Console `oracle-snowflake-jumphost`. See `talos/cluster-services/crowdsec/README.md` |
+| crowdsec-web-ui peer | wg0 `[Peer]` `10.100.0.11/32` (talos/crowdsec-lapi-tunnel), pubkey `NzhhHkFAmXsWAoi3IKVxZUxrmFER7aovcl198KR4vxM=` |
 | wg0 output | `/etc/nftables-wg-restrict.nft` (table `ip wg_restrict`): VPS may only reply into wg0 |
-| Egress cap | `egress-cap.service`: `tc ... cake bandwidth 20mbit` on `enp0s6` (max ~6.5 TB/month) |
-| Egress guard | `snowflake-egress-guard.timer` every 15 min: stops the proxy once vnstat shows 7 TB tx this month, restarts it next month |
-| Auto-updates | `/etc/apt/apt.conf.d/52unattended-upgrades-local`: adds `-updates`, auto-reboot at 10:00 UTC (jelly 09:00, monero 09:30, same file) |
+| Egress cap | `egress-cap.service`: `tc ... cake bandwidth 20mbit` on `enp0s6` (max ~6.5 TB/month), shared by all three relays |
+| Egress guard | `snowflake-egress-guard.timer` every 15 min: stops snowflake, the bridge and Conduit once vnstat shows 7 TB tx this month, restarts them next month |
+| Auto-updates | `/etc/apt/apt.conf.d/52unattended-upgrades-local`: adds `-updates` and `TorProject:noble`, auto-reboot at 10:00 UTC (jelly 09:00, monero 09:30, same file). CrowdSec stays held |
 
 Both the cap and the guard exist to keep the tenancy inside the free 10 TB/month
 outbound; the account is Pay-As-You-Go, so overage bills. Pre-change copies are

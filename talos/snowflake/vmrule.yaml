@@ -8,7 +8,7 @@ spec:
     - name: snowflake.alerts
       rules:
         - alert: SnowflakeProxyDown
-          expr: absent_over_time(up{namespace="snowflake"}[10m]) or max(up{namespace="snowflake"}) == 0
+          expr: absent_over_time(up{job="snowflake"}[10m]) or max(up{job="snowflake"}) == 0
           for: 15m
           labels:
             severity: warning
@@ -25,3 +25,34 @@ spec:
           annotations:
             summary: Snowflake proxy served no clients in 6h
             description: The proxy is up but the broker has handed it no clients; check its journal on oracle-snowflake-jumphost for NAT type and broker errors.
+    - name: tor-bridge.alerts
+      rules:
+        - alert: TorBridgeDown
+          expr: absent_over_time(up{job="tor-bridge"}[10m]) or max(up{job="tor-bridge"}) == 0
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Tor obfs4 bridge is down
+            description: tor's MetricsPort on oracle-snowflake-jumphost has not been scraped for 15m. Check tor@default and snowflake-egress-guard on the VPS, then the wg0 handshake.
+    - name: conduit.alerts
+      rules:
+        - alert: ConduitDown
+          expr: absent_over_time(up{job="conduit"}[10m]) or max(up{job="conduit"}) == 0
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Psiphon Conduit is down
+            description: Conduit's metrics on oracle-snowflake-jumphost have not been scraped for 15m. Check conduit.service and snowflake-egress-guard on the VPS, then the wg0 handshake.
+        - alert: ConduitNotLive
+          expr: max(conduit_is_live{job="conduit"}) == 0
+          for: 30m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Psiphon Conduit is not connected to the broker
+            description: conduit.service is running but has not reached the Psiphon broker for 30m; check its journal on oracle-snowflake-jumphost.

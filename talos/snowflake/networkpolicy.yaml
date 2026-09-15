@@ -33,6 +33,10 @@ spec:
       ports:
         - port: metrics
           protocol: TCP
+        - port: tor-metrics
+          protocol: TCP
+        - port: conduit-metrics
+          protocol: TCP
   # WireGuard UDP is the only egress; metrics ride inside it.
   egress:
     - to:

@@ -14,3 +14,11 @@ spec:
       port: 9999
       targetPort: metrics
       protocol: TCP
+    - name: tor-metrics
+      port: 9035
+      targetPort: tor-metrics
+      protocol: TCP
+    - name: conduit-metrics
+      port: 9090
+      targetPort: conduit-metrics
+      protocol: TCP

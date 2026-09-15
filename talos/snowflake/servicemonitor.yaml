@@ -13,3 +13,16 @@ spec:
     - port: metrics
       path: /internal/metrics
       interval: 60s
+    # Alerts and dashboards select on these job names, not the shared Service name.
+    - port: tor-metrics
+      path: /metrics
+      interval: 60s
+      relabelings:
+        - targetLabel: job
+          replacement: tor-bridge
+    - port: conduit-metrics
+      path: /metrics
+      interval: 60s
+      relabelings:
+        - targetLabel: job
+          replacement: conduit

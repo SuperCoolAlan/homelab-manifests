@@ -1,5 +1,5 @@
-# The proxy runs on Oracle (docs/oracle-wireguard-jumphost.md#snowflake-proxy); this pod only carries its metrics.
-# vmagent -> Service -> socat -> wg0 -> 10.100.0.1:9999. Peer IP .7 is hardcoded in the VPS's wg0.conf and its 9999 INPUT accept.
+# Snowflake, the Tor bridge and Conduit run on Oracle (docs/oracle-wireguard-jumphost.md#snowflake-proxy); this pod only carries their metrics.
+# vmagent -> Service -> socat -> wg0 -> 10.100.0.1:{9999,9035,9090}. Peer IP .7 is hardcoded in the VPS's wg0.conf, its INPUT accepts and torrc's MetricsPortPolicy.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -79,6 +79,53 @@ spec:
           ports:
             - name: metrics
               containerPort: 9999
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+        # tor's MetricsPortPolicy accepts only 10.100.0.7, so this must share the wg-up netns above.
+        - name: tor-metrics
+          image: alpine/socat:1.8.1.3
+          args:
+            - -d
+            - TCP-LISTEN:9035,fork,reuseaddr
+            - TCP:10.100.0.1:9035
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+          ports:
+            - name: tor-metrics
+              containerPort: 9035
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+        - name: conduit-metrics
+          image: alpine/socat:1.8.1.3
+          args:
+            - -d
+            - TCP-LISTEN:9090,fork,reuseaddr
+            - TCP:10.100.0.1:9090
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+          ports:
+            - name: conduit-metrics
+              containerPort: 9090
               protocol: TCP
           resources:
             requests:

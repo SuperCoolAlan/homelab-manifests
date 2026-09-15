@@ -94,6 +94,12 @@ helmCharts:
             interval: 60s
             conditions:
               - "[STATUS] == 200"
+          - name: CrowdSec LAPI (snowflake jumphost)
+            group: CrowdSec
+            url: http://snowflake.crowdsec-lapi-tunnel.svc.cluster.local:8080/health
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
           # Media stack (internal)
           - name: Sonarr
             group: Media

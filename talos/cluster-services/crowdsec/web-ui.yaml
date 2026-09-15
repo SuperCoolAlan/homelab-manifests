@@ -1,4 +1,4 @@
-# crowdsec-web-ui: one dashboard over the cluster LAPI and both Oracle LAPIs (via crowdsec-lapi-tunnel).
+# crowdsec-web-ui: one dashboard over the cluster LAPI and all three Oracle LAPIs (via crowdsec-lapi-tunnel).
 # Keep the authentik forward-auth middleware: it gates the app's first-run admin setup page.
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -95,6 +95,16 @@ spec:
               value: crowdsec-web-ui
             - name: CONFIG_INSTANCES_2_LAPI_AUTH_PASSWORD_FILE
               value: /run/secrets/crowdsec-web-ui/lapi-password-monero
+            - name: CONFIG_INSTANCES_3_ID
+              value: snowflake
+            - name: CONFIG_INSTANCES_3_NAME
+              value: oracle-snowflake-jumphost
+            - name: CONFIG_INSTANCES_3_LAPI_URL
+              value: http://snowflake.crowdsec-lapi-tunnel.svc.cluster.local:8080
+            - name: CONFIG_INSTANCES_3_LAPI_AUTH_USERNAME
+              value: crowdsec-web-ui
+            - name: CONFIG_INSTANCES_3_LAPI_AUTH_PASSWORD_FILE
+              value: /run/secrets/crowdsec-web-ui/lapi-password-snowflake
           volumeMounts:
             - name: data
               mountPath: /app/data
