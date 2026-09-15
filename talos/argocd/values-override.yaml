@@ -1,6 +1,7 @@
 # ArgoCD values override for Talos cluster
 global:
   image:
+    # renovate: datasource=docker depName=quay.io/argoproj/argocd
     tag: v3.2.6
   # Enable Prometheus scrape annotations on all components
   addPrometheusAnnotations: true
@@ -89,6 +90,7 @@ repoServer:
         runAsUser: 999
         runAsGroup: 999
     - name: install-sops
+      # renovate: datasource=docker depName=curlimages/curl
       image: curlimages/curl:8.11.1
       command: ["sh", "-c"]
       args:
@@ -106,6 +108,7 @@ repoServer:
         runAsUser: 999
         runAsGroup: 999
     - name: import-gpg
+      # renovate: datasource=docker depName=quay.io/argoproj/argocd
       image: quay.io/argoproj/argocd:v3.2.6
       command: ["/bin/sh", "-c"]
       args:
