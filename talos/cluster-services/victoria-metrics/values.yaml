@@ -177,8 +177,8 @@ alertmanager:
     secrets:
       - alertmanager-discord-monero
       - alertmanager-discord-homelab
-  # Raw Alertmanager config (useManagedConfig: false). Only labeled alertgroups reach Discord; everything else stays
-  # blackholed as before, so adding a receiver here does not start paging for the chart's default rules.
+  # Raw Alertmanager config (useManagedConfig: false). Labeled alertgroups and any severity=critical alert reach Discord;
+  # everything else (chart warnings/info) stays blackholed. Routes match in order, so alertgroup routes win over critical.
   config:
     route:
       receiver: blackhole
@@ -193,6 +193,9 @@ alertmanager:
         - receiver: discord-homelab
           matchers:
             - alertgroup="homelab"
+        - receiver: discord-homelab
+          matchers:
+            - severity="critical"
     receivers:
       - name: blackhole
       - name: discord-monero
