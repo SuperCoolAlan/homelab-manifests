@@ -28,3 +28,12 @@ resources:
 # Only run on ramhaus (flyer has limited RAM)
 nodeSelector:
   kubernetes.io/hostname: talos-ramhaus
+
+customRules:
+  # Loaded from /etc/falco/rules.d after the stock rules, so overrides here win.
+  homelab-exceptions.yaml: |-
+    # containerd runs Cilium's CNI plugin (installed onto the host by the agent) for every pod sandbox; container.id=runtime is containerd itself.
+    - macro: known_drop_and_execute_activities
+      condition: (container.id = runtime and proc.pname = containerd and proc.exepath startswith /opt/cni/bin/)
+      override:
+        condition: replace
