@@ -6,6 +6,7 @@ cloudflare:
 # Pin to a specific cloudflared release.
 # https://github.com/cloudflare/cloudflared/releases
 image:
+  # renovate: datasource=docker depName=cloudflare/cloudflared
   tag: "2026.1.1"
 
 fullnameOverride: cloudflare-tunnel-remote
