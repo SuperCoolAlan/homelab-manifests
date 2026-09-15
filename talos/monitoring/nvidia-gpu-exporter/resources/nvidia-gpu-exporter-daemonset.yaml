@@ -37,6 +37,7 @@ spec:
           #
           # It also emits nvidia_smi_* metric names, which is what the
           # dashboard inherited from TrueNAS already queries.
+          # renovate: datasource=docker depName=ghcr.io/utkuozdemir/nvidia_gpu_exporter
           image: ghcr.io/utkuozdemir/nvidia_gpu_exporter:1.13.1
           args:
             - --web.listen-address=:9835

@@ -21,6 +21,7 @@ spec:
         kubernetes.io/hostname: talos-ramhaus
       containers:
         - name: upsd
+          # renovate: datasource=docker depName=instantlinux/nut-upsd versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-r(?<build>\d+)$
           image: instantlinux/nut-upsd:2.8.5-r1@sha256:a4a68e3c56081e3187621ee2a4bf9bce2936eaf0b628c01f81881f25cee0e667
           env:
             # NAME must match the ServiceMonitor's ups param and the liveness probe.
@@ -66,6 +67,7 @@ spec:
               subPath: nut-upsd-password
               readOnly: true
         - name: exporter
+          # renovate: datasource=docker depName=ghcr.io/druggeri/nut_exporter
           image: ghcr.io/druggeri/nut_exporter:3.3.0@sha256:276460d141c732772f8b1fcd785a7de272473e6d39fd85c32b163efc2999cb9a
           args:
             # An empty list drops ups.status, which every OB/LB/RB alert in nut-vmrule.yaml depends on.

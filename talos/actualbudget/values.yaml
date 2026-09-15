@@ -3,6 +3,7 @@ strategy:
   rollingUpdate: null
 
 image:
+  # renovate: datasource=docker depName=actualbudget/actual-server
   tag: "26.5.2"
 
 persistence:

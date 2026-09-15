@@ -21,6 +21,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: maintainerr
+          # renovate: datasource=docker depName=ghcr.io/maintainerr/maintainerr
           image: ghcr.io/maintainerr/maintainerr:2.26.1
           ports:
             - containerPort: 6246
