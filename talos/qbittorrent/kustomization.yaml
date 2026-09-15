@@ -8,6 +8,7 @@ resources:
   - pvcs.yaml
   - pvc-ssd.yaml
   - local-asandov-ingress.yaml
+  - exporter.yaml
 
 generators:
   - secrets-generator.yaml
