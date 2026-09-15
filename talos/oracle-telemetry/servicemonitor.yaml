@@ -13,7 +13,9 @@ spec:
       interval: 60s
       relabelings:
         # Every VPS scrapes as the same socat target shape; name series after the VPS, not the pod.
-        - sourceLabels: [__meta_kubernetes_service_name]
+        - action: replace
+          sourceLabels: [__meta_kubernetes_service_name]
           targetLabel: instance
-        - targetLabel: job
+        - action: replace
+          targetLabel: job
           replacement: oracle-node
