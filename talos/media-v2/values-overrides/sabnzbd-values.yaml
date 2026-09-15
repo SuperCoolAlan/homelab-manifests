@@ -9,6 +9,9 @@ persistentVolumeClaims:
   sabnzbd-state-ssd:
     requestStorage: '5Gi'
     storageClassName: 'ssd-array'
+  sabnzbd-state-fast:
+    requestStorage: '5Gi'
+    storageClassName: 'fast-array'
 
 # Application configuration with Eweka news server
 application:
