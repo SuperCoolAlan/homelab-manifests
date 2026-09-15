@@ -1,5 +1,5 @@
 # Referenced by the seerr chart via existingClaim — must be declared here or
-# ArgoCD prunes it (the old media-servarr chart used to render this PVC).
+# ArgoCD prunes it. The -ssd claim is the rollback for the 2026-09-15 move to fast-array.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -9,6 +9,19 @@ spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: ssd-array
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyseerr-config-fast
+  namespace: media-v2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
   resources:
     requests:
       storage: 5Gi

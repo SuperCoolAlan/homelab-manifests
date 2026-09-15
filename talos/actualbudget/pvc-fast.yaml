@@ -1,0 +1,13 @@
+# fast-array: sqlite's small sync writes want the mirror pool, not raidz2 `ssd`.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: actualbudget-data-fast
+  namespace: actualbudget
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 5Gi

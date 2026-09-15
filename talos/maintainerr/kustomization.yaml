@@ -8,5 +8,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - pvc-ssd.yaml
+  - pvc-fast.yaml
   - ingress.yaml
+
 

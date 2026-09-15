@@ -1,14 +1,13 @@
-# App state (queue db, history) on the local ZFS `ssd` pool.
+# App state (queue db, history) on the local ZFS `fast` pool.
 persistentVolumeClaims:
-  sabnzbd-config: null  # chart default — superseded by sabnzbd-state-ssd
-  # On ssd-array (4x480G raidz2). Migrated off the `fast` pool 2026-08-12:
-  # fast has had no redundancy since 2026-08-10 (both mirrors down to one
-  # leg - see ~/Documents/truenas-migration/FAST-POOL-RECOVERY.md) and
-  # nothing on it is backed up. Low-write state volume, so raidz2's
-  # small-write penalty does not apply the way it does to jellyfin/unifi.
+  sabnzbd-config: null  # chart default — superseded by sabnzbd-state-fast
+  # -ssd is the rollback for the 2026-09-15 move to fast-array; drop it after the soak.
   sabnzbd-state-ssd:
     requestStorage: '5Gi'
     storageClassName: 'ssd-array'
+  sabnzbd-state-fast:
+    requestStorage: '5Gi'
+    storageClassName: 'fast-array'
 
 # Application configuration with Eweka news server
 application:
@@ -145,7 +144,7 @@ deployment:
   volumes:
     config:
       persistentVolumeClaim:
-        claimName: 'sabnzbd-state-ssd'
+        claimName: 'sabnzbd-state-fast'
     downloads:
       persistentVolumeClaim:
         claimName: 'sabnzbd-downloads'
