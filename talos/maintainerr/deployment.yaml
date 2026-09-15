@@ -7,6 +7,9 @@ metadata:
     app: maintainerr
 spec:
   replicas: 1
+  # RWO zfs-localpv volume: a surge pod can't mount it while the old pod runs ("device already mounted").
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: maintainerr
