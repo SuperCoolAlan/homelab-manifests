@@ -240,6 +240,44 @@ ssh oracle-snowflake-jumphost 'vnstat -m -i enp0s6; tc -s qdisc show dev enp0s6 
 ssh oracle-snowflake-jumphost 'sudo wg show wg0'               # handshake for WzQX…
 ```
 
+## Signal TLS proxy
+
+Added 2026-09-15 on its own instance, `signal-proxy-20260915`
+(`147.224.156.61`, A1.Flex 1 OCPU / 4 GB, SSH alias `oracle-signal-proxy`,
+`momscloset` key). Share link: `https://signal.tube/#signal.asandov.com`.
+`signal.asandov.com` is a Cloudflare A record, **DNS only**: proxying would put
+Cloudflare's certificate in front and break the outer TLS layer.
+
+It is a native port of `signalapp/Signal-TLS-Proxy` (pinned at
+`cc41daab1f38f7c01de833875065f46435914151`): one nginx terminates the outer TLS
+on 443 with the Let's Encrypt certificate and hands the stream to a loopback
+relay on `127.0.0.1:4433`, which reads the inner SNI and splices only to the
+Signal hostnames in upstream's map. Anything else goes to `127.0.0.1:9` and
+fails. The proxy never sees message contents; the inner TLS is end-to-end with
+Signal.
+
+| Piece | Where |
+|---|---|
+| nginx | Ubuntu `nginx` + `libnginx-mod-stream`; `/etc/nginx/nginx.conf` is the merged terminate + relay config (no sites-enabled). Logs off, as upstream |
+| Certificate | `certbot certonly --webroot -w /var/www/certbot`, no email (as upstream), `certbot.timer` renews, deploy hook reloads nginx. TLS params from certbot's repo in `/etc/letsencrypt/` |
+| Upstream drift | `signal-proxy-upstream-check.timer` (daily) compares upstream `data/nginx-relay/nginx.conf` with `/usr/local/share/signal-proxy/nginx-relay.pinned.conf` and writes `signal_proxy_upstream_{drift,check_success,last_check_timestamp_seconds}` to node-exporter's textfile dir. Alerts `SignalProxyUpstreamChanged` / `SignalProxyUpstreamCheckStale` |
+| Re-syncing | copy upstream's map/upstreams into the `stream` block, replace the pinned copy and `PINNED_SHA`, `nginx -t`, `systemctl reload nginx`. Signal gives ~30 days before a change is required |
+| Firewall | Shared security list already allows TCP 80/443 (no NSG needed). `rules.v4`: TCP 80, 443, UDP 51820, TCP 9100 from `10.100.0.12` on wg0, TCP 8080 from `10.100.0.13` on wg0 |
+| WireGuard | server pubkey `CDzfORMvOMa5sHqUsfV1+PTyXm4FcItbMQ1y9qBrYAE=`; peers `10.100.0.12` oracle-telemetry (`DOXpuMy6io8/HluVcCf0X0kNKvoljf5wukDtZVvsozs=`), `10.100.0.13` crowdsec-lapi-tunnel (`D73KyjISJJ5+zjeliHXyOxNRBQVYLlnQf779eyfwAkk=`) |
+| wg0 output | `/etc/nftables-wg-restrict.nft`, journald push to `10.100.0.12:9428` only |
+| CrowdSec engine | held 1.7.8 + nftables bouncer 0.0.36, LAPI `0.0.0.0:8080`, sshd via journald, Console `oracle-signal-proxy` |
+| Auto-updates | same `52unattended-upgrades-local`, auto-reboot 10:30 UTC |
+| Backups | OCI policy `signal-weekly-sun` (see `docs/backup-and-recovery.md`) |
+| Gatus | `tls://signal.asandov.com:443`, connected + certificate > 10 days |
+
+No egress cap: relayed Signal traffic is small next to the other boxes. Pre-change
+copies are `*.bak-20260915`.
+
+```bash
+echo | openssl s_client -connect signal.asandov.com:443 -servername signal.asandov.com 2>/dev/null | openssl x509 -noout -subject -enddate
+ssh oracle-signal-proxy 'cat /var/lib/prometheus/node-exporter/signal_proxy.prom; systemctl list-timers certbot.timer signal-proxy-upstream-check.timer --no-pager'
+```
+
 ## Oracle telemetry (all three boxes)
 
 Added 2026-09-14. Each VPS gets one more WireGuard peer, a pod in
@@ -250,6 +288,7 @@ Added 2026-09-14. Each VPS gets one more WireGuard peer, a pod in
 | jelly-jumphost | `10.100.0.8` | `7nkSNZABpwn43FYr07Ge7RJAIjRywELaSWdC31a2n2s=` |
 | monero-jumphost | `10.100.0.9` | `z95Kwa4GhiMI707V78rbRIc00IoxuFxoOMSQ4SriQRE=` |
 | snowflake-jumphost | `10.100.0.10` | `OPglLmGEvHQjLidsCRnXIloKlXtbNApHUMly5CIT4WQ=` |
+| signal-proxy | `10.100.0.12` | `DOXpuMy6io8/HluVcCf0X0kNKvoljf5wukDtZVvsozs=` |
 
 **Metrics (pull).** `prometheus-node-exporter` listens on `10.100.0.1:9100`
 only (`/etc/default/prometheus-node-exporter`, drop-in ordering it after
@@ -267,6 +306,7 @@ a VPS may open a connection into wg0, and only to its own peer on 9428:
 | jelly | `/etc/nftables.conf`, table `wg_restrict` |
 | monero | `/etc/nftables-monerod.nft`, table `monerod_gw` output chain |
 | snowflake | `/etc/nftables-wg-restrict.nft` |
+| signal | `/etc/nftables-wg-restrict.nft` |
 
 On the pod side nginx accepts only `POST /insert/journald/upload` from
 `10.100.0.1` and 403s everything else, because VictoriaLogs' 9428 also serves the
