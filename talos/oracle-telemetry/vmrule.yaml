@@ -24,6 +24,16 @@ spec:
           annotations:
             summary: "Oracle VPS {{ $labels.instance }} root filesystem under 15% free"
             description: "Boot volumes are sized to stay inside the free 200 GB; clean up rather than grow."
+        # Caps bound snowflake/monero/signal at ~9.54 TB per 31 days; jelly is uncapped, so it is the only way over 10 TB.
+        - alert: OracleTenancyEgressHigh
+          expr: sum(increase(node_network_transmit_bytes_total{job="oracle-node",device="enp0s6"}[30d])) > 9e12
+          for: 30m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Oracle boxes sent over 9 TB in the last 30 days
+            description: "The tenancy's free outbound is 10 TB/month and it is Pay-As-You-Go, so overage bills. Look at jelly (uncapped remote Jellyfin streaming) first: sum by (instance) (increase(node_network_transmit_bytes_total{job=\"oracle-node\",device=\"enp0s6\"}[30d]))."
     - name: signal-proxy.alerts
       rules:
         # Fed by signal-proxy-upstream-check.timer via node-exporter's textfile collector on the signal VPS.

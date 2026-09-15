@@ -157,6 +157,7 @@ the pod's egress, so peers see `147.224.205.227` as the node's address.
 | OCI security list (shared with jellyfin box) | UDP 51820 from 0.0.0.0/0. 18080 was removed from it 2026-09-13 so the jellyfin box is closed on it at the cloud layer; previous rules backed up before the change |
 | CrowdSec engine | LAPI on `0.0.0.0:8080` (`/etc/crowdsec/config.yaml.local`), this VPS only; jelly-jumphost runs its own since 2026-09-14. See `talos/cluster-services/crowdsec/README.md` |
 | crowdsec-web-ui peer | wg0 `[Peer]` `10.100.0.6/32` (talos/crowdsec-lapi-tunnel) and `-A INPUT -s 10.100.0.6/32 -i wg0 ... --dport 8080 -j ACCEPT` in `rules.v4`. jelly-jumphost has the same with `10.100.0.5`, in both `rules.v4` and `/etc/nftables.conf`. Removing either rule blanks that engine in the web UI |
+| Egress cap | `egress-cap.service`: `tc ... cake bandwidth 8mbit` on `enp0s6` (at most 2.68 TB in a 31-day month), covering monerod, p2pool and the VPS itself. No guard: the node must never shut off. See [Egress budget](#egress-budget) |
 
 `/etc/nftables.conf` must not `flush ruleset`: `netfilter-persistent` owns
 `table ip filter`, and a flush at boot would wipe the FORWARD accepts.
@@ -226,8 +227,8 @@ pod; server pubkey `B31LFquE549qd8JW4zGS7b1XsVNIPI/mS29xFVhRDkA=`.
 | CrowdSec engine | apt `crowdsec` 1.7.8 + `crowdsec-firewall-bouncer-nftables` 0.0.36 (held), LAPI `0.0.0.0:8080` (`config.yaml.local`), sshd via journald (`acquis.d/sshd-journal.yaml`). Console `oracle-snowflake-jumphost`. See `talos/cluster-services/crowdsec/README.md` |
 | crowdsec-web-ui peer | wg0 `[Peer]` `10.100.0.11/32` (talos/crowdsec-lapi-tunnel), pubkey `NzhhHkFAmXsWAoi3IKVxZUxrmFER7aovcl198KR4vxM=`. A peer added live with `wg set` gets no route (only `wg-quick up` adds them): also run `ip route replace <peer>/32 dev wg0`, or replies leave via enp0s6 and the tunnel times out |
 | wg0 output | `/etc/nftables-wg-restrict.nft` (table `ip wg_restrict`): VPS may only reply into wg0 |
-| Egress cap | `egress-cap.service`: `tc ... cake bandwidth 20mbit` on `enp0s6` (max ~6.5 TB/month), shared by all three relays |
-| Egress guard | `snowflake-egress-guard.timer` every 15 min: stops snowflake, the bridge and Conduit once vnstat shows 7 TB tx this month, restarts them next month |
+| Egress cap | `egress-cap.service`: `tc ... cake bandwidth 19500kbit` on `enp0s6` (at most 6.53 TB in a 31-day month), shared by all three relays. Change it live with `tc qdisc change`: restarting the unit also restarts Conduit, which `Requires=` it |
+| Egress guard | `snowflake-egress-guard.timer` every 15 min: stops snowflake, the bridge and Conduit once vnstat shows 6.6 TB tx this month, restarts them next month. A backstop only; the cap keeps it from tripping. See [Egress budget](#egress-budget) |
 | Auto-updates | `/etc/apt/apt.conf.d/52unattended-upgrades-local`: adds `-updates` and `TorProject:noble`, auto-reboot at 10:00 UTC (jelly 09:00, monero 09:30, same file). CrowdSec stays held |
 
 Both the cap and the guard exist to keep the tenancy inside the free 10 TB/month
@@ -270,13 +271,34 @@ Signal.
 | Backups | OCI policy `signal-weekly-sun` (see `docs/backup-and-recovery.md`) |
 | Gatus | `tls://signal.asandov.com:443`, connected + certificate > 10 days |
 
-No egress cap: relayed Signal traffic is small next to the other boxes. Pre-change
-copies are `*.bak-20260915`.
+Egress cap: `egress-cap.service`, `cake bandwidth 1mbit` on `enp0s6` (at most 0.33 TB
+in a 31-day month). No guard: the proxy must never shut off. See
+[Egress budget](#egress-budget). Pre-change copies are `*.bak-20260915`.
 
 ```bash
 echo | openssl s_client -connect signal.asandov.com:443 -servername signal.asandov.com 2>/dev/null | openssl x509 -noout -subject -enddate
 ssh oracle-signal-proxy 'cat /var/lib/prometheus/node-exporter/signal_proxy.prom; systemctl list-timers certbot.timer signal-proxy-upstream-check.timer --no-pager'
 ```
+
+## Egress budget
+
+The tenancy's free outbound is 10 TB/month and the account is Pay-As-You-Go, so
+overage bills. Each box gets a `tc cake` cap on `enp0s6` sized so its worst-case
+31-day month fits a fixed share. Personal services and the Signal proxy never
+shut off; only the volunteer relays on the snowflake box have a guard, and its
+cap keeps that guard from tripping.
+
+| Box | `egress-cap.service` | Worst case / 31 days | Shut-off |
+|---|---|---|---|
+| snowflake | 19.5 Mbit/s | 6.53 TB | guard at 6.6 TB (unreachable backstop) |
+| monero | 8 Mbit/s | 2.68 TB | never |
+| signal | 1 Mbit/s | 0.33 TB | never |
+| jelly | none | remote Jellyfin streaming | never |
+
+That leaves ~0.46 TB/month for jelly before billing. `OracleTenancyEgressHigh`
+fires at 9 TB summed over the last 30 days. Every box has vnstat
+(`vnstat -m -i enp0s6`). Carve a new box's cap out of this table rather than
+raising the total.
 
 ## Oracle telemetry (all three boxes)
 
