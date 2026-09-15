@@ -1,8 +1,8 @@
 # CrowdSec
 
-Crowd-sourced intrusion detection and remediation, split across three engines
-(LAPIs): this cluster's, and one on each Oracle VPS (monero-jumphost and
-jelly-jumphost), because their exposure differs. Bans are not shared between
+Crowd-sourced intrusion detection and remediation, split across four engines
+(LAPIs): this cluster's, and one on each Oracle VPS (monero-jumphost,
+jelly-jumphost and snowflake-jumphost), because their exposure differs. Bans are not shared between
 engines; each gets CAPI plus its own Console blocklist subscriptions.
 
 Deployed 2026-08-31. Phased plan and rationale: `docs/crowdsec-plan.md`.
@@ -36,9 +36,10 @@ CrowdSec-related crosses the VCN or the WireGuard tunnels. Box-level details:
 | Log processor | this dir, `crowdsec-agent` Deployment | live, reads VictoriaLogs (no DaemonSet) |
 | monero engine | monero-jumphost, apt `crowdsec` 1.7.8 + `crowdsec-firewall-bouncer-nftables` 0.0.36 (held) | live, Console `oracle-monero-jumphost`, bouncer `cs-firewall-bouncer-monero` |
 | jelly engine | jelly-jumphost, same packages (held) | live since 2026-09-14, Console `oracle-jellyfin-jumphost`, bouncer `oracle-fw` |
+| snowflake engine | snowflake-jumphost, same packages (held) | live since 2026-09-15, Console `oracle-snowflake-jumphost`, bouncer `cs-firewall-bouncer-1789489309` |
 | Traefik bouncer | `cluster-services/traefik` (plugin + Middleware) | live, bouncer `traefik-bouncer` |
-| Web UI | this dir, `web-ui.yaml` (crowdsec-web-ui) | `crowdsec.local.asandov.com`, machine `crowdsec-web-ui` on all three LAPIs |
-| LAPI tunnel peers | `talos/crowdsec-lapi-tunnel` | WG peers `10.100.0.5` (jelly) / `10.100.0.6` (monero); only path into the Oracle LAPIs |
+| Web UI | this dir, `web-ui.yaml` (crowdsec-web-ui) | `crowdsec.local.asandov.com`, machine `crowdsec-web-ui` on all four LAPIs |
+| LAPI tunnel peers | `talos/crowdsec-lapi-tunnel` | WG peers `10.100.0.5` (jelly) / `10.100.0.6` (monero) / `10.100.0.11` (snowflake); only path into the Oracle LAPIs |
 | AppSec / WAF | — | not deployed |
 | Cloudflare Worker bouncer | — | not deployed (see Todo) |
 | OPNsense satellite | — | not deployed |

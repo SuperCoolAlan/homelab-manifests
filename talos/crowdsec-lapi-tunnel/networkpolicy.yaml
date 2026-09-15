@@ -76,3 +76,22 @@ spec:
       ports:
         - port: 51820
           protocol: UDP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: snowflake-wireguard-egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: crowdsec-lapi-tunnel
+      app.kubernetes.io/instance: snowflake
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 170.9.244.226/32
+      ports:
+        - port: 51820
+          protocol: UDP
