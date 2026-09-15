@@ -135,6 +135,32 @@ but jellyfin. It is now the *second* of two controls: the pod on the other end
 exposes nothing except the socat listener, so even without this rule there is no
 lateral path into the cluster.
 
+## Immich (photos.asandov.com)
+
+Added 2026-09-15. Immich moved off the Cloudflare tunnel because Cloudflare caps a
+request body at 100 MB and Immich uploads each asset in a single request, so video
+uploads failed. It shares the Jellyfin box and tunnel:
+
+```
+photos.asandov.com (DNS-only A record → this VPS)
+  → Caddy site photos.asandov.com (request_body max_size 0, no read/write timeouts)
+  → wg0 10.100.0.2:30014
+  → jellyfin-tunnel pod, container immich-forwarder (socat)
+  → traefik tunnel entrypoint :8081 → immich-public Ingress → immich-server:2283
+```
+
+- **Port 30014** is hardcoded in the socat listener, the Caddyfile and the
+  `wg_restrict` nftables rule, the same way 30013 is for Jellyfin.
+- **Traefik, not Immich directly**: going through the `tunnel` entrypoint keeps the
+  CrowdSec bouncer and traefik access logs. The entrypoint trusts X-Forwarded-For
+  from 10.244.0.0/16, so the real client IP Caddy sets survives the socat hop.
+- **Timeouts**: the `tunnel` entrypoint runs with `readTimeout: 0s`; the 60 s
+  default cuts off long uploads.
+- **Egress budget**: photo and video downloads now leave through this box's
+  uncapped Oracle egress (see [Egress budget](#egress-budget)).
+- The jelly engine's CrowdSec already reads `/var/log/caddy/*.log`, so the new
+  site is covered by its caddy scenarios and nftables bouncer.
+
 ## monerod P2P gateway
 
 Runs on its own instance, `monero-jumphost-20260910` (`147.224.205.227`,

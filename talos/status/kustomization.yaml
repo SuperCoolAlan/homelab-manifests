@@ -67,6 +67,14 @@ helmCharts:
             interval: 60s
             conditions:
               - "[STATUS] == 200"
+          # Full Oracle jumphost -> WireGuard -> traefik -> immich path.
+          - name: Immich
+            group: Public
+            url: https://photos.asandov.com/api/server/ping
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
+              - "[CERTIFICATE_EXPIRATION] > 240h"
           # Outer TLS layer only: the relay behind it accepts nothing but Signal SNIs. certbot renews at 30 days left.
           - name: Signal TLS proxy
             group: Public

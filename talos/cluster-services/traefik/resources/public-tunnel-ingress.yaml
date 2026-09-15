@@ -21,16 +21,6 @@ spec:
                   number: 8081
             path: /
             pathType: Prefix
-    - host: photos.asandov.com
-      http:
-        paths:
-          - backend:
-              service:
-                name: traefik
-                port:
-                  number: 8081
-            path: /
-            pathType: Prefix
     - host: jellyseerr.asandov.com
       http:
         paths:

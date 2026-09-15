@@ -1,5 +1,5 @@
-# Public host, reached via cloudflared -> traefik `tunnel` entrypoint
-# (see cluster-services/traefik/resources/public-tunnel-ingress.yaml).
+# Public host, reached via the jelly Oracle jumphost -> jellyfin-tunnel socat :30014 -> traefik `tunnel` entrypoint.
+# Not Cloudflare: its 100 MB request limit breaks video uploads (docs/oracle-wireguard-jumphost.md).
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
