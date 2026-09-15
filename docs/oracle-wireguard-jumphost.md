@@ -157,7 +157,7 @@ the pod's egress, so peers see `147.224.205.227` as the node's address.
 | OCI security list (shared with jellyfin box) | UDP 51820 from 0.0.0.0/0. 18080 was removed from it 2026-09-13 so the jellyfin box is closed on it at the cloud layer; previous rules backed up before the change |
 | CrowdSec engine | LAPI on `0.0.0.0:8080` (`/etc/crowdsec/config.yaml.local`), this VPS only; jelly-jumphost runs its own since 2026-09-14. See `talos/cluster-services/crowdsec/README.md` |
 | crowdsec-web-ui peer | wg0 `[Peer]` `10.100.0.6/32` (talos/crowdsec-lapi-tunnel) and `-A INPUT -s 10.100.0.6/32 -i wg0 ... --dport 8080 -j ACCEPT` in `rules.v4`. jelly-jumphost has the same with `10.100.0.5`, in both `rules.v4` and `/etc/nftables.conf`. Removing either rule blanks that engine in the web UI |
-| Egress cap | `egress-cap.service`: `tc ... cake bandwidth 8mbit` on `enp0s6` (at most 2.68 TB in a 31-day month), covering monerod, p2pool and the VPS itself. No guard: the node must never shut off. See [Egress budget](#egress-budget) |
+| Egress cap | `egress-cap.service`: `tc ... cake bandwidth 8mbit` on `enp0s6`, covering monerod, p2pool and the VPS itself. `monero-egress-throttle.timer` (every 15 min) drops it to 500 kbit/s once vnstat shows 630 GB tx this month and restores 8 Mbit/s when the month rolls over, so a 31-day month tops out near 0.8 TB. It writes `monero_egress_{throttle_active,month_tx_bytes,throttle_threshold_bytes}` to node-exporter's textfile dir. No guard: the node must never shut off. See [Egress budget](#egress-budget) |
 
 `/etc/nftables.conf` must not `flush ruleset`: `netfilter-persistent` owns
 `table ip filter`, and a flush at boot would wipe the FORWARD accepts.
@@ -290,11 +290,11 @@ cap keeps that guard from tripping.
 | Box | `egress-cap.service` | Worst case / 31 days | Shut-off |
 |---|---|---|---|
 | snowflake | 19.5 Mbit/s | 6.53 TB | guard at 6.6 TB (unreachable backstop) |
-| monero | 8 Mbit/s | 2.68 TB | never |
+| monero | 8 Mbit/s, 500 kbit/s past 630 GB/month (`monero-egress-throttle.timer`) | ~0.8 TB (measured ~0.6 TB) | never; `MoneroEgressThrottled` fires when throttled |
 | signal | none | Signal clients | never |
 | jelly | none | remote Jellyfin streaming | never |
 
-That leaves ~0.79 TB/month shared by jelly and signal before billing. `OracleTenancyEgressHigh`
+That leaves ~2.67 TB/month shared by jelly and signal before billing. `OracleTenancyEgressHigh`
 fires at 9 TB summed over the last 30 days. Every box has vnstat
 (`vnstat -m -i enp0s6`). Carve a new box's cap out of this table rather than
 raising the total.

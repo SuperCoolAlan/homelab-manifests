@@ -24,7 +24,7 @@ spec:
           annotations:
             summary: "Oracle VPS {{ $labels.instance }} root filesystem under 15% free"
             description: "Boot volumes are sized to stay inside the free 200 GB; clean up rather than grow."
-        # Caps bound snowflake/monero at ~9.21 TB per 31 days; jelly and signal are uncapped, so they are the only way over 10 TB.
+        # snowflake's cap and monero's soft limit bound them at ~7.33 TB per 31 days; jelly and signal are uncapped, so they are the only way over 10 TB.
         - alert: OracleTenancyEgressHigh
           expr: sum(increase(node_network_transmit_bytes_total{job="oracle-node",device="enp0s6"}[30d])) > 9e12
           for: 30m
@@ -34,6 +34,16 @@ spec:
           annotations:
             summary: Oracle boxes sent over 9 TB in the last 30 days
             description: "The tenancy's free outbound is 10 TB/month and it is Pay-As-You-Go, so overage bills. Look at jelly (uncapped remote Jellyfin streaming) first: sum by (instance) (increase(node_network_transmit_bytes_total{job=\"oracle-node\",device=\"enp0s6\"}[30d]))."
+        # Fed by monero-egress-throttle.timer via node-exporter's textfile collector on the monero VPS.
+        - alert: MoneroEgressThrottled
+          expr: max(monero_egress_throttle_active{job="oracle-node",instance="monero"}) == 1
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Monero VPS egress throttled to 500 kbit/s for the rest of the month
+            description: "monero-jumphost passed its 630 GB soft limit this month, so peers syncing from monerod are slowed until the 1st. It is still running. If this happens in a normal month, raise THRESH in /usr/local/sbin/monero-egress-throttle and rebalance docs/oracle-wireguard-jumphost.md#egress-budget."
     - name: signal-proxy.alerts
       rules:
         # Fed by signal-proxy-upstream-check.timer via node-exporter's textfile collector on the signal VPS.
