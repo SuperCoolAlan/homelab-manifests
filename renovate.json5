@@ -40,6 +40,11 @@
       allowedVersions: '<10',
     },
     {
+      // argocd 3.5 ships Helm 4, and the ksops-provided kustomize still runs `helm version -c`, so every helmCharts app fails to render.
+      matchPackageNames: ['quay.io/argoproj/argocd'],
+      allowedVersions: '<3.5',
+    },
+    {
       // Majors get their own PR and a loud label — read the release notes
       // in the PR body before merging these.
       matchUpdateTypes: ['major'],
