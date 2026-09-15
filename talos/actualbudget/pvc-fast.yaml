@@ -1,13 +1,13 @@
-# Rollback copy from before the 2026-09-15 move to actualbudget-data-fast; drop it after the soak.
+# fast-array: sqlite's small sync writes want the mirror pool, not raidz2 `ssd`.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: actualbudget-data-ssd
+  name: actualbudget-data-fast
   namespace: actualbudget
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ssd-array
+  storageClassName: fast-array
   resources:
     requests:
       storage: 5Gi

@@ -1,13 +1,13 @@
-# Rollback copy from before the 2026-09-15 move to qbittorrent-config-fast; drop it after the soak.
+# fast-array: fastresume and sqlite writes want the mirror pool, not raidz2 `ssd`.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: qbittorrent-config-ssd
+  name: qbittorrent-config-fast
   namespace: qbittorrent
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ssd-array
+  storageClassName: fast-array
   resources:
     requests:
       storage: 5Gi

@@ -1,13 +1,13 @@
-# Rollback copy from before the 2026-09-15 move to gatus-data-fast; drop it after the soak.
+# fast-array: sqlite's small sync writes want the mirror pool, not raidz2 `ssd`.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: gatus-data-ssd
+  name: gatus-data-fast
   namespace: status
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ssd-array
+  storageClassName: fast-array
   resources:
     requests:
       storage: 1Gi
