@@ -13,6 +13,9 @@ persistentVolumeClaims:
   radarr-config-ssd:
     requestStorage: '10Gi'
     storageClassName: 'ssd-array'
+  radarr-config-fast:
+    requestStorage: '10Gi'
+    storageClassName: 'fast-array'
 
 # Disable config.xml mounting - let app manage its own config
 application:

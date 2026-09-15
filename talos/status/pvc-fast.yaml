@@ -1,0 +1,13 @@
+# fast-array: sqlite's small sync writes want the mirror pool, not raidz2 `ssd`.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gatus-data-fast
+  namespace: status
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 1Gi
