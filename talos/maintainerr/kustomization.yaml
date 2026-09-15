@@ -8,5 +8,12 @@ resources:
   - deployment.yaml
   - service.yaml
   - pvc-ssd.yaml
+  - pvc-fast.yaml
   - ingress.yaml
+
+patches:
+  - target:
+      kind: Deployment
+      name: maintainerr
+    path: quiesce.yaml
 

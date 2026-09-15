@@ -7,6 +7,13 @@ resources:
   - namespace.yaml
   - ingress.yaml
   - pvc-ssd.yaml
+  - pvc-fast.yaml
+
+patches:
+  - target:
+      kind: Deployment
+      name: gatus
+    path: quiesce.yaml
 
 helmCharts:
   - name: gatus

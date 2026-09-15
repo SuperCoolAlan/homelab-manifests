@@ -13,6 +13,9 @@ persistentVolumeClaims:
   bazarr-config-ssd:
     requestStorage: '5Gi'
     storageClassName: 'ssd-array'
+  bazarr-config-fast:
+    requestStorage: '5Gi'
+    storageClassName: 'fast-array'
 
 # Disable config.yaml mounting to avoid conflict with NFS volume
 application:

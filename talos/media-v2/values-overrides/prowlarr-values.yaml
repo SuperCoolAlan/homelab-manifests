@@ -20,6 +20,9 @@ persistentVolumeClaims:
   prowlarr-config-ssd:
     requestStorage: '5Gi'
     storageClassName: 'ssd-array'
+  prowlarr-config-fast:
+    requestStorage: '5Gi'
+    storageClassName: 'fast-array'
 
 # Configure URL base to serve from root
 application:

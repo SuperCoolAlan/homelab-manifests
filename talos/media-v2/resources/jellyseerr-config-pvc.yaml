@@ -12,3 +12,16 @@ spec:
   resources:
     requests:
       storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyseerr-config-fast
+  namespace: media-v2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 5Gi
