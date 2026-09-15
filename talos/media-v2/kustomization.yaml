@@ -39,10 +39,6 @@ patches:
     kind: Pod
     metadata:
       name: jellyseerr-test-connection
-- target:
-    kind: (Deployment|StatefulSet)
-    name: ^(sonarr|radarr|prowlarr|bazarr|sabnzbd|jellyseerr)$
-  path: patches/quiesce.yaml
 
 
 helmCharts:
