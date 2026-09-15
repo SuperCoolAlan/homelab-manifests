@@ -14,6 +14,10 @@ operator:
   # Run a central trivy server so scan pods don't each download the 103MiB
   # vuln DB (sets trivy.mode=ClientServer and serverURL automatically)
   builtInTrivyServer: true
+  # SBOM reports are cached in operator memory (~243 MiB for ~430 reports) and OOM it; only ClusterVulnerabilityReports need them.
+  sbomGenerationEnabled: false
+  # Node-collector needs privileged hostPath mounts and checks kubeadm paths Talos doesn't have.
+  infraAssessmentScannerEnabled: false
 
 serviceMonitor:
   # Enable Prometheus ServiceMonitor
@@ -24,4 +28,5 @@ resources:
     cpu: 100m
     memory: 128Mi
   limits:
-    memory: 512Mi
+    # Startup informer sync of every report kind peaks well above steady state.
+    memory: 1Gi
