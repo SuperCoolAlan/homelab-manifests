@@ -26,6 +26,9 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
           fetch-depth: 0
 
+      - name: README app inventory is current
+        run: python3 .github/ci/gen-readme-apps.py --check
+
       - name: Install tools
         run: |
           set -euo pipefail
