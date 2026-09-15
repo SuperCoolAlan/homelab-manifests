@@ -18,6 +18,7 @@ spec:
     spec:
       containers:
         - name: exporter
+          # renovate: datasource=docker depName=ghcr.io/martabal/qbittorrent-exporter
           image: ghcr.io/martabal/qbittorrent-exporter:v2.0.3@sha256:bc4fa09481634ee894ebfb4d47c8aa239a32a12567b043afa01fa42a3075d1a5
           env:
             - name: QBITTORRENT_BASE_URL

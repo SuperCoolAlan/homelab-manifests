@@ -24,6 +24,7 @@ spec:
       enableServiceLinks: false
       initContainers:
         - name: wg-up
+          # renovate: datasource=docker depName=linuxserver/wireguard versioning=loose
           image: linuxserver/wireguard:1.0.20260223
           securityContext:
             capabilities:
@@ -64,6 +65,7 @@ spec:
               memory: 64Mi
       containers:
         - name: forwarder
+          # renovate: datasource=docker depName=alpine/socat versioning=loose
           image: alpine/socat:1.8.1.3
           args:
             - -d
@@ -88,6 +90,7 @@ spec:
               memory: 64Mi
         # tor's MetricsPortPolicy accepts only 10.100.0.7, so this must share the wg-up netns above.
         - name: tor-metrics
+          # renovate: datasource=docker depName=alpine/socat versioning=loose
           image: alpine/socat:1.8.1.3
           args:
             - -d
@@ -111,6 +114,7 @@ spec:
             limits:
               memory: 64Mi
         - name: conduit-metrics
+          # renovate: datasource=docker depName=alpine/socat versioning=loose
           image: alpine/socat:1.8.1.3
           args:
             - -d

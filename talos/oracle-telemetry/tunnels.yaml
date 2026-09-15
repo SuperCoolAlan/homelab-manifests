@@ -29,6 +29,7 @@ spec:
       enableServiceLinks: false
       initContainers:
         - name: wg-up
+          # renovate: datasource=docker depName=linuxserver/wireguard versioning=loose
           image: linuxserver/wireguard:1.0.20260223
           securityContext:
             capabilities:
@@ -69,6 +70,7 @@ spec:
               memory: 64Mi
       containers:
         - name: node-metrics
+          # renovate: datasource=docker depName=alpine/socat versioning=loose
           image: alpine/socat:1.8.1.3
           args:
             - -d
@@ -91,6 +93,7 @@ spec:
             limits:
               memory: 64Mi
         - name: journald-ingest
+          # renovate: datasource=docker depName=nginxinc/nginx-unprivileged
           image: nginxinc/nginx-unprivileged:1.30.4-alpine@sha256:adf5042a17f4ecdd200c595fa9ffd1be37efb18f89a830bd1a00e4ab4d59d42c
           # Skip the image entrypoint scripts; they try to rewrite config on a read-only root.
           command: ["nginx", "-g", "daemon off;"]
@@ -152,6 +155,7 @@ spec:
       enableServiceLinks: false
       initContainers:
         - name: wg-up
+          # renovate: datasource=docker depName=linuxserver/wireguard versioning=loose
           image: linuxserver/wireguard:1.0.20260223
           securityContext:
             capabilities:
@@ -191,6 +195,7 @@ spec:
               memory: 64Mi
       containers:
         - name: node-metrics
+          # renovate: datasource=docker depName=alpine/socat versioning=loose
           image: alpine/socat:1.8.1.3
           args:
             - -d
@@ -213,6 +218,7 @@ spec:
             limits:
               memory: 64Mi
         - name: journald-ingest
+          # renovate: datasource=docker depName=nginxinc/nginx-unprivileged
           image: nginxinc/nginx-unprivileged:1.30.4-alpine@sha256:adf5042a17f4ecdd200c595fa9ffd1be37efb18f89a830bd1a00e4ab4d59d42c
           command: ["nginx", "-g", "daemon off;"]
           securityContext:
@@ -273,6 +279,7 @@ spec:
       enableServiceLinks: false
       initContainers:
         - name: wg-up
+          # renovate: datasource=docker depName=linuxserver/wireguard versioning=loose
           image: linuxserver/wireguard:1.0.20260223
           securityContext:
             capabilities:
@@ -312,6 +319,7 @@ spec:
               memory: 64Mi
       containers:
         - name: node-metrics
+          # renovate: datasource=docker depName=alpine/socat versioning=loose
           image: alpine/socat:1.8.1.3
           args:
             - -d
@@ -334,6 +342,7 @@ spec:
             limits:
               memory: 64Mi
         - name: journald-ingest
+          # renovate: datasource=docker depName=nginxinc/nginx-unprivileged
           image: nginxinc/nginx-unprivileged:1.30.4-alpine@sha256:adf5042a17f4ecdd200c595fa9ffd1be37efb18f89a830bd1a00e4ab4d59d42c
           command: ["nginx", "-g", "daemon off;"]
           securityContext:
@@ -442,6 +451,7 @@ spec:
       enableServiceLinks: false
       initContainers:
         - name: wg-up
+          # renovate: datasource=docker depName=linuxserver/wireguard versioning=loose
           image: linuxserver/wireguard:1.0.20260223
           securityContext:
             capabilities:
@@ -481,6 +491,7 @@ spec:
               memory: 64Mi
       containers:
         - name: node-metrics
+          # renovate: datasource=docker depName=alpine/socat versioning=loose
           image: alpine/socat:1.8.1.3
           args:
             - -d
@@ -503,6 +514,7 @@ spec:
             limits:
               memory: 64Mi
         - name: journald-ingest
+          # renovate: datasource=docker depName=nginxinc/nginx-unprivileged
           image: nginxinc/nginx-unprivileged:1.30.4-alpine@sha256:adf5042a17f4ecdd200c595fa9ffd1be37efb18f89a830bd1a00e4ab4d59d42c
           command: ["nginx", "-g", "daemon off;"]
           securityContext:
