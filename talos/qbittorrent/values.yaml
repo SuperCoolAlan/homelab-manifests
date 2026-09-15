@@ -10,7 +10,7 @@ podSecurityContext:
 image:
   repository: linuxserver/qbittorrent
   # renovate: datasource=docker depName=linuxserver/qbittorrent
-  tag: "5.1.4"
+  tag: "5.2.3"
 
 env:
   PUID: "1000"
