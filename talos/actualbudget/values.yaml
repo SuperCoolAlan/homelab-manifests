@@ -4,7 +4,7 @@ strategy:
 
 image:
   # renovate: datasource=docker depName=actualbudget/actual-server
-  tag: "26.5.2"
+  tag: "26.9.0"
 
 persistence:
   enabled: true
