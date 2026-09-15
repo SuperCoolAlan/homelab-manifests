@@ -216,6 +216,7 @@ pod; server pubkey `B31LFquE549qd8JW4zGS7b1XsVNIPI/mS29xFVhRDkA=`.
 | Upgrading | `crane export --platform linux/arm64 <image@digest> - \| tar -xf - bin/proxy usr/share/tor/geoip usr/share/tor/geoip6`, copy to the paths above, update the digest comment, restart |
 | Ports | `-ephemeral-ports-range 32768:60999`; must match the NSG and `rules.v4` or the NAT test falls back to restricted |
 | Metrics | `-metrics-address 10.100.0.1` (wg0 only), `:9999` |
+| Verbose logging | Temporary drop-in `snowflake-proxy.service.d/verbose.conf` adds `-verbose` (IPs stay scrubbed); delete it and `daemon-reload` + restart to revert |
 | OCI NSG `snowflake-jumphost` | ingress UDP 32768-60999 from 0.0.0.0/0; UDP 51820 comes from the shared security list |
 | INPUT accepts | `/etc/iptables/rules.v4`: UDP 51820, UDP 32768:60999, TCP 9999 from `10.100.0.7` on wg0 |
 | wg0 output | `/etc/nftables-wg-restrict.nft` (table `ip wg_restrict`): VPS may only reply into wg0 |
