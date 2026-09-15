@@ -37,7 +37,7 @@ spec:
           # a newer version — so match first, upgrade deliberately afterwards.
           # This image bundles MongoDB; there is no separate database pod.
           # renovate: datasource=docker depName=goofball222/unifi
-          image: goofball222/unifi:9.5.21
+          image: goofball222/unifi:10.6.101
           ports:
             - name: inform
               containerPort: 8080
