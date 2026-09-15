@@ -573,6 +573,18 @@ configMapGenerator:
         grafana_folder: "Monero"
     files:
       - dashboards/Monero/p2pool.json
+
+  # Tor Snowflake (hand-built). Proxy counters are KB despite the _bytes name, hence the * 1024.
+  - name: dashboard-tor-snowflake
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Tor"
+    files:
+      - dashboards/Tor/snowflake.json
 #
 #   # Starlink
 #   - name: dashboard-starlink
