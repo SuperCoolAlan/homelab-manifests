@@ -23,7 +23,7 @@ patches:
 helmCharts:
   - name: qbittorrent
     repo: https://charts.alekc.dev
-    version: 2.7.5
+    version: 2.8.2
     releaseName: qbittorrent
     namespace: qbittorrent
     valuesFile: values.yaml
