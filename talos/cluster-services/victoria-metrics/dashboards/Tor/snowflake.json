@@ -325,7 +325,15 @@
       "options": {
         "view": { "id": "zero", "lat": 20, "lon": 0, "zoom": 1.3 },
         "controls": { "showZoom": true, "mouseWheelZoom": false, "showAttribution": false },
-        "basemap": { "type": "default", "name": "Basemap" },
+        "basemap": {
+          "type": "esri-xyz",
+          "name": "Basemap",
+          "config": {
+            "server": "custom",
+            "url": "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+            "attribution": "Tiles © Esri"
+          }
+        },
         "layers": [
           {
             "type": "markers",
