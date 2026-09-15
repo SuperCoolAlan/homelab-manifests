@@ -35,6 +35,11 @@
       allowedVersions: '<20',
     },
     {
+      // UniFi 10 bundles MongoDB 8, which can't open this controller's older database in place; needs a backup/restore migration first.
+      matchPackageNames: ['goofball222/unifi'],
+      allowedVersions: '<10',
+    },
+    {
       // Majors get their own PR and a loud label — read the release notes
       // in the PR body before merging these.
       matchUpdateTypes: ['major'],
