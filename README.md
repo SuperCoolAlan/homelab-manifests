@@ -35,7 +35,7 @@ flowchart TB
     end
 
     subgraph Oracle["Oracle Cloud · Always Free"]
-        jelly[jelly jumphost<br/>Caddy → Jellyfin]
+        jelly[jelly jumphost<br/>Caddy → Jellyfin · Immich]
         monero[monero jumphost<br/>monerod P2P]
         snow[snowflake box<br/>Snowflake · Tor bridge · Conduit]
         signal[signal box<br/>Signal TLS proxy]
@@ -258,7 +258,7 @@ Backups: CNPG barman and VolSync restic go to Backblaze B2, and the Oracle boxes
 - **OPNsense**: router, firewall and DNS. ExternalDNS writes local records; MetalLB peers with it over iBGP ([docs/metallb-bgp-hairpin.md](docs/metallb-bgp-hairpin.md)).
 - **Cilium**: CNI, with Hubble at `hubble.local` ([docs/cilium-migration.md](docs/cilium-migration.md)).
 - **Traefik**: `*.asandov.local` behind Authentik forward-auth, plus a tunnel entrypoint that fronts Cloudflare Tunnel hosts through the CrowdSec bouncer.
-- **Oracle jumphosts**: public Jellyfin, monerod P2P, Tor Snowflake, bridge and Conduit, and a Signal TLS proxy. Each connects home over WireGuard and runs its own CrowdSec engine, node-exporter and journald shipping ([docs/oracle-wireguard-jumphost.md](docs/oracle-wireguard-jumphost.md)).
+- **Oracle jumphosts**: public Jellyfin and Immich (off Cloudflare, which caps uploads at 100 MB), monerod P2P, Tor Snowflake, bridge and Conduit, and a Signal TLS proxy. Each connects home over WireGuard and runs its own CrowdSec engine, node-exporter and journald shipping ([docs/oracle-wireguard-jumphost.md](docs/oracle-wireguard-jumphost.md)).
 - **Twingate**: remote private access to the LAN.
 
 ## GitOps
