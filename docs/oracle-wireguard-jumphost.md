@@ -222,6 +222,7 @@ pod; server pubkey `B31LFquE549qd8JW4zGS7b1XsVNIPI/mS29xFVhRDkA=`.
 | wg0 output | `/etc/nftables-wg-restrict.nft` (table `ip wg_restrict`): VPS may only reply into wg0 |
 | Egress cap | `egress-cap.service`: `tc ... cake bandwidth 20mbit` on `enp0s6` (max ~6.5 TB/month) |
 | Egress guard | `snowflake-egress-guard.timer` every 15 min: stops the proxy once vnstat shows 7 TB tx this month, restarts it next month |
+| Auto-updates | `/etc/apt/apt.conf.d/52unattended-upgrades-local`: adds `-updates`, auto-reboot at 10:00 UTC (jelly 09:00, monero 09:30, same file) |
 
 Both the cap and the guard exist to keep the tenancy inside the free 10 TB/month
 outbound; the account is Pay-As-You-Go, so overage bills. Pre-change copies are
