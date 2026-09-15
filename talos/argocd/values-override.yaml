@@ -2,7 +2,7 @@
 global:
   image:
     # renovate: datasource=docker depName=quay.io/argoproj/argocd
-    tag: v3.2.6
+    tag: v3.5.3
   # Enable Prometheus scrape annotations on all components
   addPrometheusAnnotations: true
 
@@ -109,7 +109,7 @@ repoServer:
         runAsGroup: 999
     - name: import-gpg
       # renovate: datasource=docker depName=quay.io/argoproj/argocd
-      image: quay.io/argoproj/argocd:v3.2.6
+      image: quay.io/argoproj/argocd:v3.5.3
       command: ["/bin/sh", "-c"]
       args:
         - |
