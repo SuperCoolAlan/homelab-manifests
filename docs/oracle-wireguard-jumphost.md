@@ -271,8 +271,7 @@ Signal.
 | Backups | OCI policy `signal-weekly-sun` (see `docs/backup-and-recovery.md`) |
 | Gatus | `tls://signal.asandov.com:443`, connected + certificate > 10 days |
 
-Egress cap: `egress-cap.service`, `cake bandwidth 1mbit` on `enp0s6` (at most 0.33 TB
-in a 31-day month). No guard: the proxy must never shut off. See
+No egress cap and no guard: the proxy must never be throttled or shut off. See
 [Egress budget](#egress-budget). Pre-change copies are `*.bak-20260915`.
 
 ```bash
@@ -292,10 +291,10 @@ cap keeps that guard from tripping.
 |---|---|---|---|
 | snowflake | 19.5 Mbit/s | 6.53 TB | guard at 6.6 TB (unreachable backstop) |
 | monero | 8 Mbit/s | 2.68 TB | never |
-| signal | 1 Mbit/s | 0.33 TB | never |
+| signal | none | Signal clients | never |
 | jelly | none | remote Jellyfin streaming | never |
 
-That leaves ~0.46 TB/month for jelly before billing. `OracleTenancyEgressHigh`
+That leaves ~0.79 TB/month shared by jelly and signal before billing. `OracleTenancyEgressHigh`
 fires at 9 TB summed over the last 30 days. Every box has vnstat
 (`vnstat -m -i enp0s6`). Carve a new box's cap out of this table rather than
 raising the total.

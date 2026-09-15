@@ -24,7 +24,7 @@ spec:
           annotations:
             summary: "Oracle VPS {{ $labels.instance }} root filesystem under 15% free"
             description: "Boot volumes are sized to stay inside the free 200 GB; clean up rather than grow."
-        # Caps bound snowflake/monero/signal at ~9.54 TB per 31 days; jelly is uncapped, so it is the only way over 10 TB.
+        # Caps bound snowflake/monero at ~9.21 TB per 31 days; jelly and signal are uncapped, so they are the only way over 10 TB.
         - alert: OracleTenancyEgressHigh
           expr: sum(increase(node_network_transmit_bytes_total{job="oracle-node",device="enp0s6"}[30d])) > 9e12
           for: 30m
