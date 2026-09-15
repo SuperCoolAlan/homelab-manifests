@@ -14,6 +14,7 @@ double-coverage; each byte gets stored once per location.
 | Postgres DB on TrueNAS (Authentik, future) | `pg_dump` cron (local, short retention) | `pg_dump` pushed to `asandov-truenas` (separate prefix) |
 | NFS-backed files (photos, *arr configs, etc.) | TrueNAS periodic ZFS snapshots | TrueNAS `cloud_backup` (restic) → `asandov-truenas` |
 | Bulk/re-obtainable (downloads, media library) | none | none |
+| Oracle jumphost boot volumes (jelly, monero, snowflake) | none | OCI policy-based boot volume backups (us-chicago-1, see schedules) |
 
 **Never** back up a live Postgres data directory at the file level. Use
 application-aware backup (barman-cloud / pg_dump) for DBs.
@@ -43,6 +44,14 @@ file is the only way back.
 | TrueNAS ZFS snapshot — `immich-photos` (task id=1, recursive) | TrueNAS `pool.snapshottask` | every 6h | 30d | pool-local only |
 | TrueNAS ZFS snapshot — `media/nfs/v` (task id=2, recursive + exclude `pvc-58505e09-…`) | TrueNAS `pool.snapshottask` | every 6h | 30d | pool-local only |
 | TrueNAS cloud_backup — `immich-photos/v1` (task id=1, restic, via S3-compat cred id=2) | TrueNAS `cloud_backup` | `0 3 * * *` (03:00 UTC) | `keep_last=30` | `s3://asandov-truenas/immich-photos/` |
+| OCI boot volume backup — jelly (`jelly-weekly-mon`) | OCI volume backup policy | weekly Mon 11:00 UTC, incremental | 8d | OCI (Always Free) |
+| OCI boot volume backup — monero (`monero-weekly-wed`) | OCI volume backup policy | weekly Wed 11:00 UTC, incremental | 8d | OCI (Always Free) |
+| OCI boot volume backup — snowflake (`snowflake-weekly-fri`) | OCI volume backup policy | weekly Fri 11:00 UTC, incremental | 8d | OCI (Always Free) |
+
+The tenancy gets 5 free volume backups at any time; this is Pay-As-You-Go, so a
+6th is billed, not refused. Staggered days with 8d retention keep each box covered
+and cap the total at 4, leaving one slot for a manual backup before risky changes.
+Don't align the days or use bronze/silver/gold (they retain 12+ backups each).
 
 ## TODOs
 
