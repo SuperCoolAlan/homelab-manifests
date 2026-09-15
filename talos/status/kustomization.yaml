@@ -68,6 +68,14 @@ helmCharts:
             interval: 60s
             conditions:
               - "[STATUS] == 200"
+          # Outer TLS layer only: the relay behind it accepts nothing but Signal SNIs. certbot renews at 30 days left.
+          - name: Signal TLS proxy
+            group: Public
+            url: tls://signal.asandov.com:443
+            interval: 60s
+            conditions:
+              - "[CONNECTED] == true"
+              - "[CERTIFICATE_EXPIRATION] > 240h"
           # CrowdSec. Oracle LAPIs are reached through talos/crowdsec-lapi-tunnel, whose
           # NetworkPolicy must keep admitting gatus or these read as down.
           - name: CrowdSec Web UI
@@ -97,6 +105,12 @@ helmCharts:
           - name: CrowdSec LAPI (snowflake jumphost)
             group: CrowdSec
             url: http://snowflake.crowdsec-lapi-tunnel.svc.cluster.local:8080/health
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
+          - name: CrowdSec LAPI (signal proxy)
+            group: CrowdSec
+            url: http://signal.crowdsec-lapi-tunnel.svc.cluster.local:8080/health
             interval: 60s
             conditions:
               - "[STATUS] == 200"

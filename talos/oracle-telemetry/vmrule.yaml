@@ -24,3 +24,24 @@ spec:
           annotations:
             summary: "Oracle VPS {{ $labels.instance }} root filesystem under 15% free"
             description: "Boot volumes are sized to stay inside the free 200 GB; clean up rather than grow."
+    - name: signal-proxy.alerts
+      rules:
+        # Fed by signal-proxy-upstream-check.timer via node-exporter's textfile collector on the signal VPS.
+        - alert: SignalProxyUpstreamChanged
+          expr: max(signal_proxy_upstream_drift{job="oracle-node",instance="signal"}) == 1
+          for: 1h
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Signal-TLS-Proxy relay config changed upstream
+            description: "signalapp/Signal-TLS-Proxy's data/nginx-relay/nginx.conf no longer matches the copy /etc/nginx/nginx.conf on oracle-signal-proxy was ported from. Signal gives about 30 days before a change is required: re-sync the stream map, update /usr/local/share/signal-proxy/{nginx-relay.pinned.conf,PINNED_SHA}, reload nginx."
+        - alert: SignalProxyUpstreamCheckStale
+          expr: time() - max(signal_proxy_upstream_last_check_timestamp_seconds{job="oracle-node",instance="signal"}) > 50 * 3600 or max(signal_proxy_upstream_check_success{job="oracle-node",instance="signal"}) == 0
+          for: 2h
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Signal-TLS-Proxy upstream drift check is not running
+            description: "signal-proxy-upstream-check on oracle-signal-proxy has not succeeded in over two days, so upstream relay changes would go unnoticed. Check the timer and its journal."
