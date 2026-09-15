@@ -15,6 +15,16 @@ spec:
           annotations:
             summary: "Oracle VPS {{ $labels.instance }} metrics unreachable"
             description: "node-exporter on the {{ $labels.instance }} VPS has not been scraped for 15m. Check the oracle-telemetry pod's wg0 handshake, then prometheus-node-exporter on the VPS."
+        # Needs node-exporter's systemd collector on each VPS (see docs/oracle-wireguard-jumphost.md#oracle-telemetry-all-oracle-boxes).
+        - alert: OracleJournalUploadDown
+          expr: max by (instance) (node_systemd_unit_state{job="oracle-node",name="systemd-journal-upload.service",state="active"}) == 0 or on (instance) (up{job="oracle-node"} == 1 unless on (instance) node_systemd_unit_state{job="oracle-node",name="systemd-journal-upload.service"})
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: "Oracle VPS {{ $labels.instance }} is not shipping journald to VictoriaLogs"
+            description: "systemd-journal-upload on {{ $labels.instance }} is not active, or its state metric is missing. Check `journalctl -u systemd-journal-upload` there and the oracle-telemetry pod's journald-ingest nginx."
         - alert: OracleNodeFilesystemFilling
           expr: node_filesystem_avail_bytes{job="oracle-node",mountpoint="/"} / node_filesystem_size_bytes{job="oracle-node",mountpoint="/"} < 0.15
           for: 30m

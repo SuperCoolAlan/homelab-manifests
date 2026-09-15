@@ -17,7 +17,8 @@ spec:
             summary: Snowflake proxy is down
             description: The Oracle Snowflake proxy has not been scraped for 15m. Check the wg0 handshake, then snowflake-proxy and snowflake-egress-guard on oracle-snowflake-jumphost.
         - alert: SnowflakeProxyNoClients
-          expr: increase(tor_snowflake_proxy_connections_total[6h]) == 0
+          # Summed: the counter is per country, so single quiet countries and dead pods' series must not fire.
+          expr: sum(increase(tor_snowflake_proxy_connections_total{job="snowflake"}[6h])) == 0
           for: 1h
           labels:
             severity: warning

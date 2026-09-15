@@ -325,7 +325,7 @@ fires at 9 TB summed over the last 30 days. Every box has vnstat
 (`vnstat -m -i enp0s6`). Carve a new box's cap out of this table rather than
 raising the total.
 
-## Oracle telemetry (all three boxes)
+## Oracle telemetry (all Oracle boxes)
 
 Added 2026-09-14. Each VPS gets one more WireGuard peer, a pod in
 `talos/oracle-telemetry`:
@@ -340,7 +340,7 @@ Added 2026-09-14. Each VPS gets one more WireGuard peer, a pod in
 **Metrics (pull).** `prometheus-node-exporter` listens on `10.100.0.1:9100`
 only (`/etc/default/prometheus-node-exporter`, drop-in ordering it after
 `wg-quick@wg0`). vmagent scrapes the pod's socat, `job="oracle-node"`,
-`instance` = jelly / monero / snowflake. INPUT accepts 9100 from the peer only:
+`instance` = jelly / monero / snowflake / signal. INPUT accepts 9100 from the peer only:
 `rules.v4` on all boxes, plus `/etc/nftables.conf` on jelly.
 
 **Logs (push).** `systemd-journal-upload` sends the whole journal to
@@ -364,6 +364,18 @@ journal-upload keeps its cursor in `/var/lib/private/systemd/journal-upload/stat
 and resumes after tunnel outages. That file was seeded with the journal tail at
 setup: without a cursor journal-upload ships the entire journal from the start
 (2 GB on jelly). Delete it only if you want that backfill.
+
+**Uploader must never give up.** The stock unit restarts 5 times in 10 s and then
+stops for good, so a routine restart of the ingest pod or VictoriaLogs silently
+ended log shipping on three boxes on 2026-09-15. Each box has
+`/etc/systemd/system/systemd-journal-upload.service.d/10-retry-forever.conf`
+(`StartLimitIntervalSec=0`, `Restart=always`, `RestartSec=30`).
+
+**Alerting on it.** node-exporter runs with
+`--collector.systemd --collector.systemd.unit-include=systemd-journal-upload\.service`
+in `/etc/default/prometheus-node-exporter`, which exposes only that unit's state.
+`OracleJournalUploadDown` (alertgroup `homelab`, to Discord) fires after 15 min
+when the unit isn't active or the state metric is missing while the box is up.
 
 `systemd-journal-remote.service`/`.socket` from the same package stay masked;
 nothing here listens for remote journals. Pre-change copies are `*.bak-20260914`.

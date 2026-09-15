@@ -143,6 +143,9 @@ vmagent:
 vmalert:
   enabled: true
   spec:
+    extraArgs:
+      # Otherwise vmalert overwrites each rule's alertgroup label with its group name, and the Discord routes never match.
+      disableAlertgroupLabel: "true"
     nodeSelector:
       kubernetes.io/hostname: talos-ramhaus
 
