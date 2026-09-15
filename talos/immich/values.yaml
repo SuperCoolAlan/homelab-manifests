@@ -6,6 +6,8 @@
 # DB connection to CNPG-managed postgres (immich-postgres cluster)
 controllers:
   main:
+    # RWO zfs-localpv library volume: a surge pod can't mount it while the old server runs.
+    strategy: Recreate
     containers:
       main:
         image:
