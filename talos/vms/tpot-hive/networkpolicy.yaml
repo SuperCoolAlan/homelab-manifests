@@ -1,0 +1,28 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: tpot-hive
+  namespace: tpot
+spec:
+  endpointSelector:
+    matchLabels:
+      kubevirt.io/vm: tpot-hive
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: traefik
+            app.kubernetes.io/name: traefik
+      toPorts:
+        - ports:
+            - port: "64297"
+              protocol: TCP
+  egress:
+    # Internet only: the LAN, nodes, pods and services must stay unreachable from the honeypot.
+    - toCIDRSet:
+        - cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+            - 100.64.0.0/10
+            - 169.254.0.0/16

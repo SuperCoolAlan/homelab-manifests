@@ -1,0 +1,19 @@
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: tpot-hive-rootdisk
+  namespace: tpot
+spec:
+  source:
+    registry:
+      # T-Pot's installer refuses distro releases older than the current one.
+      url: "docker://quay.io/containerdisks/debian:13"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    volumeMode: Filesystem
+    resources:
+      requests:
+        # T-Pot hive minimum; sparse, grows with Elasticsearch data.
+        storage: 256Gi
+    storageClassName: fast-array
