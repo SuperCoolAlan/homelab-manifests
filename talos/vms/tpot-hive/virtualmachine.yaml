@@ -6,7 +6,8 @@ metadata:
   labels:
     app: tpot-hive
 spec:
-  runStrategy: Always
+  # Keep Halted until the ramhaus outage on first boot is understood; Always restarts it with the node.
+  runStrategy: Halted
   template:
     metadata:
       labels:
