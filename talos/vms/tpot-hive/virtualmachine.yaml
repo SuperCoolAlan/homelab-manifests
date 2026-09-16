@@ -1,0 +1,64 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: tpot-hive
+  namespace: tpot
+  labels:
+    app: tpot-hive
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: tpot-hive
+        app: tpot-hive
+    spec:
+      architecture: amd64
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      # Public resolvers only: cluster DNS is off-limits to the honeypot (see networkpolicy.yaml).
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 1.1.1.1
+          - 9.9.9.9
+      domain:
+        cpu:
+          cores: 6
+          sockets: 1
+          threads: 1
+        resources:
+          requests:
+            memory: 16Gi
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+              ports:
+                - name: ssh
+                  port: 64295
+                  protocol: TCP
+                - name: web
+                  port: 64297
+                  protocol: TCP
+          networkInterfaceMultiqueue: true
+        machine:
+          type: q35
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          dataVolume:
+            name: tpot-hive-rootdisk
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            secretRef:
+              name: tpot-hive-cloud-init
