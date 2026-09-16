@@ -174,11 +174,12 @@ flowchart LR
     argocd_appset --> Security
     subgraph Virtual_machines["Virtual machines"]
         app_aldo_vm["aldo-vm"]
+        app_tpot_hive["tpot-hive"]
     end
     argocd_appset --> Virtual_machines
 ```
 
-**44 Argo CD applications.**
+**45 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -226,6 +227,7 @@ flowchart LR
 | Security | [`falco`](talos/security/falco) | falco |  |
 | Security | [`trivy-operator`](talos/security/trivy-operator) | trivy-system |  |
 | Virtual machines | [`aldo-vm`](talos/vms/aldo-vm) | vms |  |
+| Virtual machines | [`tpot-hive`](talos/vms/tpot-hive) | tpot |  |
 <!-- apps:end -->
 
 ## Infrastructure

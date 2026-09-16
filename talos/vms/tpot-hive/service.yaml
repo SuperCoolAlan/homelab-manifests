@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tpot-hive
+  namespace: tpot
+  labels:
+    app: tpot-hive
+  annotations:
+    # Must stay on the Service, not the Ingress, or traefik ignores the transport.
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: tpot-tpot-insecure@kubernetescrd
+spec:
+  type: ClusterIP
+  selector:
+    kubevirt.io/vm: tpot-hive
+  ports:
+    - name: web
+      port: 64297
+      targetPort: 64297
+      protocol: TCP
+    - name: ssh
+      port: 64295
+      targetPort: 64295
+      protocol: TCP

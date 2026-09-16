@@ -1,0 +1,36 @@
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: tpot-insecure
+  namespace: tpot
+spec:
+  # T-Pot's nginx only serves its own self-signed cert.
+  insecureSkipVerify: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tpot-hive
+  namespace: tpot
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: tpot.local.asandov.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tpot-hive
+                port:
+                  number: 64297
+  tls:
+    - hosts:
+        - tpot.local.asandov.com
+      secretName: tpot-local-tls

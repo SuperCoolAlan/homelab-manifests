@@ -1,0 +1,71 @@
+# T-Pot honeypot
+
+[T-Pot CE](https://github.com/telekom-security/tpotce) in its distributed layout:
+the **hive** (Elasticsearch, Kibana, attack map) runs at home as a KubeVirt VM,
+and a **sensor** (the honeypots themselves) runs on a public cloud box and ships
+events to the hive. Attackers only ever touch the sensor.
+
+**Status (2026-09-16):** hive manifests in `talos/vms/tpot-hive/`. No sensor yet;
+hosting is undecided (Oracle A1 slot reshuffle vs. AWS trial), so nothing is
+exposed and the hive receives no events.
+
+```
+Internet ──▶ sensor (cloud) ──WireGuard, tcp/64294 only──▶ hive VM (ramhaus)   [not built]
+LAN ──▶ traefik ──▶ tpot.local.asandov.com ──▶ hive VM :64297                   [built]
+```
+
+## Hive VM — `talos/vms/tpot-hive/`
+
+| Piece | Detail |
+|---|---|
+| VM | Debian 13 containerdisk, 6 cores, 16 GiB, pinned to talos-ramhaus, namespace `tpot` |
+| Disk | DataVolume `tpot-hive-rootdisk`, 256 GiB sparse on `fast-array` (T-Pot hive minimum) |
+| Install | cloud-init runs `install.sh -s -t h` from a pinned tpotce commit, then reboots. Log: `/var/log/tpot-install.log` |
+| Secrets | `secrets/tpot-hive-cloud-init.enc.yaml` (SOPS) holds the whole userdata, including the web password for user `alan` |
+| Web UI | `https://tpot.local.asandov.com`: Authentik forward auth, then T-Pot's own nginx login. Traefik skips verification of T-Pot's self-signed cert |
+| SSH | Installer moves sshd to 64295; `momscloset` key, user `tpot`. `virtctl ssh -n tpot -p 64295 -i ~/.ssh/momscloset tpot@vm/tpot-hive` or `virtctl console tpot-hive -n tpot` |
+
+The tpotce pin lives inside the encrypted userdata and only matters on first boot,
+so Renovate does not track it. Updates happen inside the VM with
+`~/tpotce/update.sh -y`.
+
+The latest tagged release (24.04.1, Dec 2024) predates Debian 13 support, which is
+why the pin is a master commit rather than a tag.
+
+### Isolation
+
+The hive will ingest attacker-controlled data, so it is treated as untrusted:
+
+| Control | Where |
+|---|---|
+| Ingress only from traefik on 64297 | `networkpolicy.yaml` (CiliumNetworkPolicy) |
+| Egress only to the public internet: 10/8, 172.16/12, 192.168/16, 100.64/10, 169.254/16 excluded (LAN, nodes, pods, services, API server) | `networkpolicy.yaml` |
+| DNS via 1.1.1.1 / 9.9.9.9, never cluster DNS | `dnsPolicy: None` in `virtualmachine.yaml` |
+| No host mounts, no NFS, no shared PVCs | disk is its own zvol |
+
+The DNS setting and the egress policy depend on each other: with cluster DNS the
+VM would need a hole to kube-dns in `10.0.0.0/8`.
+
+When the sensor is added, open exactly one more ingress: tcp/64294 from the
+WireGuard tunnel pod. Nothing else.
+
+## First boot
+
+Expect 30+ minutes: the installer clones tpotce from github.com (slow over
+Starlink) and pulls ~20 images.
+
+```bash
+kubectl -n tpot get dv,vm,vmi
+virtctl console tpot-hive -n tpot          # watch cloud-init, then the reboot
+# inside: tail -f /var/log/tpot-install.log ; sudo systemctl status tpot
+curl -sk -o /dev/null -w '%{http_code}\n' https://tpot.local.asandov.com   # 302 to authentik
+```
+
+To reinstall from scratch, delete the DataVolume and VM; cloud-init only runs once
+per disk.
+
+## Open items
+
+- Sensor host (needs 8 GB RAM / 128 GB disk per T-Pot docs).
+- WireGuard tunnel pod + 64294 ingress rule on the hive.
+- Hive certificate with the tunnel IP as SAN before deploying the sensor (see T-Pot README, "Planning and Certificates").
