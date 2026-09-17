@@ -286,5 +286,7 @@ Other apps are listed explicitly, and the comment above each entry becomes its n
 | [renovate-ci.md](docs/renovate-ci.md) | Renovate and PR validation |
 | [authentik-postgres-migration.md](docs/authentik-postgres-migration.md) | Authentik onto CNPG |
 | [torrent-hardlink-migration.md](docs/torrent-hardlink-migration.md) | single-copy media with hardlinks |
+| [tpot-honeypot.md](docs/tpot-honeypot.md) | T-Pot hive VM and its isolation |
+| [tpot-sensor.md](docs/tpot-sensor.md) | the exposed sensor half and its tunnel home |
 
 Per-app notes: [jellyfin](talos/jellyfin/README.md), [monerod](talos/monerod/README.md), [p2pool](talos/p2pool/README.md), [unifi](talos/unifi/README.md).
