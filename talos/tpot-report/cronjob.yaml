@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: tpot-report
+  namespace: tpot
+spec:
+  schedule: "17 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: tpot-report
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: report
+              image: python:3.13-alpine
+              command: ["python3", "/app/report.py"]
+              env:
+                - name: HIVE_URL
+                  value: https://tpot-hive.tpot.svc.cluster.local:64297
+                - name: HIVE_USER
+                  value: alan
+                - name: HIVE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: tpot-report
+                      key: hive-password
+                - name: ABUSEIPDB_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: tpot-report
+                      key: abuseipdb-key
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                readOnlyRootFilesystem: true
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi
+              volumeMounts:
+                - name: script
+                  mountPath: /app
+          volumes:
+            - name: script
+              configMap:
+                name: tpot-report-script

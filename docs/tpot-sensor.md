@@ -4,8 +4,9 @@ The exposed half of the [T-Pot deployment](tpot-honeypot.md): a public cloud VM
 running the honeypots, shipping every event to the hive VM at home. Attackers
 only ever touch the sensor.
 
-**Status (2026-09-17):** five sensors live on Azure trial credit — westus2,
-swedencentral, australiaeast, japaneast, centralindia — all shipping to the hive.
+**Status (2026-09-17):** five sensors live on Azure trial credit, spread across four
+continents, all shipping to the hive. Which regions and which addresses stay out of
+this repo: it is public, and a list of the sensors is a list of boxes to avoid.
 AWS declined its free plan (the account is not new), so the host is Azure: the
 $200/30-day credit with the spending limit on cannot bill, and the subscription
 disables itself at day 30, taking the sensors with it. Provisioned by Terraform in
@@ -165,8 +166,8 @@ keeps every event already ingested and the tunnels simply stop handshaking.
 Moving to a paid host later means provisioning a box with the same user-data,
 adding its peer to the hive's `wg0.conf`, and running `join-sensor.sh`.
 
-`10.101.0.0/24` is the tunnel: hive `.2`, sensors `.1`, `.11`, `.12`, `.13`, `.14`.
-The Oracle jumphost mesh owns `10.100.0.0/24` — do not overlap it.
+`10.101.0.0/24` is the tunnel: hive `.2`, sensors from `.11` up. The Oracle jumphost
+mesh owns `10.100.0.0/24` — do not overlap it.
 
 ## Not available in 24.04
 
