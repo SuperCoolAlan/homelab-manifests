@@ -41,6 +41,8 @@ spec:
           interfaces:
             - name: default
               masquerade: {}
+              # cloud-init's netplan matches this MAC; an unpinned MAC changes on restart and the guest loses its IP.
+              macAddress: "ee:d6:18:22:f4:f6"
               # Masquerade forwards only listed ports; sshd sits on 22 until T-Pot's installer moves it.
               ports:
                 - name: ssh-stock
