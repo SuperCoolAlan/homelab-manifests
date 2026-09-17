@@ -28,7 +28,7 @@ write_files:
     permissions: "0600"
     content: |
       [Interface]
-      Address = 10.101.0.1/30
+      Address = PLACEHOLDER_WG_ADDRESS/24
       ListenPort = 51820
       PrivateKey = PLACEHOLDER_SENSOR_WG_PRIVKEY
 
@@ -36,6 +36,11 @@ write_files:
       # hive VM on talos-ramhaus
       PublicKey = PLACEHOLDER_HIVE_WG_PUBKEY
       AllowedIPs = 10.101.0.2/32
+
+swap:
+  filename: /swapfile
+  size: 4294967296
+  maxsize: 4294967296
 
 runcmd:
   - systemctl enable --now wg-quick@wg0

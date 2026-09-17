@@ -16,11 +16,12 @@ provider "azurerm" {
 # One source of truth for the user-data: the same template used for non-Azure hosts.
 locals {
   cloud_init = {
-    for name, s in var.sensors : name => replace(replace(replace(replace(
+    for name, s in var.sensors : name => replace(replace(replace(replace(replace(
       file("${path.module}/../cloud-init.yaml"),
       "PLACEHOLDER_SSH_PUBKEY", var.ssh_public_key),
       "PLACEHOLDER_SENSOR_WG_PRIVKEY", var.sensor_secrets[name].wg_private_key),
       "PLACEHOLDER_HIVE_WG_PUBKEY", var.hive_wg_public_key),
+      "PLACEHOLDER_WG_ADDRESS", s.wg_address),
     "PLACEHOLDER_WEB_PASSWORD", var.sensor_secrets[name].web_password)
   }
 }
