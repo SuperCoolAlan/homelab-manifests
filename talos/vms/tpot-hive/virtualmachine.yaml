@@ -41,7 +41,11 @@ spec:
           interfaces:
             - name: default
               masquerade: {}
+              # Masquerade forwards only listed ports; sshd sits on 22 until T-Pot's installer moves it.
               ports:
+                - name: ssh-stock
+                  port: 22
+                  protocol: TCP
                 - name: ssh
                   port: 64295
                   protocol: TCP
