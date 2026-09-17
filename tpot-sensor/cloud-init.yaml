@@ -3,8 +3,9 @@
 # with a public IPv4. Replace every PLACEHOLDER_ value, then encrypt the filled
 # copy to secrets/ with SOPS -- it carries the web password and the WireGuard key.
 # Runbook: docs/tpot-sensor.md
-hostname: tpot-sensor
-fqdn: tpot-sensor.tpot.local
+# Per-region: events are grouped by this hostname in Kibana.
+hostname: PLACEHOLDER_HOSTNAME
+fqdn: PLACEHOLDER_HOSTNAME.tpot.local
 
 users:
   - name: alan
