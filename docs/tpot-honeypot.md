@@ -47,8 +47,9 @@ The hive will ingest attacker-controlled data, so it is treated as untrusted:
 The DNS setting and the egress policy depend on each other: with cluster DNS the
 VM would need a hole to kube-dns in `10.0.0.0/8`.
 
-When the sensor is added, open exactly one more ingress: tcp/64294 from the
-WireGuard tunnel pod. Nothing else.
+The sensor needs no cluster ingress at all: the hive dials the tunnel out and the
+sensor's events arrive on the hive's own `wg0` inside the guest, so Cilium only
+sees the encrypted UDP flow the hive opened. See [T-Pot sensor](tpot-sensor.md).
 
 ## First boot
 
@@ -71,6 +72,5 @@ PVC until then); cloud-init only runs once per disk.
 
 ## Open items
 
-- Sensor host (needs 8 GB RAM / 128 GB disk per T-Pot docs).
-- WireGuard tunnel pod + 64294 ingress rule on the hive.
-- Hive certificate with the tunnel IP as SAN before deploying the sensor (see T-Pot README, "Planning and Certificates").
+- Sensor host: no always-free cloud VM fits, so it is an AWS Free plan box (self-closing credits). Template and runbook: [T-Pot sensor](tpot-sensor.md).
+- Hive-side WireGuard config + certificate reissued with the tunnel IP as SAN, both covered in that runbook.
