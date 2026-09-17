@@ -27,6 +27,15 @@ spec:
               protocol: TCP
             - port: "64295"
               protocol: TCP
+    # The reporter reads events through the hive's own nginx, so the API key never sits on the honeypot.
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: tpot
+            app: tpot-report
+      toPorts:
+        - ports:
+            - port: "64297"
+              protocol: TCP
   egress:
     # Internet only: the LAN, nodes, pods and services must stay unreachable from the honeypot.
     - toCIDRSet:

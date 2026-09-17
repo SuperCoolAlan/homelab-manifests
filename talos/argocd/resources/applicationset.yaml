@@ -38,6 +38,8 @@ spec:
           - path: talos/qbittorrent
           # Tracearr
           - path: talos/tracearr
+          # Reports honeypot attackers to AbuseIPDB (key stays in-cluster, not on the honeypot)
+          - path: talos/tpot-report
           # Maintainerr
           - path: talos/maintainerr
           # Piper (TTS)
