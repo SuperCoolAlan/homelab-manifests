@@ -15,7 +15,7 @@ metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd,tpot-tpot-basic-auth@kubernetescrd
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
