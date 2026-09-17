@@ -5,13 +5,13 @@ the **hive** (Elasticsearch, Kibana, attack map) runs at home as a KubeVirt VM,
 and a **sensor** (the honeypots themselves) runs on a public cloud box and ships
 events to the hive. Attackers only ever touch the sensor.
 
-**Status (2026-09-16):** hive manifests in `talos/vms/tpot-hive/`. No sensor yet;
-hosting is undecided (Oracle A1 slot reshuffle vs. AWS trial), so nothing is
-exposed and the hive receives no events.
+**Status (2026-09-17):** hive installed and running on ramhaus; the web UI answers
+behind Authentik. No sensor yet; hosting is undecided (Oracle A1 slot reshuffle vs.
+AWS trial), so nothing is exposed and the hive only sees its own honeypots.
 
 ```
 Internet ──▶ sensor (cloud) ──WireGuard, tcp/64294 only──▶ hive VM (ramhaus)   [not built]
-LAN ──▶ traefik ──▶ tpot.local.asandov.com ──▶ hive VM :64297                   [built]
+LAN ──▶ traefik ──▶ tpot.local.asandov.com ──▶ hive VM :64297                   [running]
 ```
 
 ## Hive VM — `talos/vms/tpot-hive/`
@@ -20,10 +20,11 @@ LAN ──▶ traefik ──▶ tpot.local.asandov.com ──▶ hive VM :64297 
 |---|---|
 | VM | Debian 13 containerdisk, 6 cores, 16 GiB, pinned to talos-ramhaus, namespace `tpot` |
 | Disk | DataVolume `tpot-hive-rootdisk`, 256 GiB sparse on `fast-array` (T-Pot hive minimum) |
-| Install | cloud-init runs `install.sh -s -t h` from a pinned tpotce commit, then reboots. Log: `/var/log/tpot-install.log` |
+| Install | cloud-init runs `install.sh -s -t h` from a pinned tpotce commit as user `alan`, then reboots. Log: `/var/log/tpot-install.log`. The installer aborts if the invoking user is named `tpot` — it creates that user itself |
 | Secrets | `secrets/tpot-hive-cloud-init.enc.yaml` (SOPS) holds the whole userdata, including the web password for user `alan` |
 | Web UI | `https://tpot.local.asandov.com`: Authentik forward auth, then T-Pot's own nginx login. Traefik skips verification of T-Pot's self-signed cert |
-| SSH | Installer moves sshd to 64295; `momscloset` key, user `tpot`. `virtctl ssh -n tpot -p 64295 -i ~/.ssh/momscloset tpot@vm/tpot-hive` or `virtctl console tpot-hive -n tpot` |
+| SSH | Installer moves sshd to 64295; `momscloset` key, user `alan`. `ssh tpot` (alias in `~/.ssh/config`, tunnels via `virtctl port-forward`), or `virtctl console tpot-hive -n tpot`. Ports 22 and 64295 are forwarded by masquerade and allowed from virt-api |
+| MAC | Pinned in `virtualmachine.yaml`: an unpinned MAC changes on every restart and cloud-init's netplan, which matches on MAC, then leaves the guest with no IP |
 
 The tpotce pin lives inside the encrypted userdata and only matters on first boot,
 so Renovate does not track it. Updates happen inside the VM with
@@ -52,17 +53,21 @@ WireGuard tunnel pod. Nothing else.
 ## First boot
 
 Expect 30+ minutes: the installer clones tpotce from github.com (slow over
-Starlink) and pulls ~20 images.
+Starlink) and pulls ~20 images. That download once locked up ramhaus's onboard
+e1000e NIC (`Detected Hardware Unit Hang`), taking the node, the tunnels and the
+cluster API down with it; TSO/GSO are disabled on `eno1` via an `EthernetConfig`
+document in the (gitignored) `talos/config/worker-ramhaus-nvme.yaml`.
 
 ```bash
 kubectl -n tpot get dv,vm,vmi
 virtctl console tpot-hive -n tpot          # watch cloud-init, then the reboot
-# inside: tail -f /var/log/tpot-install.log ; sudo systemctl status tpot
+ssh tpot 'sudo tail -f /var/log/tpot-install.log'   # once sshd is up
+talosctl -n 10.0.1.12 dmesg | grep 'Hardware Unit Hang'   # must stay empty during the pulls
 curl -sk -o /dev/null -w '%{http_code}\n' https://tpot.local.asandov.com   # 302 to authentik
 ```
 
-To reinstall from scratch, delete the DataVolume and VM; cloud-init only runs once
-per disk.
+To reinstall from scratch, delete the DataVolume and restart the VM (it holds the
+PVC until then); cloud-init only runs once per disk.
 
 ## Open items
 
