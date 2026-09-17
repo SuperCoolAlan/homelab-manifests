@@ -16,6 +16,17 @@ spec:
         - ports:
             - port: "64297"
               protocol: TCP
+    # virtctl ssh tunnels through virt-api; T-Pot moves sshd from 22 to 64295 after install.
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kubevirt
+            kubevirt.io: virt-api
+      toPorts:
+        - ports:
+            - port: "22"
+              protocol: TCP
+            - port: "64295"
+              protocol: TCP
   egress:
     # Internet only: the LAN, nodes, pods and services must stay unreachable from the honeypot.
     - toCIDRSet:
