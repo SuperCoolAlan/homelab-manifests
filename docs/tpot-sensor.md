@@ -85,7 +85,20 @@ instances are fine and usually cheaper.
 
 ## Joining the sensor to the hive
 
-All of this runs on the hive (`ssh tpot`), which is where `deploy.sh` lives.
+Use `tpot-sensor/join-sensor.sh <name> <sensor-tunnel-ip>`. It does what
+`deploy.sh` does, minus the parts that make `deploy.sh` unusable non-interactively:
+Ansible's become prompt needs a real tty, and its playbook reboots the sensor
+mid-run, killing the SSH session that drives it.
+
+Three things the join must get right; each one silently produces no events:
+
+| Requirement | Symptom when wrong |
+|---|---|
+| `data/hive.crt` on the sensor (the hive's nginx cert) | logstash: `File does not exist /data/hive.crt`, http_output pipeline never starts |
+| One entry per user in the hive's `LS_WEB_USER` | nginx matches the first duplicate, sensor gets 401 |
+| `TPOT_TYPE=SENSOR` before starting T-Pot | a sensor still labelled HIVE will not start at all |
+
+The manual equivalent, if you need it:
 
 1. **Bring up the hive's tunnel end.** `/etc/wireguard/wg0.conf` in the hive VM:
    ```ini
@@ -127,7 +140,7 @@ All of this runs on the hive (`ssh tpot`), which is where `deploy.sh` lives.
    ```
    It writes `TPOT_TYPE=SENSOR`, `TPOT_HIVE_IP` and a base64 `TPOT_HIVE_USER`
    into the sensor's `.env`, and the matching `LS_WEB_USER` on the hive. Each
-   sensor gets its own user, so a second sensor is another `deploy.sh` run.
+   sensor gets its own user, so a second sensor is another run.
 
 ## Verify
 
