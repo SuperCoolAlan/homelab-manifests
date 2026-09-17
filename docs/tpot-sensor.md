@@ -4,9 +4,12 @@ The exposed half of the [T-Pot deployment](tpot-honeypot.md): a public cloud VM
 running the honeypots, shipping every event to the hive VM at home. Attackers
 only ever touch the sensor.
 
-**Status (2026-09-17):** not deployed. Template and runbook only; the host is an
-AWS Free plan instance being created (credits self-terminate the account, so the
-sensor is disposable by design — everything needed to rebuild it is here).
+**Status (2026-09-17):** five sensors live on Azure trial credit — westus2,
+swedencentral, australiaeast, japaneast, centralindia — all shipping to the hive.
+AWS declined its free plan (the account is not new), so the host is Azure: the
+$200/30-day credit with the spending limit on cannot bill, and the subscription
+disables itself at day 30, taking the sensors with it. Provisioned by Terraform in
+`tpot-sensor/terraform/`; add a region by adding a tfvars entry and applying.
 
 ## Why the tunnel is dialed from home
 
@@ -33,8 +36,8 @@ scanners, bots, attackers
 └───────────────────────────────┘
 ```
 
-`10.101.0.0/30` is the sensor tunnel. The Oracle jumphost mesh owns
-`10.100.0.0/24` — do not overlap it.
+`10.101.0.0/24` is the sensor tunnel; the hive is `.2` and each sensor gets its own
+address. The Oracle jumphost mesh owns `10.100.0.0/24` — do not overlap it.
 
 Nothing in the cluster gains an ingress rule: the inner traffic arrives on the
 hive's own `wg0` inside the guest, so Cilium only ever sees the encrypted UDP
@@ -153,13 +156,17 @@ curl -sk https://127.0.0.1:64297/es/_cat/indices?v          # run on the hive
 Then watch Kibana at `https://tpot.local.asandov.com` — sensor events land in the
 same indices, tagged by sensor.
 
-## When the AWS credits run out
+## When the Azure credit runs out
 
-The account closes itself, so the sensor disappears with it. Nothing at home
-breaks: the hive keeps every event already ingested, and the tunnel simply stops
-handshaking. To move to another host, provision a new box with the same
-user-data and re-run `deploy.sh`; only the `Endpoint` line in the hive's
-`wg0.conf` changes.
+At day 30 the spending limit disables the subscription and every sensor stops at
+once — that is the point: no card is ever charged. Nothing at home breaks; the hive
+keeps every event already ingested and the tunnels simply stop handshaking.
+
+Moving to a paid host later means provisioning a box with the same user-data,
+adding its peer to the hive's `wg0.conf`, and running `join-sensor.sh`.
+
+`10.101.0.0/24` is the tunnel: hive `.2`, sensors `.1`, `.11`, `.12`, `.13`, `.14`.
+The Oracle jumphost mesh owns `10.100.0.0/24` — do not overlap it.
 
 ## Not available in 24.04
 
