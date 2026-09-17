@@ -24,3 +24,10 @@ talos/cluster-services/traefik/helm/
 # Postgres migration dumps - contain user data, never commit (repo is public)
 talos/immich/*.dump
 talos/immich/*.sql
+
+# Terraform state holds sensor private keys and passwords
+tpot-sensor/terraform/.terraform/
+tpot-sensor/terraform/*.tfstate
+tpot-sensor/terraform/*.tfstate.*
+tpot-sensor/terraform/terraform.tfvars
+tpot-sensor/terraform/*.tfplan

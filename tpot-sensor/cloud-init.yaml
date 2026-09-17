@@ -1,7 +1,7 @@
 #cloud-config
 # T-Pot sensor user-data template. Host-agnostic: works on any Debian 13 cloud VM
 # with a public IPv4. Replace every PLACEHOLDER_ value, then encrypt the filled
-# copy to secrets/ with SOPS — it carries the web password and the WireGuard key.
+# copy to secrets/ with SOPS -- it carries the web password and the WireGuard key.
 # Runbook: docs/tpot-sensor.md
 hostname: tpot-sensor
 fqdn: tpot-sensor.tpot.local
