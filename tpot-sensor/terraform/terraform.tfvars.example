@@ -1,0 +1,20 @@
+# Copy to terraform.tfvars (gitignored -- it holds private keys and passwords).
+subscription_id    = "00000000-0000-0000-0000-000000000000"
+ssh_public_key     = "ssh-ed25519 AAAA... alan@example"
+hive_wg_public_key = "HIVE_WG_PUBKEY="
+
+# wg genkey | tee sensor-<name>.key | wg pubkey
+# Not every region can deploy every size: probe first (see docs/tpot-sensor.md).
+sensors = {
+  westus2 = {
+    location   = "westus2"
+    wg_address = "10.101.0.11"
+  }
+}
+
+sensor_secrets = {
+  westus2 = {
+    wg_private_key = "SENSOR_WG_PRIVKEY="
+    web_password   = "generate-a-random-one"
+  }
+}
