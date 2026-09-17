@@ -73,7 +73,7 @@ def main():
     attackers = [b for b in buckets if reportable(b["key"])][:MAX_REPORTS]
     print(f"{len(buckets)} source IPs in window, reporting {len(attackers)}")
 
-    sent = failed = 0
+    sent = failed = skipped = 0
     for b in attackers:
         ip, hits = b["key"], b["doc_count"]
         seen = ",".join(h["key"] for h in b["hp"]["buckets"])
@@ -92,17 +92,22 @@ def main():
                 json.load(r)
                 sent += 1
         except urllib.error.HTTPError as e:
-            # 429 means the daily quota is gone; stop rather than burn the rest of the run.
             body = e.read().decode()[:200]
+            # 429 is two different things: a per-IP duplicate (skip it) or the daily
+            # quota (stop, or every remaining report burns a failed request).
+            if e.code == 429 and "15 minutes" in body:
+                skipped += 1
+                continue
             print(f"{ip}: HTTP {e.code} {body}")
             failed += 1
             if e.code == 429:
+                print("daily quota reached, stopping")
                 break
         except Exception as e:  # noqa: BLE001 - keep going on single-IP failures
             print(f"{ip}: {e}")
             failed += 1
 
-    print(f"reported={sent} failed={failed}")
+    print(f"reported={sent} duplicates={skipped} failed={failed}")
 
 
 if __name__ == "__main__":
