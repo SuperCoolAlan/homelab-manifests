@@ -1,0 +1,44 @@
+#cloud-config
+# T-Pot sensor user-data template. Host-agnostic: works on any Debian 13 cloud VM
+# with a public IPv4. Replace every PLACEHOLDER_ value, then encrypt the filled
+# copy to secrets/ with SOPS — it carries the web password and the WireGuard key.
+# Runbook: docs/tpot-sensor.md
+hostname: tpot-sensor
+fqdn: tpot-sensor.tpot.local
+
+users:
+  - name: alan
+    gecos: Alan
+    shell: /bin/bash
+    # T-Pot refuses to install as `tpot` (it creates that user) and its unattended install (-s) needs passwordless sudo.
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - "PLACEHOLDER_SSH_PUBKEY"
+
+package_update: true
+packages:
+  - curl
+  - git
+  - wireguard-tools
+
+write_files:
+  # The hive dials in: home is behind CGNAT, so the sensor has to be the listener.
+  - path: /etc/wireguard/wg0.conf
+    permissions: "0600"
+    content: |
+      [Interface]
+      Address = 10.101.0.1/30
+      ListenPort = 51820
+      PrivateKey = PLACEHOLDER_SENSOR_WG_PRIVKEY
+
+      [Peer]
+      # hive VM on talos-ramhaus
+      PublicKey = PLACEHOLDER_HIVE_WG_PUBKEY
+      AllowedIPs = 10.101.0.2/32
+
+runcmd:
+  - systemctl enable --now wg-quick@wg0
+  # Same pinned commit as the hive: sensor and hive must run matching T-Pot versions.
+  - su - alan -c 'TPOT_BRANCH=3fefebaff4a632fd8d12f88f4d68fd99bd697ed8 bash -c "$(curl -sL https://raw.githubusercontent.com/telekom-security/tpotce/3fefebaff4a632fd8d12f88f4d68fd99bd697ed8/install.sh)" install.sh -s -t s -u alan -p PLACEHOLDER_WEB_PASSWORD' > /var/log/tpot-install.log 2>&1
+  - reboot
