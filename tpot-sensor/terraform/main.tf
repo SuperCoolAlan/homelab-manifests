@@ -16,12 +16,13 @@ provider "azurerm" {
 # One source of truth for the user-data: the same template used for non-Azure hosts.
 locals {
   cloud_init = {
-    for name, s in var.sensors : name => replace(replace(replace(replace(replace(
+    for name, s in var.sensors : name => replace(replace(replace(replace(replace(replace(
       file("${path.module}/../cloud-init.yaml"),
       "PLACEHOLDER_SSH_PUBKEY", var.ssh_public_key),
       "PLACEHOLDER_SENSOR_WG_PRIVKEY", var.sensor_secrets[name].wg_private_key),
       "PLACEHOLDER_HIVE_WG_PUBKEY", var.hive_wg_public_key),
       "PLACEHOLDER_WG_ADDRESS", s.wg_address),
+      "PLACEHOLDER_HOSTNAME", "tpot-sensor-${name}"),
     "PLACEHOLDER_WEB_PASSWORD", var.sensor_secrets[name].web_password)
   }
 }
@@ -137,5 +138,11 @@ resource "azurerm_linux_virtual_machine" "sensor" {
     offer     = "debian-13"
     sku       = "13-gen2"
     version   = "latest"
+  }
+
+  lifecycle {
+    # cloud-init only runs on first boot, so a template edit must never destroy a
+    # live sensor. Rebuild deliberately with -replace when you want the new user-data.
+    ignore_changes = [custom_data]
   }
 }
