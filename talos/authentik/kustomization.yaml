@@ -13,6 +13,7 @@ resources:
   - resources/ldap-ingressroute.yaml
   - resources/ldap-dns.yaml
   - resources/local-asandov-ingress.yaml
+  - resources/blueprint-cloudflare-access.yaml
 
 generators:
   - secrets-generator.yaml
