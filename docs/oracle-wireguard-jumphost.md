@@ -387,6 +387,36 @@ ssh oracle-monero-jumphost 'curl -s -o /dev/null -w "%{http_code}\n" http://10.1
 # VictoriaLogs: _stream:{_HOSTNAME="monero-jumphost-20260910"}   VictoriaMetrics: up{job="oracle-node"}
 ```
 
+## Looped CCTV box
+
+Added 2026-09-18. The OnLogic FR201 at the Looped shop (repo `SuperCoolAlan/looped-cctv`) is peer
+`10.100.0.20` on **monero-jumphost**, pubkey `95WaWM/7eB7iS9s108r+d3XpKLaykLadftUKC3xfLBI=`. It sits
+behind T-Mobile CGNAT, so it dials out like the pods do.
+
+It is **push only**, through one hole: the VPS forwards `10.100.0.20 → 10.100.0.9` TCP 9428 (new
+connections) and the replies, and nothing else between peers. monerod and p2pool still cannot reach it,
+and nothing on this side can open a connection to the box.
+
+| Data | On the box | Arrives at |
+|---|---|---|
+| Logs | `systemd-journal-upload` → `http://10.100.0.9:9428/insert/journald` (Docker uses the journald log driver) | VictoriaLogs, `_HOSTNAME="looped-cctv"` |
+| Metrics | `vmagent` scrapes loopback node-exporter and Frigate `/api/metrics`, remote_writes to `http://10.100.0.9:9428/api/v1/write` | vmsingle, `job="looped-node"` / `"looped-frigate"`, `site="looped"` |
+
+The monero pod's nginx lets `10.100.0.20` POST only those two paths; `/api/v1/write` is allowed from `.20`
+alone. Alerts are the `looped-cctv.alerts` group in `talos/oracle-telemetry/vmrule.yaml`.
+
+| Piece on monero-jumphost | Where |
+|---|---|
+| Peer | `[Peer]` `AllowedIPs = 10.100.0.20/32` in `/etc/wireguard/wg0.conf`, plus `ip route replace 10.100.0.20/32 dev wg0` when added live |
+| The hole | `table ip monerod_gw` forward chain in `/etc/nftables-monerod.nft`, ahead of the `wg0 → wg0` drop |
+| FORWARD accept | `/etc/iptables/rules.v4`, ahead of the reject |
+| Backups | `*.bak-20260918` |
+
+```bash
+ssh oracle-monero-jumphost 'sudo wg show wg0 | grep -A4 95WaWM'   # recent handshake, bytes received
+# VictoriaMetrics: up{job="looped-node"}   VictoriaLogs: _stream:{_HOSTNAME="looped-cctv"}
+```
+
 ## DNS
 
 `jellyfin.asandov.com` → `163.192.195.190` in Cloudflare, **DNS Only** (grey
