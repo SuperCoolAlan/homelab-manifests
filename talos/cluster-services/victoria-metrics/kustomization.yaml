@@ -551,6 +551,17 @@ configMapGenerator:
 
   # monerod (lalanza808/docker-monero-node node_stats.json). GeoIP map panels
   # dropped (need their nodemapper); datasource uid rewritten to "prometheus".
+  - name: dashboard-looped-cctv
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Looped"
+    files:
+      - dashboards/Looped/looped-cctv.json
+
   - name: dashboard-monerod
     namespace: monitoring
     options:
