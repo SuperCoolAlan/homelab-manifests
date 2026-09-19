@@ -83,7 +83,7 @@ spec:
       containers:
         - name: p2pool
           # renovate: datasource=docker depName=ghcr.io/sethforprivacy/p2pool
-          image: ghcr.io/sethforprivacy/p2pool:v4.18@sha256:53b6a88aff43c7f165066c4e918fea250fabd0afccee7e07a020dff3ce605de7
+          image: ghcr.io/sethforprivacy/p2pool:v4.18@sha256:b6f8ae2fbe76ae6cff95ec70f6024f839e0066fc887f7c336d27c1167b6e702e
           workingDir: /data
           command: ["/bin/sh", "-c", "mkdir -p /data/api && exec p2pool \"$@\"", "p2pool"]
           args:
