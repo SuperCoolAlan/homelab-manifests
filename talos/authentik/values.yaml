@@ -27,6 +27,13 @@ global:
   envFrom:
     - secretRef:
         name: authentik-secrets
+    # client id/secret read by the cloudflare-access blueprint (!Env)
+    - secretRef:
+        name: cloudflare-access-oidc
+
+blueprints:
+  configMaps:
+    - authentik-blueprint-cloudflare-access
 
 # Disable the bundled PostgreSQL. Despite the previous "using CNPG" note here,
 # authentik has never had a CNPG cluster - authentik.postgresql.host above
