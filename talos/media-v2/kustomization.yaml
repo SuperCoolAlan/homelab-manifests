@@ -44,35 +44,35 @@ patches:
 helmCharts:
 - name: sonarr
   repo: https://media-servarr.shw.al/charts
-  version: 0.16.0
+  version: 0.17.2
   releaseName: sonarr
   namespace: media-v2
   valuesFile: values-overrides/sonarr-values.yaml
     
 - name: radarr
   repo: https://media-servarr.shw.al/charts
-  version: 1.10.0
+  version: 1.12.1
   releaseName: radarr
   namespace: media-v2
   valuesFile: values-overrides/radarr-values.yaml
 
 - name: prowlarr
   repo: https://media-servarr.shw.al/charts
-  version: 0.28.0
+  version: 0.30.1
   releaseName: prowlarr
   namespace: media-v2
   valuesFile: values-overrides/prowlarr-values.yaml
 
 - name: sabnzbd
   repo: https://media-servarr.shw.al/charts
-  version: 1.6.2
+  version: 1.6.3
   releaseName: sabnzbd
   namespace: media-v2
   valuesFile: values-overrides/sabnzbd-values.yaml
 
 - name: bazarr
   repo: https://media-servarr.shw.al/charts
-  version: 0.17.0
+  version: 0.18.2
   releaseName: bazarr
   namespace: media-v2
   valuesFile: values-overrides/bazarr-values.yaml
