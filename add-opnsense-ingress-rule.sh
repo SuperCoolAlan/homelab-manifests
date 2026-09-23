@@ -2,8 +2,8 @@
 
 # OPNsense API configuration
 OPNSENSE_HOST="10.0.1.1"
-API_KEY="***REMOVED***"
-API_SECRET="***REMOVED***"
+API_KEY="${OPNSENSE_API_KEY:?set OPNSENSE_API_KEY}"
+API_SECRET="${OPNSENSE_API_SECRET:?set OPNSENSE_API_SECRET}"
 
 # Firewall rule configuration
 RULE_JSON='{
