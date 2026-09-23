@@ -162,6 +162,8 @@ spec:
             - --rpc-bind-port=18081
             # Loopback counts as a public IP (default limit 3); the exporter's parallel collectors exceed it and get reset.
             - --rpc-max-connections-per-public-ip=10
+            # RPC errors ban the caller's IP, and a banned 127.0.0.1 cuts the exporter off until restart. 18089 is LAN-only.
+            - --disable-rpc-ban
             # Oracle DNATs 18080 straight through, so the advertised port is the real one. No UPnP.
             - --no-igd
             # p2pool README's recommended node settings: faster block/tx propagation means fewer stale p2pool shares.
