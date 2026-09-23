@@ -169,6 +169,7 @@ flowchart LR
     argocd_appset --> Monitoring
     subgraph Security["Security"]
         app_falco["falco"]
+        app_tpot_report["tpot-report"]
         app_trivy_operator["trivy-operator"]
     end
     argocd_appset --> Security
@@ -179,7 +180,7 @@ flowchart LR
     argocd_appset --> Virtual_machines
 ```
 
-**45 Argo CD applications.**
+**46 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -225,6 +226,7 @@ flowchart LR
 | Monitoring | [`opnsense-exporter`](talos/monitoring/opnsense-exporter) | monitoring |  |
 | Monitoring | [`starlink`](talos/monitoring/starlink) | monitoring |  |
 | Security | [`falco`](talos/security/falco) | falco |  |
+| Security | [`tpot-report`](talos/tpot-report) | tpot | Reports honeypot attackers to AbuseIPDB (key stays in-cluster, not on the honeypot) |
 | Security | [`trivy-operator`](talos/security/trivy-operator) | trivy-system |  |
 | Virtual machines | [`aldo-vm`](talos/vms/aldo-vm) | vms |  |
 | Virtual machines | [`tpot-hive`](talos/vms/tpot-hive) | tpot |  |

@@ -26,6 +26,7 @@ PREFIX_CATEGORIES = {
     "talos/cluster-services/": "Cluster services",
     "talos/monitoring/": "Monitoring",
     "talos/security/": "Security",
+    "talos/tpot-report": "Security",
     "talos/vms/": "Virtual machines",
 }
 ORDER = [c for c, _ in CATEGORIES[:1]] + ["Cluster services"] + [c for c, _ in CATEGORIES[1:]] + [
