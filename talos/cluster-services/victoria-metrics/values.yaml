@@ -230,6 +230,9 @@ victoria-metrics-operator:
     enabled: true
   operator:
     disable_prometheus_converter: false
+  # Their monitoring.coreos.com CRDs are removed (unused, and their schemas cost apiserver memory); watching them would break informers.
+  extraArgs:
+    controller.disableReconcileFor: PodMonitor,Probe,ScrapeConfig,AlertmanagerConfig
   nodeSelector:
     kubernetes.io/hostname: talos-ramhaus
 
