@@ -62,7 +62,7 @@ spec:
             # The only privileged code in p2pool: a few seconds twice a day. Talos machine.sysfs sets no_turbo=1 at boot.
             - name: turbo-on
               # renovate: datasource=docker depName=busybox
-              image: busybox:1.38.0@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+              image: busybox:1.38.0@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e
               command: ["/bin/sh", "-c", "echo 0 > /sys/devices/system/cpu/intel_pstate/no_turbo && echo turbo on"]
               securityContext:
                 privileged: true
@@ -120,7 +120,7 @@ spec:
             # Runs before the scale-up so mining never starts with turbo on.
             - name: turbo-off
               # renovate: datasource=docker depName=busybox
-              image: busybox:1.38.0@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+              image: busybox:1.38.0@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e
               command: ["/bin/sh", "-c", "echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo && echo turbo off"]
               securityContext:
                 privileged: true
