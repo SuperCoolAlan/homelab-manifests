@@ -13,3 +13,16 @@ helmCharts:
     releaseName: volsync
     namespace: volsync-system
     valuesFile: values.yaml
+    # Chart only renders its ServiceMonitor when this exact kind is advertised; the patch below targets it.
+    apiVersions:
+      - monitoring.coreos.com/v1/ServiceMonitor
+
+patches:
+  # controller-runtime's secure metrics endpoint 401s anonymous scrapes; vmagent's SA already has get on /metrics.
+  - target:
+      kind: ServiceMonitor
+      name: volsync
+    patch: |-
+      - op: add
+        path: /spec/endpoints/0/bearerTokenFile
+        value: /var/run/secrets/kubernetes.io/serviceaccount/token
