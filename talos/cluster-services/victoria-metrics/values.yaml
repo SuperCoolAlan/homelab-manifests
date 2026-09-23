@@ -149,6 +149,14 @@ vmalert:
     nodeSelector:
       kubernetes.io/hostname: talos-ramhaus
 
+defaultRules:
+  rules:
+    # N-1 capacity checks can't pass with one big worker and a small blackbox.
+    KubeMemoryOvercommit:
+      enabled: false
+    KubeCPUOvercommit:
+      enabled: false
+
 # Configure datasource name and UID for dashboard compatibility
 defaultDatasources:
   victoriametrics:
