@@ -156,6 +156,10 @@ defaultRules:
       enabled: false
     KubeCPUOvercommit:
       enabled: false
+    # p2pool scales to 0 on the OG&E peak schedule; P2PoolDown covers it with that schedule in mind. Keep the rest of the chart expr.
+    ScrapePoolHasNoTargets:
+      spec:
+        expr: sum(vm_promscrape_scrape_pool_targets{scrape_job!~"serviceScrape/p2pool/.*"}) without(status,instance,pod) == 0
 
 # Configure datasource name and UID for dashboard compatibility
 defaultDatasources:
