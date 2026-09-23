@@ -201,6 +201,9 @@ dex:
   enabled: false
 
 redis:
+  # metrics.enabled only creates the Service; without the exporter sidecar it has no endpoints.
+  exporter:
+    enabled: true
   metrics:
     enabled: true
     serviceMonitor:
