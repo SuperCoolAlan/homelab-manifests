@@ -30,6 +30,8 @@ helmCharts:
       serviceMonitor:
         enabled: true
       config:
+        # The serviceMonitor above scrapes /metrics, which 404s without this.
+        metrics: true
         storage:
           type: sqlite
           path: /data/gatus.db
