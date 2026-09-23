@@ -156,6 +156,9 @@ defaultRules:
       enabled: false
     KubeCPUOvercommit:
       enabled: false
+    # Fires whenever a recording rule is legitimately empty (e.g. count:up0 with no targets down).
+    RecordingRulesNoData:
+      enabled: false
     # p2pool scales to 0 on the OG&E peak schedule; P2PoolDown covers it with that schedule in mind. Keep the rest of the chart expr.
     ScrapePoolHasNoTargets:
       spec:
