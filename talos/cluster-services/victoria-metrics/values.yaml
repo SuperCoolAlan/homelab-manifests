@@ -323,6 +323,25 @@ kubeControllerManager:
 kubeScheduler:
   enabled: false
 
+# Talos runs etcd outside Kubernetes and serves 2379 with client-cert auth only; scraping needs listen-metrics-urls on the control plane first.
+kubeEtcd:
+  enabled: false
+
+# Scrape Talos's own kube-dns Service; a chart Service would be forced into monitoring by the kustomization namespace and select nothing.
+coreDns:
+  service:
+    enabled: false
+  vmScrape:
+    spec:
+      jobLabel: k8s-app
+      namespaceSelector:
+        matchNames: [kube-system]
+      selector:
+        matchLabels:
+          k8s-app: kube-dns
+      endpoints:
+        - port: metrics
+
 # Default dashboards from the chart. node-exporter-full is large enough to blow
 # the client-side-apply annotation limit; the ArgoCD ApplicationSet sets
 # ServerSideApply=true, so it applies cleanly.
