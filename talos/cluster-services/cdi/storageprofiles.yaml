@@ -1,0 +1,18 @@
+# CDI creates these per StorageClass but can't infer access modes for zfs-localpv; without them every DataVolume must spell them out.
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: StorageProfile
+metadata:
+  name: fast-array
+spec:
+  claimPropertySets:
+    - accessModes: [ReadWriteOnce]
+      volumeMode: Filesystem
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: StorageProfile
+metadata:
+  name: ssd-array
+spec:
+  claimPropertySets:
+    - accessModes: [ReadWriteOnce]
+      volumeMode: Filesystem
