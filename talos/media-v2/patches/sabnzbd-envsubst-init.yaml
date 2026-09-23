@@ -13,6 +13,8 @@
     # Substitute passwords using sed with escaped values
     sed -i "s|\$ewekaPassword|$EWEKA_ESC|g" /config-processed/sabnzbd.ini
     sed -i "s|\$newshostingPassword|$NEWSHOSTING_ESC|g" /config-processed/sabnzbd.ini
+    # Keys are hex, so no escaping needed.
+    sed -i "s|\$sabnzbdApiKey|$sabnzbdApiKey|g; s|\$sabnzbdNzbKey|$sabnzbdNzbKey|g" /config-processed/sabnzbd.ini
 
     echo "Password substitution completed"
 - op: add
@@ -28,3 +30,13 @@
         secretKeyRef:
           name: sabnzbd-passwords
           key: newshostingPassword
+    - name: sabnzbdApiKey
+      valueFrom:
+        secretKeyRef:
+          name: sabnzbd-apikey
+          key: apiKey
+    - name: sabnzbdNzbKey
+      valueFrom:
+        secretKeyRef:
+          name: sabnzbd-apikey
+          key: nzbKey

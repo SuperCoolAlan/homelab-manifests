@@ -21,8 +21,8 @@ application:
       log_level = 2
       queue_limit = 20
       port = 8080
-      api_key = ***REMOVED***
-      nzb_key = ***REMOVED***
+      api_key = $sabnzbdApiKey
+      nzb_key = $sabnzbdNzbKey
       download_dir = /downloads/incomplete
       complete_dir = /downloads/complete
       host_whitelist = sabnzbd,localhost,sabnzbd.media-v2.svc.cluster.local,radarr,sonarr,prowlarr,sabnzbd.local.asandov.com,sabnzbd.asandov.local
