@@ -93,7 +93,7 @@ spec:
               memory: 64Mi
         - name: tor
           # renovate: datasource=docker depName=osminogin/tor-simple versioning=loose
-          image: osminogin/tor-simple:0.4.9.12@sha256:6ad8d9f6880c0c0f0fc1fbe453c4ae0904d901924fb8a797f60d7d1475db1c89
+          image: osminogin/tor-simple:0.4.9.13@sha256:9cd994f3bb813ae4ebd148ef077f8a61fd4420899e7ed5bcaa24aabd2d119648
           # Native sidecar: starts before monerod and the startup probe gates it on the .onion existing.
           restartPolicy: Always
           # Tor refuses group-accessible key dirs; fsGroup can re-grant group perms on mount, so re-tighten every start.
