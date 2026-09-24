@@ -221,6 +221,12 @@ alertmanager:
         discord_configs:
           - webhook_url_file: /etc/vm/secrets/alertmanager-discord-homelab/webhook_url
             send_resolved: true
+    inhibit_rules:
+      # zfs-localpv can never be RWX, so CDI's default-class check can't pass; Watchdog always fires, so this mutes it for good.
+      - source_matchers:
+          - alertname="Watchdog"
+        target_matchers:
+          - alertname="CDIDefaultStorageClassDegraded"
 
 # Operator settings - convert Prometheus ServiceMonitors
 victoria-metrics-operator:
