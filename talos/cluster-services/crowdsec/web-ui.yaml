@@ -42,7 +42,7 @@ spec:
       containers:
         - name: crowdsec-web-ui
           # renovate: datasource=docker depName=ghcr.io/theduffman85/crowdsec-web-ui
-          image: ghcr.io/theduffman85/crowdsec-web-ui:2026.8.3
+          image: ghcr.io/theduffman85/crowdsec-web-ui:2026.9.2
           ports:
             - name: http
               containerPort: 3000
