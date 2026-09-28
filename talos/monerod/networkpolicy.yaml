@@ -1,0 +1,27 @@
+# json-exporter's /probe fetches any ?target=, and from inside this pod that includes the admin RPC on 127.0.0.1:18081.
+# Only vmagent may reach 7979; the monerod ports stay open to everything, as they were before this policy existed.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: monerod
+  namespace: monerod
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: monerod
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - port: 18080
+        - port: 18089
+        - port: 18083
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: vmagent
+      ports:
+        - port: 7979
