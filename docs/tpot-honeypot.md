@@ -19,7 +19,7 @@ LAN ──▶ traefik ──▶ tpot.local.asandov.com ──▶ hive VM :64297 
 | Piece | Detail |
 |---|---|
 | VM | Debian 13 containerdisk, 6 cores, 16 GiB, pinned to talos-ramhaus, namespace `tpot` |
-| Disk | DataVolume `tpot-hive-rootdisk`, 256 GiB sparse on `fast-array` (T-Pot hive minimum) |
+| Disk | DataVolume `tpot-hive-rootdisk` on `fast-array`, created at 256 GiB; PVC patched to 400 GiB (grown into the guest by KubeVirt `ExpandDisks` + cloud-init growpart). ILM `tpot` has no delete phase, so indices are kept |
 | Install | cloud-init runs `install.sh -s -t h` from a pinned tpotce commit as user `alan`, then reboots. Log: `/var/log/tpot-install.log`. The installer aborts if the invoking user is named `tpot` — it creates that user itself |
 | Secrets | `secrets/tpot-hive-cloud-init.enc.yaml` (SOPS) holds the whole userdata, including the web password for user `alan` |
 | Web UI | `https://tpot.local.asandov.com`: Authentik forward auth, then T-Pot's own nginx login. Traefik skips verification of T-Pot's self-signed cert |

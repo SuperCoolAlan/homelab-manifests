@@ -15,3 +15,5 @@ spec:
         # Required to pin a VM to a specific architecture when the cluster
         # has mixed architectures (talos-blackbox arm64, talos-ramhaus amd64).
         - MultiArchitecture
+        # Grows a VM's disk.img to fill its PVC after a resize; without it Filesystem-mode disks keep their old size.
+        - ExpandDisks

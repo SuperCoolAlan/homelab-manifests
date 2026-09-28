@@ -14,6 +14,6 @@ spec:
     volumeMode: Filesystem
     resources:
       requests:
-        # T-Pot hive minimum; sparse, grows with Elasticsearch data.
+        # CDI rejects DataVolume spec edits; the live PVC was patched to 400Gi to hold 31 days of Elasticsearch data.
         storage: 256Gi
     storageClassName: fast-array
