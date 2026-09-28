@@ -19,7 +19,8 @@ spec:
         module: [info]
         target: ["http://127.0.0.1:18081/get_info"]
       relabelings:
-        - targetLabel: module
+        - action: replace
+          targetLabel: module
           replacement: info
     - port: metrics
       path: /probe
@@ -28,7 +29,8 @@ spec:
         module: [net]
         target: ["http://127.0.0.1:18081/get_net_stats"]
       relabelings:
-        - targetLabel: module
+        - action: replace
+          targetLabel: module
           replacement: net
     - port: metrics
       path: /probe
@@ -37,7 +39,8 @@ spec:
         module: [txpool]
         target: ["http://127.0.0.1:18081/get_transaction_pool_stats"]
       relabelings:
-        - targetLabel: module
+        - action: replace
+          targetLabel: module
           replacement: txpool
     - port: metrics
       path: /probe
@@ -46,5 +49,6 @@ spec:
         module: [lastblock]
         target: ["http://127.0.0.1:18081/json_rpc"]
       relabelings:
-        - targetLabel: module
+        - action: replace
+          targetLabel: module
           replacement: lastblock
