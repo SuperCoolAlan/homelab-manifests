@@ -30,9 +30,9 @@
       allowedVersions: '<1.34.0',
     },
     {
-      // linuxserver published an ancient 20.04.1 tag that docker versioning ranks above 5.x; it is a downgrade.
+      // linuxserver's old 14.x and 20.x tags rank above 5.x in docker versioning but are 2021-22 builds; taking one is a downgrade.
       matchPackageNames: ['linuxserver/qbittorrent'],
-      allowedVersions: '<20',
+      allowedVersions: '<14',
     },
     {
       // UniFi 10 bundles MongoDB 8, which can't open this controller's older database in place; needs a backup/restore migration first.

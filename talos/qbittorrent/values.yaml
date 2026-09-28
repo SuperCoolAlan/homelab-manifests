@@ -10,7 +10,7 @@ podSecurityContext:
 image:
   repository: linuxserver/qbittorrent
   # renovate: datasource=docker depName=linuxserver/qbittorrent
-  tag: "14.3.9"
+  tag: "5.2.3"
 
 env:
   PUID: "1000"
@@ -80,5 +80,5 @@ resources:
     memory: "256Mi"
     cpu: "100m"
   limits:
-    memory: "2Gi"
+    memory: "8Gi"
     cpu: "2000m"
