@@ -4,8 +4,8 @@
 server:
   enabled: true
 
-  # 30 day retention for logs
-  retentionPeriod: 30d
+  # 90 day retention for logs
+  retentionPeriod: 90d
 
   # Limit disk usage to 100GB
   retentionDiskSpaceUsage: 100GB
