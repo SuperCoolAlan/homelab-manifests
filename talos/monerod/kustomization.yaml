@@ -9,12 +9,16 @@ resources:
   - service.yaml
   - local-asandov-ingress.yaml
   - servicemonitor.yaml
+  - networkpolicy.yaml
   - vmrule.yaml
 
 configMapGenerator:
   - name: monerod-torrc
     files:
       - torrc
+  - name: monerod-json-exporter
+    files:
+      - json-exporter.yml
 
 generators:
   - secrets-generator.yaml

@@ -1,0 +1,100 @@
+# One module per monerod RPC call; servicemonitor.yaml probes each. Field names verified against monerod v0.18.5.1.
+# Must read the unrestricted RPC: restricted mode zeroes connection counts, start_time and free_space.
+modules:
+  info:
+    metrics:
+      - name: monero_info_height
+        path: '{ .height }'
+        help: Local chain height
+      - name: monero_info_target_height
+        path: '{ .target_height }'
+        help: Height peers report while syncing (0 once synced)
+      - name: monero_info_synchronized
+        path: '{ .synchronized }'
+        help: 1 when monerod considers itself synced
+      - name: monero_info_busy_syncing
+        path: '{ .busy_syncing }'
+        help: 1 while monerod is adding blocks
+      - name: monero_info_mainnet
+        path: '{ .mainnet }'
+        help: 1 on mainnet
+      - name: monero_info_database_size_bytes
+        path: '{ .database_size }'
+        help: LMDB size
+      - name: monero_info_free_space_bytes
+        path: '{ .free_space }'
+        help: Free space on the data volume
+      - name: monero_info_start_time_seconds
+        path: '{ .start_time }'
+        help: Unix time monerod started
+      - name: monero_info_incoming_connections
+        path: '{ .incoming_connections_count }'
+        help: Inbound P2P peers
+      - name: monero_info_outgoing_connections
+        path: '{ .outgoing_connections_count }'
+        help: Outbound P2P peers
+      - name: monero_info_rpc_connections
+        path: '{ .rpc_connections_count }'
+        help: Open RPC connections
+      - name: monero_info_white_peerlist_size
+        path: '{ .white_peerlist_size }'
+        help: Peers seen online recently
+      - name: monero_info_grey_peerlist_size
+        path: '{ .grey_peerlist_size }'
+        help: Peers heard about but not contacted
+      - name: monero_info_tx_pool_size
+        path: '{ .tx_pool_size }'
+        help: Transactions in the mempool
+  lastblock:
+    body:
+      content: '{"jsonrpc":"2.0","id":"0","method":"get_last_block_header"}'
+    metrics:
+      - name: monero_lastblock_height
+        path: '{ .result.block_header.height }'
+        help: Height of the last block
+      - name: monero_lastblock_difficulty
+        path: '{ .result.block_header.difficulty }'
+        help: Difficulty of the last block
+      - name: monero_lastblock_reward_atomic
+        path: '{ .result.block_header.reward }'
+        help: Last block reward in atomic units (1e12 per XMR)
+      - name: monero_lastblock_size_bytes
+        path: '{ .result.block_header.block_size }'
+        help: Last block size
+      - name: monero_lastblock_transactions
+        path: '{ .result.block_header.num_txes }'
+        help: Non-coinbase transactions in the last block
+      - name: monero_lastblock_timestamp_seconds
+        path: '{ .result.block_header.timestamp }'
+        help: Miner timestamp of the last block
+  txpool:
+    metrics:
+      - name: monero_transaction_pool_transactions
+        path: '{ .pool_stats.txs_total }'
+        help: Transactions in the mempool
+      - name: monero_transaction_pool_size_bytes
+        path: '{ .pool_stats.bytes_total }'
+        help: Mempool size
+      - name: monero_transaction_pool_fees_atomic
+        path: '{ .pool_stats.fee_total }'
+        help: Sum of mempool fees in atomic units
+      - name: monero_transaction_pool_double_spends
+        path: '{ .pool_stats.num_double_spends }'
+        help: Mempool transactions that double-spend
+      - name: monero_transaction_pool_failing_transactions
+        path: '{ .pool_stats.num_failing }'
+        help: Mempool transactions that failed verification
+      - name: monero_transaction_pool_not_relayed
+        path: '{ .pool_stats.num_not_relayed }'
+        help: Mempool transactions not yet relayed
+      - name: monero_transaction_pool_older_than_10m
+        path: '{ .pool_stats.num_10m }'
+        help: Mempool transactions older than 10 minutes
+  net:
+    metrics:
+      - name: monero_net_rx_bytes
+        path: '{ .total_bytes_in }'
+        help: P2P bytes received since monerod started
+      - name: monero_net_tx_bytes
+        path: '{ .total_bytes_out }'
+        help: P2P bytes sent since monerod started

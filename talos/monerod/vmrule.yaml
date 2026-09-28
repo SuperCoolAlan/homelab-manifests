@@ -1,5 +1,5 @@
-# Routed to the Monero Discord channel by `alertgroup: monero`. The exporter scrape has gaps, so sync and peer rules
-# use max_over_time; a bare instant query would flap on every missed scrape.
+# Routed to the Monero Discord channel by `alertgroup: monero`. Sync and peer rules use max_over_time
+# so one missed scrape doesn't flap them.
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMRule
 metadata:
@@ -35,9 +35,9 @@ spec:
             alertgroup: monero
           annotations:
             summary: No monerod exporter samples for 30m
-            description: The exporter sidecar or monerod's loopback RPC is failing; every other monerod alert is blind until this clears.
+            description: The json-exporter sidecar or monerod's loopback RPC is failing; every other monerod alert is blind until this clears.
         - alert: MonerodFewOutboundPeers
-          expr: max_over_time(sum(monero_p2p_connections{namespace="monerod",type="out",state="normal"})[15m]) < 4
+          expr: max_over_time(max(monero_info_outgoing_connections{namespace="monerod"})[15m]) < 4
           for: 30m
           labels:
             severity: warning
@@ -46,7 +46,7 @@ spec:
             summary: monerod has only {{ $value }} outbound peers
             description: All monerod egress exits the monero jumphost (wg peer 10.100.0.3) and fails closed, so this usually means the tunnel is down.
         - alert: MonerodNoInboundPeers
-          expr: max_over_time(sum(monero_p2p_connections{namespace="monerod",type="in"})[1h]) == 0
+          expr: max_over_time(max(monero_info_incoming_connections{namespace="monerod"})[1h]) == 0
           for: 2h
           labels:
             severity: info

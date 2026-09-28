@@ -228,27 +228,31 @@ spec:
           volumeMounts:
             - name: bitmonero
               mountPath: /home/monero/.bitmonero
-        - name: exporter
-          # cirocosta/monero-exporter built by lalanza808/docker-monero-node. Needs the full RPC, hence localhost.
-          # renovate: datasource=docker depName=lalanza808/exporter
-          image: lalanza808/exporter:1.0.0@sha256:82b6946ee54abb97cf2633b94f6273feb64506953d99a286b237e4ddaba5476c
+        - name: json-exporter
+          # Reads the unrestricted loopback RPC. /probe takes any ?target=, so networkpolicy.yaml must keep 7979 vmagent-only.
+          # renovate: datasource=docker depName=quay.io/prometheuscommunity/json-exporter
+          image: quay.io/prometheuscommunity/json-exporter:v0.8.0@sha256:3aad20d41a0b31dfaaf7ab1a091440e92a82a61ef68b76750eac0ad50a983652
           args:
-            - --monero-addr=http://127.0.0.1:18081
-            - --bind-addr=:9000
+            - --config.file=/config/json-exporter.yml
+            - --web.listen-address=:7979
           ports:
             - name: metrics
-              containerPort: 9000
+              containerPort: 7979
           resources:
             requests:
-              cpu: 10m
-              memory: 32Mi
+              cpu: 5m
+              memory: 16Mi
             limits:
-              memory: 128Mi
+              memory: 64Mi
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities:
               drop: ["ALL"]
+          volumeMounts:
+            - name: json-exporter-config
+              mountPath: /config
+              readOnly: true
       volumes:
         - name: wg-key
           secret:
@@ -257,6 +261,9 @@ spec:
         - name: torrc
           configMap:
             name: monerod-torrc
+        - name: json-exporter-config
+          configMap:
+            name: monerod-json-exporter
       # LMDB writes are memory-mapped and random; a slow drain here means an
       # unclean shutdown and a long recovery on the next start.
       terminationGracePeriodSeconds: 300

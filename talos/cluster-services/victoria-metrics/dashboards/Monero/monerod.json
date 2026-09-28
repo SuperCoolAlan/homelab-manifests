@@ -77,7 +77,7 @@
         "h": 4,
         "w": 2,
         "x": 0,
-        "y": 11
+        "y": 0
       },
       "id": 68,
       "options": {
@@ -162,7 +162,7 @@
         "h": 4,
         "w": 2,
         "x": 2,
-        "y": 11
+        "y": 0
       },
       "id": 69,
       "options": {
@@ -232,7 +232,7 @@
         "h": 4,
         "w": 3,
         "x": 4,
-        "y": 11
+        "y": 0
       },
       "id": 81,
       "options": {
@@ -253,9 +253,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "monero_info_uptime_seconds_total",
+          "expr": "time() - monero_info_start_time_seconds",
           "interval": "",
-          "legendFormat": "limit",
+          "legendFormat": "uptime",
           "refId": "A"
         }
       ],
@@ -298,7 +298,7 @@
         "h": 4,
         "w": 3,
         "x": 7,
-        "y": 11
+        "y": 0
       },
       "id": 79,
       "options": {
@@ -391,7 +391,7 @@
         "h": 4,
         "w": 3,
         "x": 10,
-        "y": 11
+        "y": 0
       },
       "id": 80,
       "options": {
@@ -491,7 +491,7 @@
         "h": 4,
         "w": 6,
         "x": 13,
-        "y": 11
+        "y": 0
       },
       "id": 84,
       "options": {
@@ -592,7 +592,7 @@
         "h": 4,
         "w": 5,
         "x": 19,
-        "y": 11
+        "y": 0
       },
       "id": 76,
       "options": {
@@ -740,7 +740,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 15
+        "y": 4
       },
       "id": 71,
       "options": {
@@ -862,7 +862,7 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 15
+        "y": 4
       },
       "id": 66,
       "options": {
@@ -881,9 +881,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "monero_info_uptime_seconds_total",
+          "expr": "time() - monero_info_start_time_seconds",
           "interval": "",
-          "legendFormat": "limit",
+          "legendFormat": "uptime",
           "refId": "A"
         }
       ],
@@ -962,7 +962,7 @@
         "h": 7,
         "w": 8,
         "x": 16,
-        "y": 15
+        "y": 4
       },
       "id": 75,
       "options": {
@@ -994,106 +994,6 @@
         }
       ],
       "title": "Database Size",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "description": "The distribution of the heights of our peers\n",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-BlPu"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 15,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": 3600000,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 22
-      },
-      "id": 49,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "8.5.4",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "monero_p2p_connections_height{quantile=~\"1\"}",
-          "interval": "1m",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Connected Peers' Height",
       "transparent": true,
       "type": "timeseries"
     },
@@ -1193,8 +1093,8 @@
       "gridPos": {
         "h": 7,
         "w": 8,
-        "x": 8,
-        "y": 22
+        "x": 0,
+        "y": 11
       },
       "id": 59,
       "options": {
@@ -1348,7 +1248,7 @@
         "h": 7,
         "w": 8,
         "x": 16,
-        "y": 22
+        "y": 11
       },
       "id": 74,
       "options": {
@@ -1380,107 +1280,6 @@
         }
       ],
       "title": "Free space",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "description": "The distribution of data retrieval from our connected peers.\n",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "dark-blue",
-            "mode": "fixed"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 30,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "log": 2,
-              "type": "log"
-            },
-            "showPoints": "never",
-            "spanNulls": 3600000,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "Bps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 29
-      },
-      "id": 50,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "8.5.4",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "monero_p2p_connections_rx_rate_bps{quantile=\"1\"}",
-          "interval": "1m",
-          "legendFormat": "quantile 1",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "P2P Peers Data In Rate",
       "transparent": true,
       "type": "timeseries"
     },
@@ -1579,7 +1378,7 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 29
+        "y": 11
       },
       "id": 58,
       "options": {
@@ -1625,314 +1424,6 @@
         }
       ],
       "title": "Data rate",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "description": "The distribution of data transmission to our connected peers.\n",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "dark-yellow",
-            "mode": "fixed"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 30,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "log": 2,
-              "type": "log"
-            },
-            "showPoints": "never",
-            "spanNulls": 3600000,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "Bps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 29
-      },
-      "id": 60,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "8.5.4",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "monero_p2p_connections_tx_rate_bps{quantile=\"1\"}",
-          "interval": "1m",
-          "legendFormat": "{{ quantile }}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "P2P Peers Data Out Rate",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "description": "Average amount of time spent serving RPC methods over that past minute.\n\nps.: this includes the calls made by the stats collector too.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic",
-            "seriesBy": "max"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "log": 2,
-              "type": "log"
-            },
-            "showPoints": "never",
-            "spanNulls": 3600000,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 36
-      },
-      "id": 42,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "8.5.4",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "rate(monero_rpc_seconds_total[1m])",
-          "interval": "3m",
-          "legendFormat": "{{method}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Time spent serving RPC methods",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "description": "Average number of RPC requests served over the past interval.\n\nps.: this includes the calls made by the stats collector too.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": -1,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 8,
-            "scaleDistribution": {
-              "log": 2,
-              "type": "log"
-            },
-            "showPoints": "never",
-            "spanNulls": 3600000,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 36
-      },
-      "id": 40,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "8.5.4",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "increase(monero_rpc_hits_total[1m])",
-          "interval": "2m",
-          "legendFormat": "{{method}} {{ $__interval }}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "RPC hits per Interval",
       "transparent": true,
       "type": "timeseries"
     },
@@ -2004,7 +1495,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 44
+        "y": 18
       },
       "id": 18,
       "options": {
@@ -2104,7 +1595,7 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 44
+        "y": 18
       },
       "id": 23,
       "options": {
@@ -2196,7 +1687,7 @@
               }
             ]
           },
-          "unit": "\u0271"
+          "unit": "ɱ"
         },
         "overrides": []
       },
@@ -2204,7 +1695,7 @@
         "h": 7,
         "w": 8,
         "x": 16,
-        "y": 44
+        "y": 18
       },
       "id": 24,
       "options": {
@@ -2228,7 +1719,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "monero_transaction_pool_fees_monero",
+          "expr": "monero_transaction_pool_fees_atomic / 1e12",
           "interval": "2m",
           "legendFormat": "fee",
           "range": true,
@@ -2303,7 +1794,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 51
+        "y": 25
       },
       "id": 12,
       "options": {
@@ -2394,7 +1885,7 @@
               }
             ]
           },
-          "unit": "\u0271"
+          "unit": "ɱ"
         },
         "overrides": []
       },
@@ -2402,7 +1893,7 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 51
+        "y": 25
       },
       "id": 6,
       "options": {
@@ -2421,9 +1912,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "monero_lastblock_reward_monero",
+          "expr": "monero_lastblock_reward_atomic / 1e12",
           "interval": "",
-          "legendFormat": "total rewards",
+          "legendFormat": "reward",
           "refId": "A"
         }
       ],
@@ -2493,7 +1984,7 @@
         "h": 7,
         "w": 8,
         "x": 16,
-        "y": 51
+        "y": 25
       },
       "id": 14,
       "options": {
@@ -2517,29 +2008,15 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "monero_lastblock_transactions_inputs_sum",
+          "expr": "monero_lastblock_transactions",
           "hide": false,
           "interval": "2m",
-          "legendFormat": "inputs",
+          "legendFormat": "txs",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "monero_lastblock_transactions_outputs_sum",
-          "hide": false,
-          "interval": "2m",
-          "legendFormat": "outputs",
-          "range": true,
-          "refId": "B"
         }
       ],
-      "title": "Inputs and Outputs",
+      "title": "Transactions in Last Block",
       "transparent": true,
       "type": "timeseries"
     },
@@ -2606,7 +2083,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 58
+        "y": 32
       },
       "id": 57,
       "options": {
@@ -2632,14 +2109,27 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "monero_peerlist",
+          "expr": "monero_info_white_peerlist_size",
           "interval": "2m",
-          "legendFormat": "{{ type }}",
+          "legendFormat": "white",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "monero_info_grey_peerlist_size",
+          "interval": "2m",
+          "legendFormat": "grey",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Peerlists' count",
+      "title": "Peerlist Sizes",
       "transparent": true,
       "type": "timeseries"
     },
@@ -2706,7 +2196,7 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 58
+        "y": 32
       },
       "id": 32,
       "options": {
@@ -2848,7 +2338,7 @@
         "h": 7,
         "w": 8,
         "x": 16,
-        "y": 58
+        "y": 32
       },
       "id": 11,
       "options": {
@@ -2945,9 +2435,9 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
+        "w": 12,
         "x": 0,
-        "y": 65
+        "y": 39
       },
       "id": 73,
       "options": {
@@ -2981,105 +2471,6 @@
       ],
       "title": "RPC Connections",
       "transformations": [],
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "description": "The distribution of the age of the connections established to/from our nodes.\n",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "light-purple",
-            "mode": "fixed"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 30,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": 3600000,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 8,
-        "y": 65
-      },
-      "id": 51,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "8.5.4",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "max(monero_p2p_connections_age{quantile=\"1\"})",
-          "interval": "2m",
-          "legendFormat": "quantile 1",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Connections' Age",
       "transparent": true,
       "type": "timeseries"
     },
@@ -3144,9 +2535,9 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 65
+        "w": 12,
+        "x": 12,
+        "y": 39
       },
       "id": 47,
       "options": {
@@ -3170,14 +2561,27 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(monero_p2p_connections) by (state)",
+          "expr": "monero_info_outgoing_connections",
           "interval": "1m",
-          "legendFormat": "{{ type }}",
+          "legendFormat": "out",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "monero_info_incoming_connections",
+          "interval": "1m",
+          "legendFormat": "in",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Connections by connection state",
+      "title": "P2P Connections",
       "transparent": true,
       "type": "timeseries"
     }
