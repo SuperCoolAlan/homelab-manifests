@@ -1,0 +1,12 @@
+# Holds the probe's SSH identity; losing it means registering a new probe.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ripe-atlas-etc
+  namespace: ripe-atlas
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 1Gi

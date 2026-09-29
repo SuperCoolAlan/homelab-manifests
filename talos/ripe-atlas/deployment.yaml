@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ripe-atlas
+  namespace: ripe-atlas
+  labels:
+    app.kubernetes.io/name: ripe-atlas
+spec:
+  # Recreate is required: the RWO zfs PVC can't be mounted by two pods during a rolling update.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ripe-atlas
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ripe-atlas
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: probe
+          # Upstream's setuid binaries only start as root; capabilities mirror the image's docker-compose example.
+          # renovate: datasource=docker depName=jamesits/ripe-atlas
+          image: jamesits/ripe-atlas:5130-probe@sha256:841459abe5aac56833e94832b2460423b5b9532b6420df73bfec54dd3303643b
+          env:
+            - name: RXTXRPT
+              value: "no"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          securityContext:
+            capabilities:
+              drop: ["ALL"]
+              add: ["NET_RAW", "KILL", "SETUID", "SETGID", "CHOWN", "FOWNER", "DAC_OVERRIDE"]
+          volumeMounts:
+            - name: etc
+              mountPath: /etc/ripe-atlas
+            - name: spool
+              mountPath: /var/spool/ripe-atlas
+            - name: run
+              mountPath: /run/ripe-atlas
+      volumes:
+        - name: etc
+          persistentVolumeClaim:
+            claimName: ripe-atlas-etc
+        - name: spool
+          emptyDir: {}
+        - name: run
+          emptyDir: {}
