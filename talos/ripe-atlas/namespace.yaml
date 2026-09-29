@@ -1,0 +1,9 @@
+# Privileged because NET_RAW (ping/traceroute) is outside the baseline profile's allowed capabilities.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ripe-atlas
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
