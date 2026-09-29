@@ -1,0 +1,41 @@
+# T-Pot lives in the private tpot-manifests repo (deploy key: secrets/tpot-manifests-repo.enc.yaml, applied by hand).
+# No resources finalizer: deleting one of these must orphan the VM and its 400Gi disk, never cascade.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tpot-hive
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:SuperCoolAlan/tpot-manifests.git
+    targetRevision: HEAD
+    path: hive
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tpot-report
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:SuperCoolAlan/tpot-manifests.git
+    targetRevision: HEAD
+    path: report
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
