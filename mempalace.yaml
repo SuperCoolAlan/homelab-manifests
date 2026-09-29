@@ -4,8 +4,6 @@ rooms:
   description: Files from talos/
 - name: llm
   description: Files from llm/
-- name: keyboards
-  description: Files from keyboards/
 - name: documentation
   description: Files from docs/
 - name: configuration

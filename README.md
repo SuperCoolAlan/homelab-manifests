@@ -160,6 +160,10 @@ flowchart LR
         app_oracle_telemetry["oracle-telemetry"]
     end
     argocd_appset --> Oracle_edge
+    subgraph Internet_measurement["Internet measurement"]
+        app_ripe_atlas["ripe-atlas"]
+    end
+    argocd_appset --> Internet_measurement
     subgraph Monitoring["Monitoring"]
         app_nut["nut"]
         app_nvidia_gpu_exporter["nvidia-gpu-exporter"]
@@ -169,18 +173,16 @@ flowchart LR
     argocd_appset --> Monitoring
     subgraph Security["Security"]
         app_falco["falco"]
-        app_tpot_report["tpot-report"]
         app_trivy_operator["trivy-operator"]
     end
     argocd_appset --> Security
     subgraph Virtual_machines["Virtual machines"]
         app_aldo_vm["aldo-vm"]
-        app_tpot_hive["tpot-hive"]
     end
     argocd_appset --> Virtual_machines
 ```
 
-**46 Argo CD applications.**
+**45 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -221,15 +223,14 @@ flowchart LR
 | Privacy and crypto | [`snowflake`](talos/snowflake) | snowflake | Tor Snowflake proxy (anti-censorship), egress locked to the internet |
 | Oracle edge | [`crowdsec-lapi-tunnel`](talos/crowdsec-lapi-tunnel) | crowdsec-lapi-tunnel | WireGuard peers letting crowdsec-web-ui reach the Oracle LAPIs (privileged ns for NET_ADMIN) |
 | Oracle edge | [`oracle-telemetry`](talos/oracle-telemetry) | oracle-telemetry | Oracle VPS node metrics (pulled) and journald (pushed, insert-only) over WireGuard (privileged ns for NET_ADMIN) |
+| Internet measurement | [`ripe-atlas`](talos/ripe-atlas) | ripe-atlas | RIPE Atlas software probe (internet measurements), outbound-only |
 | Monitoring | [`nut`](talos/monitoring/nut) | monitoring |  |
 | Monitoring | [`nvidia-gpu-exporter`](talos/monitoring/nvidia-gpu-exporter) | monitoring |  |
 | Monitoring | [`opnsense-exporter`](talos/monitoring/opnsense-exporter) | monitoring |  |
 | Monitoring | [`starlink`](talos/monitoring/starlink) | monitoring |  |
 | Security | [`falco`](talos/security/falco) | falco |  |
-| Security | [`tpot-report`](talos/tpot-report) | tpot | Reports honeypot attackers to AbuseIPDB (key stays in-cluster, not on the honeypot) |
 | Security | [`trivy-operator`](talos/security/trivy-operator) | trivy-system |  |
 | Virtual machines | [`aldo-vm`](talos/vms/aldo-vm) | vms |  |
-| Virtual machines | [`tpot-hive`](talos/vms/tpot-hive) | tpot |  |
 <!-- apps:end -->
 
 ## Infrastructure
@@ -264,6 +265,7 @@ Backups: CNPG barman and VolSync restic go to Backblaze B2, and the Oracle boxes
 - **Traefik**: `*.asandov.local` behind Authentik forward-auth, plus a tunnel entrypoint that fronts Cloudflare Tunnel hosts through the CrowdSec bouncer.
 - **Oracle jumphosts**: public Jellyfin and Immich (off Cloudflare, which caps uploads at 100 MB), monerod P2P, Tor Snowflake, bridge and Conduit, and a Signal TLS proxy. Each connects home over WireGuard and runs its own CrowdSec engine, node-exporter and journald shipping ([docs/oracle-wireguard-jumphost.md](docs/oracle-wireguard-jumphost.md)).
 - **Twingate**: remote private access to the LAN.
+- **T-Pot honeypot**: hive VM and AbuseIPDB reporter, deployed by Argo CD apps `tpot-hive` and `tpot-report` from the private `tpot-manifests` repo (`talos/argocd/resources/tpot-apps.yaml`).
 
 ## GitOps
 
@@ -288,7 +290,5 @@ Other apps are listed explicitly, and the comment above each entry becomes its n
 | [renovate-ci.md](docs/renovate-ci.md) | Renovate and PR validation |
 | [authentik-postgres-migration.md](docs/authentik-postgres-migration.md) | Authentik onto CNPG |
 | [torrent-hardlink-migration.md](docs/torrent-hardlink-migration.md) | single-copy media with hardlinks |
-| [tpot-honeypot.md](docs/tpot-honeypot.md) | T-Pot hive VM and its isolation |
-| [tpot-sensor.md](docs/tpot-sensor.md) | the exposed sensor half and its tunnel home |
 
 Per-app notes: [jellyfin](talos/jellyfin/README.md), [monerod](talos/monerod/README.md), [p2pool](talos/p2pool/README.md), [unifi](talos/unifi/README.md).

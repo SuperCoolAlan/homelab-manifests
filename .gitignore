@@ -25,9 +25,3 @@ talos/cluster-services/traefik/helm/
 talos/immich/*.dump
 talos/immich/*.sql
 
-# Terraform state holds sensor private keys and passwords
-tpot-sensor/terraform/.terraform/
-tpot-sensor/terraform/*.tfstate
-tpot-sensor/terraform/*.tfstate.*
-tpot-sensor/terraform/terraform.tfvars
-tpot-sensor/terraform/*.tfplan
