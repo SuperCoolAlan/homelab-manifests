@@ -6,6 +6,9 @@ metadata:
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
+  # Temporary: drops the resources finalizer so moving tpot-hive/tpot-report to tpot-manifests orphans instead of deleting the VM.
+  syncPolicy:
+    preserveResourcesOnDeletion: true
   generators:
     - git:
         repoURL: https://github.com/SuperCoolAlan/homelab-manifests.git
