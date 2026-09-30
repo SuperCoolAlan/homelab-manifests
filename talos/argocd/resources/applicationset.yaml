@@ -62,8 +62,6 @@ spec:
           - path: talos/oracle-telemetry
           # Security scanning
           - path: talos/security/*
-          # Virtual machines (KubeVirt)
-          - path: talos/vms/*
   template:
     metadata:
       name: '{{.path.basename}}'

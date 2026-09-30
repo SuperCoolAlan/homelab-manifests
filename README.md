@@ -176,13 +176,9 @@ flowchart LR
         app_trivy_operator["trivy-operator"]
     end
     argocd_appset --> Security
-    subgraph Virtual_machines["Virtual machines"]
-        app_aldo_vm["aldo-vm"]
-    end
-    argocd_appset --> Virtual_machines
 ```
 
-**45 Argo CD applications.**
+**44 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -230,7 +226,6 @@ flowchart LR
 | Monitoring | [`starlink`](talos/monitoring/starlink) | monitoring |  |
 | Security | [`falco`](talos/security/falco) | falco |  |
 | Security | [`trivy-operator`](talos/security/trivy-operator) | trivy-system |  |
-| Virtual machines | [`aldo-vm`](talos/vms/aldo-vm) | vms |  |
 <!-- apps:end -->
 
 ## Infrastructure

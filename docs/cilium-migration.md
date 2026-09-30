@@ -63,7 +63,6 @@ K=(kubectl --kubeconfig ~/.kube/clusters/homelab.yaml)
 - **Cross-node pod traffic and DNS:** `kubectl run` a busybox pod on each node, then `nslookup kubernetes.default` and `wget` a Service on the other node.
 - **LoadBalancer IPs:** traefik `10.0.7.200` (open a `*.local.asandov.com` page), piper `.201:10200`, unifi `.202:8443`. MetalLB BGP sessions must show Established in OPNsense.
 - **External paths:** jellyfin.asandov.com through the WireGuard tunnel, monerod outbound peers (Monero dashboard), p2pool back to Ready from its cache.
-- **aldo VM:** `virtctl ssh`, or check the VMI is Running with an IP.
 - **Hubble:** hubble.local.asandov.com loads behind Authentik; Grafana has a Cilium folder.
 
 ## Rollback
