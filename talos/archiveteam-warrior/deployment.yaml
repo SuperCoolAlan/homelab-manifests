@@ -42,6 +42,9 @@ spec:
               value: asandov
             - name: SELECTED_PROJECT
               value: auto
+            # Warrior UI max; UI edits don't persist, set it here.
+            - name: CONCURRENT_ITEMS
+              value: "6"
           ports:
             - name: http
               containerPort: 8001

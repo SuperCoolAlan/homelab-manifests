@@ -27,6 +27,13 @@ def emit_output(item_id, text):
     log(item_id, text)
 
 
+def remember(it):
+    if it.get("name") not in (None, "", "New item"):
+        item_names[it["id"]] = it["name"]
+    for t in it.get("tasks", []):
+        task_names[t["id"]] = t["name"]
+
+
 def snapshot(msg):
     global project
     if not msg:
@@ -35,10 +42,7 @@ def snapshot(msg):
     project = msg["project"]["title"]
     for it in msg["items"]:
         iid = it["id"]
-        if it.get("name") not in (None, "New item"):
-            item_names[iid] = it["name"]
-        for t in it.get("tasks", []):
-            task_names[t["id"]] = t["name"]
+        remember(it)
         out = it.get("output", "")
         # Snapshots replay full output on every connect; print only what's new.
         new = out[printed.get(iid, 0):]
@@ -56,8 +60,15 @@ def handle(ev, msg):
             task_names.get(msg["task_id"], msg["task_id"]),
             msg["old_status"], msg["new_status"]))
     elif ev == "item.update_name":
-        item_names[msg["item_id"]] = msg["new_name"]
-        log(msg["item_id"], "named %s" % msg["new_name"])
+        # seesaw formats this as "Item <name>"; a bare "Item " carries no name.
+        if msg["new_name"].strip() != "Item":
+            item_names[msg["item_id"]] = msg["new_name"]
+            log(msg["item_id"], "named")
+    elif ev == "pipeline.start_item":
+        remember(msg["item"])
+        log(msg["item"]["id"], "STARTED")
+    elif ev == "pipeline.finish_item":
+        pass
     elif ev in ("item.complete", "item.fail", "item.cancel"):
         log(msg["item_id"], ev.split(".")[1].upper())
         printed.pop(msg["item_id"], None)
