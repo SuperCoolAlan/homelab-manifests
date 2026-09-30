@@ -164,6 +164,10 @@ flowchart LR
         app_ripe_atlas["ripe-atlas"]
     end
     argocd_appset --> Internet_measurement
+    subgraph Internet_archiving["Internet archiving"]
+        app_archiveteam_warrior["archiveteam-warrior"]
+    end
+    argocd_appset --> Internet_archiving
     subgraph Monitoring["Monitoring"]
         app_nut["nut"]
         app_nvidia_gpu_exporter["nvidia-gpu-exporter"]
@@ -178,7 +182,7 @@ flowchart LR
     argocd_appset --> Security
 ```
 
-**44 Argo CD applications.**
+**45 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -220,6 +224,7 @@ flowchart LR
 | Oracle edge | [`crowdsec-lapi-tunnel`](talos/crowdsec-lapi-tunnel) | crowdsec-lapi-tunnel | WireGuard peers letting crowdsec-web-ui reach the Oracle LAPIs (privileged ns for NET_ADMIN) |
 | Oracle edge | [`oracle-telemetry`](talos/oracle-telemetry) | oracle-telemetry | Oracle VPS node metrics (pulled) and journald (pushed, insert-only) over WireGuard (privileged ns for NET_ADMIN) |
 | Internet measurement | [`ripe-atlas`](talos/ripe-atlas) | ripe-atlas | RIPE Atlas software probe (internet measurements), outbound-only |
+| Internet archiving | [`archiveteam-warrior`](talos/archiveteam-warrior) | archiveteam-warrior | ArchiveTeam Warrior (saves at-risk websites), internet-only egress, 5M upload cap |
 | Monitoring | [`nut`](talos/monitoring/nut) | monitoring |  |
 | Monitoring | [`nvidia-gpu-exporter`](talos/monitoring/nvidia-gpu-exporter) | monitoring |  |
 | Monitoring | [`opnsense-exporter`](talos/monitoring/opnsense-exporter) | monitoring |  |

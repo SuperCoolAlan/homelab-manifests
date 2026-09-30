@@ -58,6 +58,8 @@ spec:
           - path: talos/snowflake
           # RIPE Atlas software probe (internet measurements), outbound-only
           - path: talos/ripe-atlas
+          # ArchiveTeam Warrior (saves at-risk websites), internet-only egress, 5M upload cap
+          - path: talos/archiveteam-warrior
           # Oracle VPS node metrics (pulled) and journald (pushed, insert-only) over WireGuard (privileged ns for NET_ADMIN)
           - path: talos/oracle-telemetry
           # Security scanning

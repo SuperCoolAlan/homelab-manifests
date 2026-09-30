@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: warrior
+  namespace: archiveteam-warrior
+  labels:
+    app.kubernetes.io/name: warrior
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: warrior
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: warrior
+      annotations:
+        # Cilium bandwidth manager cap; keeps Jellyfin ahead on the Starlink uplink.
+        kubernetes.io/egress-bandwidth: "5M"
+    spec:
+      enableServiceLinks: false
+      # Image is amd64-only.
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      # Upstream stops on SIGINT and finishes in-flight uploads; give it time.
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: warrior
+          # Upstream only publishes :latest; Renovate bumps the digest.
+          # renovate: datasource=docker depName=atdr.meo.ws/archiveteam/warrior-dockerfile
+          image: atdr.meo.ws/archiveteam/warrior-dockerfile:latest@sha256:19337aa9157e04f6cdb8f7c6f8c98e27d14efb0d9525334995fbdb036b95e1ca
+          # Env only seeds projects/config.json; projects is an emptyDir so these win on every restart.
+          env:
+            - name: DOWNLOADER
+              value: asandov
+            - name: SELECTED_PROJECT
+              value: auto
+          ports:
+            - name: http
+              containerPort: 8001
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 60
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 2Gi
+              ephemeral-storage: 60Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: projects
+              mountPath: /home/warrior/projects
+            - name: data
+              mountPath: /home/warrior/data
+      volumes:
+        - name: projects
+          emptyDir: {}
+        # In-flight items only; ArchiveTeam requeues anything lost on restart.
+        - name: data
+          emptyDir:
+            sizeLimit: 50Gi
