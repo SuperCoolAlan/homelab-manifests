@@ -1,10 +1,12 @@
 # Mirrors the warrior web UI's per-item output to stdout so VictoriaLogs keeps it; seesaw never logs items to stdout.
 import json
 import sys
+import uuid
 
 from tornado import gen, ioloop, websocket
 
-URL = "ws://localhost:8001/websocket"
+# Must be the SockJS session transport: seesaw's broadcast() reads client.session.session_id, which raw /websocket sessions lack, and the AttributeError stalls the warrior.
+URL = "ws://localhost:8001/000/%s/websocket"
 SKIP = {"bandwidth", "timestamp", "warrior.projects_loaded", "instance_id"}
 
 project = "-"
@@ -67,15 +69,19 @@ def handle(ev, msg):
 def main():
     while True:
         try:
-            conn = yield websocket.websocket_connect(URL)
-            print("connected to %s" % URL, flush=True)
+            url = URL % uuid.uuid4().hex
+            conn = yield websocket.websocket_connect(url)
+            print("connected to %s" % url, flush=True)
             while True:
-                raw = yield conn.read_message()
-                if raw is None:
+                frame = yield conn.read_message()
+                if frame is None or frame.startswith("c"):
                     break
-                d = json.loads(raw)
-                if d.get("event_name") not in SKIP:
-                    handle(d.get("event_name"), d.get("message"))
+                if not frame.startswith("a"):
+                    continue
+                for raw in json.loads(frame[1:]):
+                    d = json.loads(raw)
+                    if d.get("event_name") not in SKIP:
+                        handle(d.get("event_name"), d.get("message"))
         except Exception as e:
             print("websocket error: %r" % (e,), file=sys.stderr, flush=True)
         yield gen.sleep(5)
