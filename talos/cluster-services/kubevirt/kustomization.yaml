@@ -4,3 +4,23 @@ kind: Kustomization
 resources:
   - https://github.com/kubevirt/kubevirt/releases/download/v1.7.0/kubevirt-operator.yaml
   - kubevirt-cr.yaml
+
+# Upstream pins virt-operator to control-plane nodes; blackbox is RAM-starved, so run it with the rest of KubeVirt.
+patches:
+  - target:
+      kind: Deployment
+      name: virt-operator
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/affinity
+        value:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values: ["talos-ramhaus"]
