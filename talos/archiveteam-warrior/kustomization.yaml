@@ -9,3 +9,8 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+
+configMapGenerator:
+  - name: warrior-item-log
+    files:
+      - item-log.py
