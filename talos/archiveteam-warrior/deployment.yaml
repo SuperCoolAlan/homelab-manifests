@@ -61,6 +61,7 @@ spec:
               memory: 256Mi
             limits:
               memory: 2Gi
+              # Caps in-flight items in the writable layer; data/ can't be a volume, the image ships wget-at there.
               ephemeral-storage: 60Gi
           securityContext:
             allowPrivilegeEscalation: false
@@ -69,12 +70,6 @@ spec:
           volumeMounts:
             - name: projects
               mountPath: /home/warrior/projects
-            - name: data
-              mountPath: /home/warrior/data
       volumes:
         - name: projects
           emptyDir: {}
-        # In-flight items only; ArchiveTeam requeues anything lost on restart.
-        - name: data
-          emptyDir:
-            sizeLimit: 50Gi
