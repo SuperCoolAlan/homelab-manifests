@@ -30,11 +30,21 @@ webui:
         paths:
           - path: /
             pathType: Prefix
-  # Redis for the UI - use emptyDir (no persistent storage)
+  # Events never expire without this; redis keeps them all in RAM.
+  ttl: 2w
   redis:
-    storageEnabled: false
-    storageClass: ""
-    storageSize: ""
+    storageEnabled: true
+    storageClass: fast-array
+    storageSize: 10Gi
+    # maxmemory must stay under the container limit, or a persisted dataset OOM-loops on reload.
+    customConfig:
+      - maxmemory 3gb
+      - maxmemory-policy allkeys-lru
+    resources:
+      requests:
+        memory: 2Gi
+      limits:
+        memory: 4Gi
 
 resources:
   requests:
