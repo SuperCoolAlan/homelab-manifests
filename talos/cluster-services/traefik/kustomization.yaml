@@ -21,3 +21,15 @@ helmCharts:
   # kustomize (CI, local builds) needs it declared here.
   apiVersions:
     - monitoring.coreos.com/v1
+
+# Hub CRDs cost apiserver memory on blackbox; re-add only if hub.enabled is ever set.
+patches:
+  - target:
+      kind: CustomResourceDefinition
+      name: ".*\\.hub\\.traefik\\.io"
+    patch: |-
+      $patch: delete
+      apiVersion: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      metadata:
+        name: unused
