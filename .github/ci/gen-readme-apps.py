@@ -22,6 +22,7 @@ CATEGORIES = [
     ("Privacy and crypto", ["monerod", "p2pool", "snowflake"]),
     ("Oracle edge", ["crowdsec-lapi-tunnel", "oracle-telemetry"]),
     ("Internet measurement", ["ripe-atlas"]),
+    ("Internet archiving", ["archiveteam-warrior"]),
 ]
 PREFIX_CATEGORIES = {
     "talos/cluster-services/": "Cluster services",
