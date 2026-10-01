@@ -6,8 +6,10 @@ metadata:
   namespace: archiveteam-warrior
 spec:
   podSelector:
-    matchLabels:
-      app.kubernetes.io/name: warrior
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values: [warrior, warrior-telegram]
   policyTypes:
     - Ingress
     - Egress
