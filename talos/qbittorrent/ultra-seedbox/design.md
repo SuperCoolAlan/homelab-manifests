@@ -45,7 +45,7 @@ need (`SEEDBOX_START` in the ConfigMap).
 - Freeleech only until the pass starts; after that, any new release.
 The tracker's rule is a flat 14 days of seeding, so the disk, not the 2 TB upload cap, is the binding constraint: every grab occupies its size for the whole hold, but earns most of its upload in the first day or two. The rules therefore pace intake so a fresh release arrives every day.
 
-- Filter `ipt-freeleech`: freeleech, Movies and TV, 1–15 GB, 1080p/2160p, WEB-DL/WEBRip/WEB/BluRay, at most 30 a day. Smaller releases spread the disk over more swarms.
+- Filter `ipt-new-releases` (freeleech-only until the pass started on day 0): Movies and TV, 1–15 GB, 1080p/2160p, WEB-DL/WEBRip/WEB/BluRay, at most 30 a day. Smaller releases spread the disk over more swarms.
 - `disk-guard` external filter (`~/bin/autobrr-disk-ok.sh`, rejects on error) accepts a grab only while all of these hold:
   - the account is under 85% of its 932 GB quota (headroom for 4 active downloads);
   - under 55 GB was added in the last 24 h (85% of quota spread over the hold);
