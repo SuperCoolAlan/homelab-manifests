@@ -859,18 +859,17 @@
         "defaults": {
           "unit": "decbytes",
           "custom": {
-            "fillOpacity": 10,
+            "fillOpacity": 20,
             "lineWidth": 1,
             "showPoints": "never",
             "stacking": {
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "line+area"
+              "mode": "dashed"
             }
           },
           "min": 0,
-          "max": 2000000000000.0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -887,6 +886,10 @@
                 "value": 2000000000000.0
               }
             ]
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
           }
         },
         "overrides": []
@@ -912,7 +915,8 @@
           "expr": "max(qbittorrent_global_alltime_uploaded_bytes{job=\"qbittorrent-seedbox\"})",
           "legendFormat": "uploaded"
         }
-      ]
+      ],
+      "description": "Auto-scaled so early growth is visible; dashed lines appear once the axis reaches the 1.65 TB reserve and 2 TB cap."
     },
     {
       "id": 15,
