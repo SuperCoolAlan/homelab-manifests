@@ -1,9 +1,8 @@
-# One-month seedbox: ratio push + handoff home
+# One-month seedbox: ratio push
 
 **Goal:** raise the private-tracker ratio with a rented seedbox for exactly one
-billing month, then bring every torrent that hasn't met the tracker's seeding
-rule back to home qBittorrent and seed it until it has. Nothing gets
-hit-and-run, and the seedbox never renews.
+billing month, racing new releases while the tracker's freeleech pass makes
+downloads free. The seedbox never renews.
 
 **Why a seedbox:** home qbt is connectable (WireGuard via Windscribe, port
 forwarded), but it uploads almost nothing. The swarms it seeds are saturated
@@ -17,48 +16,34 @@ about 23 GB of upload a month.
 | Where | What | In git? |
 |---|---|---|
 | Seedbox (Ultra.cc, 1 TB disk, 2 TB/month upload cap) | qBittorrent + autobrr, from the provider's app installer | No. Configured by hand; filters are summarized below |
-| Cluster, `qbittorrent` ns | `seedbox-handoff` CronJob | Yes, this directory |
-| Cluster, `qbittorrent` ns | `seedbox-handoff` SOPS secret | Yes, encrypted |
-| GHCR | `seedbox-handoff` image: python + `qbittorrent-api` + rclone | Yes, `images/seedbox-handoff/`, built by `build-images.yml` |
+| Cluster, `qbittorrent` ns | `alerts.yaml` VMRule; seedbox scrapes and the Ultra dashboard | Yes |
 
-The tracker isn't named anywhere in git. Its announce host lives in the secret
-and is only used to filter torrents.
+The tracker isn't named anywhere in git.
 
-## Timeline
+## Rotation (since day 0)
 
-Day 0 is the day the seedbox goes live. That date is the only input the jobs
-need (`SEEDBOX_START` in the ConfigMap).
+The freeleech pass includes hit-and-run immunity, so the tracker's 14-day seeding
+rule doesn't apply while the pass lasts. Nearly all upload arrives in the first
+hours of a release, so the box grabs every new release, seeds it briefly, and
+drops it to make room for the next.
 
-| Day | Event |
-|---|---|
-| 0 | Seedbox live. **Turn off auto-renew.** Install qbt + autobrr. Run the speed test (below). |
-| 0–3 | autobrr grabs freeleech-only to prove the filters, the rotation and the upload. |
-| 3 | Start the paid freeleech pass (one month). Widen the filters to new popular releases. |
-| 22 | autobrr's `disk-guard` stops accepting grabs (2026-10-23T00:00Z). Anything grabbed after day 15.75 can't finish 14.25 days on the box, so day 22 at ~55 GB/day keeps the handoff near 350 GB. |
-| 25 | `space` phase: report how much the handoff needs vs pool1 free space. |
-| 27 | `handoff` phase: copy torrents that haven't met the rule, add them to home qbt. Retries daily through day 29. |
-| 30 | Seedbox expires. |
-| 30–44 | `expire` phase: remove each handoff torrent from home once its total seeding time reaches the rule. |
-
-## autobrr filters (on the seedbox)
-
-- Freeleech only until the pass starts; after that, any new release.
-The tracker's rule is a flat 14 days of seeding, so the disk, not the 2 TB upload cap, is the binding constraint: every grab occupies its size for the whole hold, but earns most of its upload in the first day or two. The rules therefore pace intake so a fresh release arrives every day.
-
-- Filter `ipt-new-releases` (freeleech-only until the pass started on day 0): Movies and TV, 1–15 GB, 1080p/2160p, WEB-DL/WEBRip/WEB/BluRay, at most 30 a day. Smaller releases spread the disk over more swarms.
-- `disk-guard` external filter (`~/bin/autobrr-disk-ok.sh`, rejects on error) accepts a grab only while all of these hold:
+- Filter `ipt-new-releases`: Movies and TV, 1–30 GB, 1080p/2160p, WEB-DL/WEBRip/WEB/BluRay, any release (downloads don't count during the pass).
+- `disk-guard` external filter (`~/bin/autobrr-disk-ok.sh`, rejects on error) accepts a grab only while:
   - the account is under 85% of its 932 GB quota (headroom for 4 active downloads);
-  - under 14 GB was added in the last 6 h. That's 55 GB/day (85% of quota spread over the hold), sliced so releases keep arriving through the day instead of one burst that fills the day's budget in an hour;
-  - it's before day 22.
-- Seedbox qbt removes a torrent and its files after 14.25 days of seeding (`max_seeding_time` 20520, action "remove with content"); the extra 6 h covers announce gaps.
+  - it's before 2026-10-27T00:00Z, so the 3-day hold ends before the immunity lapses with the pass (~10-31).
+- Seedbox qbt removes a torrent and its files after 3 days of seeding or 12 h without upload, whichever comes first.
 - Seedbox qbt upload slots are unlimited and connections are 1000 global / 200 per torrent, so no swarm is throttled by slot limits.
-- Keep ~350 GB of the 2 TB upload cap for the handoff, since copying data off the box is outbound traffic.
+- The binding limit is the provider's 2 TB/month upload cap, not the disk.
 
 ## Alerts
 
 `alerts.yaml` pages the homelab Discord channel when seedbox qbt, autobrr, or autobrr's announce IRC connection is down for 15 minutes. The rules switch themselves off when the seedbox expires.
 
-## CronJob: `seedbox-handoff`
+## CronJob: `seedbox-handoff` (cancelled)
+
+Not needed while hit-and-run immunity covers every grab. Kept for a future month without it.
+
+### Original design
 
 Runs once a day. Each run works out the day number from `SEEDBOX_START` and does
 whichever phases apply. All phases are idempotent, so a missed or repeated run
