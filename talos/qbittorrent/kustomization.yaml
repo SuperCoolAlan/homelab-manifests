@@ -10,6 +10,7 @@ resources:
   - pvc-fast.yaml
   - local-asandov-ingress.yaml
   - exporter.yaml
+  - ultra-seedbox/telemetry.yaml
 
 generators:
   - secrets-generator.yaml
