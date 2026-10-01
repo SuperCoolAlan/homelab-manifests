@@ -246,15 +246,15 @@ pod; server pubkey `B31LFquE549qd8JW4zGS7b1XsVNIPI/mS29xFVhRDkA=`.
 | OCI NSG `snowflake-jumphost` | ingress UDP 32768-60999 from 0.0.0.0/0; UDP 51820 comes from the shared security list |
 | Tor obfs4 bridge | `tor@default` from `deb.torproject.org` (`/etc/apt/sources.list.d/tor.sources`) + Ubuntu `obfs4proxy`; `/etc/tor/torrc`: `BridgeRelay 1`, ORPort 9443, obfs4 on 8443, nickname `chicagoobfs4`, no ContactInfo. Drop-in `tor@default.service.d/wg0.conf` orders it after wg0 |
 | Tor metrics | `MetricsPort 10.100.0.1:9035` + `MetricsPortPolicy accept 10.100.0.7`; scraped as `job="tor-bridge"`. Never widen the policy: tor's own manual warns public metrics endanger users |
-| Psiphon Conduit | `conduit.service` running `/usr/local/bin/conduit start --data-dir /var/lib/conduit --metrics-addr 10.100.0.1:9090 --bandwidth 10` (release-cli-2.0.0 arm64, checksum in `/usr/local/share/conduit/VERSION`), `DynamicUser`, same sandboxing as the proxy. WebRTC ports fall inside the existing 32768:60999 accept. Scraped as `job="conduit"` |
+| Psiphon Conduit | `conduit.service` running `/usr/local/bin/conduit start --data-dir /var/lib/conduit --metrics-addr 10.100.0.1:9090 --bandwidth 15 --max-common-clients 200` (release-cli-2.0.0 arm64, checksum in `/usr/local/share/conduit/VERSION`), `DynamicUser`, same sandboxing as the proxy. WebRTC ports fall inside the existing 32768:60999 accept. Scraped as `job="conduit"` |
 | Upgrading Conduit | download the new `conduit-linux-arm64`, verify against the release `checksums.txt`, `install -m 0755` over the binary, update `VERSION`, restart |
 | OCI NSG `snowflake-jumphost` (bridge) | ingress TCP 9443 and TCP 8443 from 0.0.0.0/0 |
 | INPUT accepts | `/etc/iptables/rules.v4`: UDP 51820, UDP 32768:60999, TCP 9443 + 8443, TCP 9999/9035/9090 from `10.100.0.7` on wg0, TCP 8080 from `10.100.0.11` on wg0 |
 | CrowdSec engine | apt `crowdsec` 1.7.8 + `crowdsec-firewall-bouncer-nftables` 0.0.36 (held), LAPI `0.0.0.0:8080` (`config.yaml.local`), sshd via journald (`acquis.d/sshd-journal.yaml`). Console `oracle-snowflake-jumphost`. See `talos/cluster-services/crowdsec/README.md` |
 | crowdsec-web-ui peer | wg0 `[Peer]` `10.100.0.11/32` (talos/crowdsec-lapi-tunnel), pubkey `NzhhHkFAmXsWAoi3IKVxZUxrmFER7aovcl198KR4vxM=`. A peer added live with `wg set` gets no route (only `wg-quick up` adds them): also run `ip route replace <peer>/32 dev wg0`, or replies leave via enp0s6 and the tunnel times out |
 | wg0 output | `/etc/nftables-wg-restrict.nft` (table `ip wg_restrict`): VPS may only reply into wg0 |
-| Egress cap | `egress-cap.service`: `tc ... cake bandwidth 19500kbit` on `enp0s6` (at most 6.53 TB in a 31-day month), shared by all three relays. Change it live with `tc qdisc change`: restarting the unit also restarts Conduit, which `Requires=` it |
-| Egress guard | `snowflake-egress-guard.timer` every 15 min: stops snowflake, the bridge and Conduit once vnstat shows 6.6 TB tx this month, restarts them next month. A backstop only; the cap keeps it from tripping. See [Egress budget](#egress-budget) |
+| Egress cap | `egress-cap.service`: `tc ... cake bandwidth 24000kbit` on `enp0s6` (at most 8.04 TB in a 31-day month), shared by all three relays. Change it live with `tc qdisc change`: restarting the unit also restarts Conduit, which `Requires=` it |
+| Egress guard | `snowflake-egress-guard.timer` every 15 min: stops snowflake, the bridge and Conduit once vnstat shows 8.1 TB tx this month, restarts them next month. A backstop only; the cap keeps it from tripping. See [Egress budget](#egress-budget) |
 | Auto-updates | `/etc/apt/apt.conf.d/52unattended-upgrades-local`: adds `-updates` and `TorProject:noble`, auto-reboot at 10:00 UTC (jelly 09:00, monero 09:30, same file). CrowdSec stays held |
 
 Both the cap and the guard exist to keep the tenancy inside the free 10 TB/month
@@ -315,12 +315,12 @@ cap keeps that guard from tripping.
 
 | Box | `egress-cap.service` | Worst case / 31 days | Shut-off |
 |---|---|---|---|
-| snowflake | 19.5 Mbit/s | 6.53 TB | guard at 6.6 TB (unreachable backstop) |
+| snowflake | 24 Mbit/s | 8.04 TB | guard at 8.1 TB (unreachable backstop) |
 | monero | 8 Mbit/s, 500 kbit/s past 630 GB/month (`monero-egress-throttle.timer`) | ~0.8 TB (measured ~0.6 TB) | never; `MoneroEgressThrottled` fires when throttled |
 | signal | none | Signal clients | never |
 | jelly | none | remote Jellyfin streaming | never |
 
-That leaves ~2.67 TB/month shared by jelly and signal before billing. `OracleTenancyEgressHigh`
+That leaves ~1.1 TB/month shared by jelly and signal before billing (they used ~10 GB in 2026-09). `OracleTenancyEgressHigh`
 fires at 9 TB summed over the last 30 days. Every box has vnstat
 (`vnstat -m -i enp0s6`). Carve a new box's cap out of this table rather than
 raising the total.
