@@ -27,7 +27,7 @@ rule doesn't apply while the pass lasts. Nearly all upload arrives in the first
 hours of a release, so the box grabs every new release, seeds it briefly, and
 drops it to make room for the next.
 
-- Filter `ipt-new-releases`: categories `Movie*,TV/*,Documentar*,Sports*,Anime*` (the tracker's movie categories are singular `Movie/…`), any resolution or source, 0.5–50 GB, 200 a day; autobrr's client allows 6 active downloads. Downloads don't count during the pass.
+- Filter `ipt-new-releases`: every new release in any category, 100 MB–50 GB, 400 a day; autobrr's client allows 6 active downloads. Downloads don't count during the pass.
 - `disk-guard` external filter (`~/bin/autobrr-disk-ok.sh`, rejects on error) accepts a grab only while:
   - the account is under 85% of its 932 GB quota (headroom for 6 active downloads);
   - it's before 2026-10-27T00:00Z, so the 3-day hold ends before the immunity lapses with the pass (~10-31).
