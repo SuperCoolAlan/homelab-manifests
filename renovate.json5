@@ -11,8 +11,9 @@
 
   // kustomize: bumps helmCharts[].version in kustomization.yaml files
   // custom.regex: bumps image tags annotated with "# renovate:" comments
+  // dockerfile: bumps FROM digests under images/
   // github-actions: keeps CI workflow actions pinned & current
-  enabledManagers: ['kustomize', 'custom.regex', 'github-actions'],
+  enabledManagers: ['kustomize', 'custom.regex', 'dockerfile', 'github-actions'],
 
   prConcurrentLimit: 5,
   prHourlyLimit: 0,
