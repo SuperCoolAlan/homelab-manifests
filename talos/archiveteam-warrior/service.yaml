@@ -10,3 +10,16 @@ spec:
     - name: http
       port: 8001
       targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: warrior-telegram
+  namespace: archiveteam-warrior
+spec:
+  selector:
+    app.kubernetes.io/name: warrior-telegram
+  ports:
+    - name: http
+      port: 8001
+      targetPort: http

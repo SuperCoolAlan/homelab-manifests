@@ -25,3 +25,31 @@ spec:
     - hosts:
         - warrior.local.asandov.com
       secretName: warrior-local-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: warrior-telegram
+  namespace: archiveteam-warrior
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: warrior-telegram.local.asandov.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: warrior-telegram
+                port:
+                  number: 8001
+  tls:
+    - hosts:
+        - warrior-telegram.local.asandov.com
+      secretName: warrior-telegram-local-tls
