@@ -105,15 +105,27 @@ spec:
           annotations:
             summary: Looped Frigate is running on the CPU detector
             description: "coral-guard found no Coral on the USB bus. Recording continues with slow detection. Reseat the Coral; see journalctl -t coral-guard on the box."
-        - alert: LoopedRecordingsDiskFilling
-          expr: node_filesystem_avail_bytes{job="looped-node",mountpoint="/srv/frigate"} / node_filesystem_size_bytes{job="looped-node",mountpoint="/srv/frigate"} < 0.05
-          for: 30m
+        # Frigate's emergency prune keeps roughly one hour of space free (~0.5% here), so a low disk is its
+        # normal state only when retention no longer fits. Expiry sized to the disk leaves ~11% free.
+        - alert: LoopedRecordingsDiskCritical
+          expr: node_filesystem_avail_bytes{job="looped-node",mountpoint="/srv/frigate"} / node_filesystem_size_bytes{job="looped-node",mountpoint="/srv/frigate"} < 0.02
+          for: 1h
           labels:
             severity: warning
             alertgroup: homelab
           annotations:
-            summary: Looped recordings partition under 5% free
-            description: "Frigate prunes oldest-first near full, so this means retention in frigate/config.yml is larger than the disk holds."
+            summary: Looped recordings partition under 2% free
+            description: "Normal expiry is no longer keeping up and Frigate is deleting the oldest hour to make room, which ignores the continuous window. Lower record.motion.days in frigate/config.yml or the camera's bitrate."
+        # Fed by recordings-age.timer on the box. Expect ~11 days; a wipe makes this fire until it refills.
+        - alert: LoopedRetentionShort
+          expr: looped_recordings_oldest_age_seconds{job="looped-node"} > 0 and looped_recordings_oldest_age_seconds{job="looped-node"} < 432000
+          for: 1h
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Looped keeps less than 5 days of footage
+            description: "The oldest recording is {{ $value | humanizeDuration }} old. Either the camera is writing far more than planned, or something deleted footage."
         - alert: LoopedJournalUploadDown
           expr: max(node_systemd_unit_state{job="looped-node",name="systemd-journal-upload.service",state="active"}) == 0
           for: 15m
