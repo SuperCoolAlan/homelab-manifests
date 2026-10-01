@@ -113,6 +113,9 @@ spec:
             # TrueNAS backed both of these with a /mnt/transcode-ram RAM disk;
             # a Memory-medium emptyDir is the direct equivalent and keeps
             # transcode churn off the SSDs entirely.
+            - name: iptv-private
+              mountPath: /iptv
+              readOnly: true
             - name: transcodes
               mountPath: /config/transcodes
             - name: transcodes
@@ -159,6 +162,9 @@ spec:
         - name: encoding-config
           configMap:
             name: jellyfin-encoding
+        - name: iptv-private
+          secret:
+            secretName: jellyfin-iptv-private
         - name: transcodes
           emptyDir:
             medium: Memory

@@ -23,6 +23,22 @@
       <IgnoreDts>true</IgnoreDts>
       <ReadAtNativeFramerate>false</ReadAtNativeFramerate>
     </TunerHostInfo>
+    <TunerHostInfo>
+      <Id>7f3b1d5e9c2a4b6d8e0f1a3c5b7d9e24</Id>
+      <!-- Mounted from the jellyfin-iptv-private Secret; the stream links carry tokens. -->
+      <Url>/iptv/private.m3u</Url>
+      <Type>m3u</Type>
+      <FriendlyName>Private</FriendlyName>
+      <ImportFavoritesOnly>false</ImportFavoritesOnly>
+      <AllowHWTranscoding>true</AllowHWTranscoding>
+      <AllowFmp4TranscodingContainer>false</AllowFmp4TranscodingContainer>
+      <AllowStreamSharing>true</AllowStreamSharing>
+      <FallbackMaxStreamingBitrate>30000000</FallbackMaxStreamingBitrate>
+      <EnableStreamLooping>false</EnableStreamLooping>
+      <TunerCount>0</TunerCount>
+      <IgnoreDts>true</IgnoreDts>
+      <ReadAtNativeFramerate>false</ReadAtNativeFramerate>
+    </TunerHostInfo>
   </TunerHosts>
   <ListingProviders>
     <ListingsProviderInfo>
