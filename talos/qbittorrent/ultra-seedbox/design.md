@@ -30,7 +30,8 @@ drops it to make room for the next.
 - Filter `ipt-new-releases`: every new release in any category, 100 MB–50 GB, 400 a day; autobrr's client allows 6 active downloads. Downloads don't count during the pass.
 - `disk-guard` external filter (`~/bin/autobrr-disk-ok.sh`, rejects on error) accepts a grab only while:
   - the account is under 85% of its 932 GB quota (headroom for 6 active downloads);
-  - it's before 2026-11-01T00:00Z, when the pass, its hit-and-run immunity and the seedbox all end.
+  - it's before 2026-10-31T23:00Z, an hour before the pass, its hit-and-run immunity and the seedbox all end.
+- Kill switch: the `seedbox-killswitch.timer` systemd user timer (Persistent, so it also fires after downtime) runs `~/bin/seedbox-killswitch.py` at 2026-10-31T23:00Z. It stops and disables autobrr and stops every unfinished download; finished torrents keep seeding.
 - Seedbox qbt removes a torrent and its files after 3 days of seeding or 12 h without upload, whichever comes first.
 - Seedbox qbt upload slots are unlimited and connections are 1000 global / 200 per torrent, so no swarm is throttled by slot limits.
 - The binding limit is the provider's 2 TB/month upload cap, not the disk.
