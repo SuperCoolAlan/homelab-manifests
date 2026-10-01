@@ -1,10 +1,11 @@
 {
-  "uid": "starlink-dish",
-  "title": "Starlink",
-  "description": "Dish health from the Starlink exporter.",
+  "uid": "internet-bandwidth",
+  "title": "Internet Bandwidth",
+  "description": "Who is using the Starlink link: WAN totals, LAN segments, cluster nodes and pods.",
   "tags": [
+    "network",
     "starlink",
-    "network"
+    "opnsense"
   ],
   "editable": true,
   "graphTooltip": 1,
@@ -27,7 +28,7 @@
     {
       "id": 1,
       "type": "stat",
-      "title": "Dish exporter",
+      "title": "WAN upload",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -35,12 +36,12 @@
       "gridPos": {
         "x": 0,
         "y": 0,
-        "w": 4,
+        "w": 6,
         "h": 4
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "bps",
           "color": {
             "mode": "thresholds"
           },
@@ -48,30 +49,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
-              },
-              {
                 "color": "green",
-                "value": 1
+                "value": null
               }
             ]
-          },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "0": {
-                  "text": "DOWN",
-                  "color": "red"
-                },
-                "1": {
-                  "text": "UP",
-                  "color": "green"
-                }
-              }
-            }
-          ]
+          }
         },
         "overrides": []
       },
@@ -94,7 +76,7 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "starlink_dish_up",
+          "expr": "rate(opnsense_interfaces_transmitted_bytes_total{interface=\"WAN\"}[$__rate_interval])*8",
           "instant": false
         }
       ]
@@ -102,15 +84,71 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "PoP latency",
+      "title": "WAN download",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 4,
+        "x": 6,
         "y": 0,
-        "w": 4,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "rate(opnsense_interfaces_received_bytes_total{interface=\"WAN\"}[$__rate_interval])*8",
+          "instant": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Starlink latency",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
         "h": 4
       },
       "fieldConfig": {
@@ -165,17 +203,17 @@
       ]
     },
     {
-      "id": 3,
+      "id": 4,
       "type": "stat",
-      "title": "Ping drop",
+      "title": "Starlink ping drop",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 8,
+        "x": 18,
         "y": 0,
-        "w": 4,
+        "w": 6,
         "h": 4
       },
       "fieldConfig": {
@@ -230,214 +268,9 @@
       ]
     },
     {
-      "id": 4,
-      "type": "stat",
-      "title": "Obstructed now",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "0": {
-                  "text": "Clear",
-                  "color": "green"
-                },
-                "1": {
-                  "text": "Obstructed",
-                  "color": "red"
-                }
-              }
-            }
-          ]
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "A",
-          "expr": "starlink_dish_currently_obstructed",
-          "instant": false
-        }
-      ]
-    },
-    {
       "id": 5,
-      "type": "stat",
-      "title": "Sky obstruction",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 16,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 0.01
-              },
-              {
-                "color": "red",
-                "value": 0.03
-              }
-            ]
-          },
-          "decimals": 2
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "A",
-          "expr": "starlink_dish_fraction_obstruction_ratio",
-          "instant": false
-        }
-      ],
-      "description": "Fraction of the dish's field of view that is blocked."
-    },
-    {
-      "id": 6,
-      "type": "stat",
-      "title": "Obstructed (24h)",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 20,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 60
-              },
-              {
-                "color": "red",
-                "value": 600
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "A",
-          "expr": "starlink_dish_last_24h_obstructed_seconds",
-          "instant": false
-        }
-      ]
-    },
-    {
-      "id": 7,
       "type": "row",
-      "title": "Connection quality",
+      "title": "Whole house (OPNsense WAN)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -448,9 +281,9 @@
       "panels": []
     },
     {
-      "id": 8,
+      "id": 6,
       "type": "timeseries",
-      "title": "PoP ping latency",
+      "title": "WAN throughput",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -463,7 +296,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "bps",
           "custom": {
             "fillOpacity": 10,
             "lineWidth": 1,
@@ -471,93 +304,6 @@
             "stacking": {
               "mode": "none"
             }
-          },
-          "min": 0
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "mean",
-            "max"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "A",
-          "expr": "starlink_dish_pop_ping_latency_seconds",
-          "legendFormat": "latency"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "B",
-          "expr": "max_over_time(starlink_dish_pop_ping_latency_seconds[$__interval])",
-          "legendFormat": "max in interval"
-        }
-      ],
-      "description": "Round trip from the dish to the Starlink point of presence."
-    },
-    {
-      "id": 9,
-      "type": "timeseries",
-      "title": "PoP ping drop",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 5,
-        "w": 12,
-        "h": 8
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "custom": {
-            "fillOpacity": 10,
-            "lineWidth": 1,
-            "showPoints": "never",
-            "stacking": {
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line+area"
-            }
-          },
-          "min": 0,
-          "max": 1,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 0.01
-              },
-              {
-                "color": "red",
-                "value": 0.05
-              }
-            ]
           }
         },
         "overrides": []
@@ -583,8 +329,8 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "starlink_dish_pop_ping_drop_ratio",
-          "legendFormat": "drop"
+          "expr": "rate(opnsense_interfaces_received_bytes_total{interface=\"WAN\"}[$__rate_interval])*8",
+          "legendFormat": "download"
         },
         {
           "datasource": {
@@ -592,78 +338,25 @@
             "uid": "prometheus"
           },
           "refId": "B",
-          "expr": "max_over_time(starlink_dish_pop_ping_drop_ratio[$__interval])",
-          "legendFormat": "max in interval"
+          "expr": "-rate(opnsense_interfaces_transmitted_bytes_total{interface=\"WAN\"}[$__rate_interval])*8",
+          "legendFormat": "upload"
         }
       ],
-      "description": "Share of pings to the PoP that got no reply. Short spikes here are what games feel as rubber-banding."
+      "description": "Everything leaving the house, all devices. Upload is drawn below zero."
     },
     {
-      "id": 10,
+      "id": 7,
       "type": "timeseries",
-      "title": "Obstructed",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 13,
-        "w": 12,
-        "h": 6
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "custom": {
-            "fillOpacity": 60,
-            "lineWidth": 1,
-            "showPoints": "never",
-            "stacking": {
-              "mode": "none"
-            }
-          },
-          "min": 0,
-          "max": 1
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "hidden",
-          "placement": "bottom",
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "A",
-          "expr": "max_over_time(starlink_dish_currently_obstructed[$__interval])",
-          "legendFormat": "obstructed"
-        }
-      ]
-    },
-    {
-      "id": 11,
-      "type": "timeseries",
-      "title": "Prolonged obstruction duration",
+      "title": "Starlink latency & drop",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 12,
-        "y": 13,
+        "y": 5,
         "w": 12,
-        "h": 6
+        "h": 8
       },
       "fieldConfig": {
         "defaults": {
@@ -678,13 +371,44 @@
           },
           "min": 0
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "drop (max)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "max",
+                "value": 1
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
-          "displayMode": "hidden",
+          "displayMode": "table",
           "placement": "bottom",
-          "calcs": []
+          "calcs": [
+            "mean",
+            "max"
+          ]
         },
         "tooltip": {
           "mode": "multi",
@@ -698,35 +422,154 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "starlink_dish_prolonged_obstruction_duration_seconds",
-          "legendFormat": "duration"
+          "expr": "max_over_time(starlink_dish_pop_ping_latency_seconds[$__interval])",
+          "legendFormat": "latency (max)"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "max_over_time(starlink_dish_pop_ping_drop_ratio[$__interval])",
+          "legendFormat": "drop (max)"
         }
-      ]
+      ],
+      "description": "Line up lag with these: drop spikes with low WAN use point at Starlink, not the LAN."
     },
     {
-      "id": 12,
-      "type": "row",
-      "title": "Throughput",
-      "collapsed": false,
-      "gridPos": {
-        "x": 0,
-        "y": 19,
-        "w": 24,
-        "h": 1
-      },
-      "panels": []
-    },
-    {
-      "id": 13,
+      "id": 8,
       "type": "timeseries",
-      "title": "Dish throughput",
+      "title": "Upload by LAN interface",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 0,
-        "y": 20,
+        "y": 13,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "rate(opnsense_interfaces_received_bytes_total{interface!=\"WAN\"}[$__rate_interval])*8",
+          "legendFormat": "{{interface}}"
+        }
+      ],
+      "description": "Traffic arriving at OPNsense from each LAN/VLAN, i.e. what that segment sends, including to other segments."
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Download by LAN interface",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 13,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "rate(opnsense_interfaces_transmitted_bytes_total{interface!=\"WAN\"}[$__rate_interval])*8",
+          "legendFormat": "{{interface}}"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "row",
+      "title": "Cluster",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Node NIC throughput",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 22,
         "w": 24,
         "h": 8
       },
@@ -765,8 +608,8 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "starlink_dish_downlink_throughput_bytes",
-          "legendFormat": "download"
+          "expr": "rate(node_network_receive_bytes_total{device=~\"eno1|end0\"}[$__rate_interval])*8",
+          "legendFormat": "{{instance}} {{device}} rx"
         },
         {
           "datasource": {
@@ -774,144 +617,29 @@
             "uid": "prometheus"
           },
           "refId": "B",
-          "expr": "-starlink_dish_uplink_throughput_bytes",
-          "legendFormat": "upload"
+          "expr": "-rate(node_network_transmit_bytes_total{device=~\"eno1|end0\"}[$__rate_interval])*8",
+          "legendFormat": "{{instance}} {{device}} tx"
         }
       ],
-      "description": "The exporter calls these *_bytes but they are bits per second; they match the OPNsense WAN counters \u00d78. Upload is drawn below zero."
+      "description": "Physical NICs, includes LAN traffic such as NFS to TrueNAS. Transmit is drawn below zero."
     },
     {
-      "id": 14,
-      "type": "row",
-      "title": "Dish",
-      "collapsed": false,
-      "gridPos": {
-        "x": 0,
-        "y": 28,
-        "w": 24,
-        "h": 1
-      },
-      "panels": []
-    },
-    {
-      "id": 15,
+      "id": 12,
       "type": "timeseries",
-      "title": "Active alerts",
+      "title": "Top pods by upload",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 0,
-        "y": 29,
+        "y": 30,
         "w": 12,
-        "h": 7
+        "h": 10
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
-          "custom": {
-            "fillOpacity": 40,
-            "lineWidth": 1,
-            "showPoints": "never",
-            "stacking": {
-              "mode": "none"
-            }
-          },
-          "min": 0,
-          "max": 1
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "mean",
-            "max"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "A",
-          "expr": "starlink_dish_alert_motors_stuck",
-          "legendFormat": "motors_stuck"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "B",
-          "expr": "starlink_dish_alert_thermal_throttle",
-          "legendFormat": "thermal_throttle"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "C",
-          "expr": "starlink_dish_alert_thermal_shutdown",
-          "legendFormat": "thermal_shutdown"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "D",
-          "expr": "starlink_dish_alert_mast_not_near_vertical",
-          "legendFormat": "mast_not_near_vertical"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "E",
-          "expr": "starlink_dish_alert_unexpected_location",
-          "legendFormat": "unexpected_location"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "F",
-          "expr": "starlink_dish_alert_slow_eth_speeds",
-          "legendFormat": "slow_eth_speeds"
-        }
-      ],
-      "description": "1 = alert raised by the dish."
-    },
-    {
-      "id": 16,
-      "type": "timeseries",
-      "title": "Boresight",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 29,
-        "w": 12,
-        "h": 7
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "degree",
+          "unit": "bps",
           "custom": {
             "fillOpacity": 10,
             "lineWidth": 1,
@@ -944,17 +672,171 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "starlink_dish_bore_sight_azimuth_deg",
-          "legendFormat": "azimuth"
+          "expr": "topk(10, sum by (namespace, pod) (rate(container_network_transmit_bytes_total{interface=\"eth0\",pod!=\"\"}[$__rate_interval])))*8",
+          "legendFormat": "{{namespace}}/{{pod}}"
+        }
+      ],
+      "description": "Pod-network interfaces only; host-network pods (cilium, metallb, node-exporter) report the whole node and are excluded."
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Top pods by download",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 30,
+        "w": 12,
+        "h": 10
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "none"
+            }
+          }
         },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "refId": "B",
-          "expr": "starlink_dish_bore_sight_elevation_deg",
-          "legendFormat": "elevation"
+          "refId": "A",
+          "expr": "topk(10, sum by (namespace, pod) (rate(container_network_receive_bytes_total{interface=\"eth0\",pod!=\"\"}[$__rate_interval])))*8",
+          "legendFormat": "{{namespace}}/{{pod}}"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Upload by namespace",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (namespace) (rate(container_network_transmit_bytes_total{interface=\"eth0\",pod!=\"\"}[$__rate_interval]))*8",
+          "legendFormat": "{{namespace}}"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Download by namespace",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (namespace) (rate(container_network_receive_bytes_total{interface=\"eth0\",pod!=\"\"}[$__rate_interval]))*8",
+          "legendFormat": "{{namespace}}"
         }
       ]
     }
