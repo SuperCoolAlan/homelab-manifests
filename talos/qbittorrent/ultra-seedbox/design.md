@@ -34,7 +34,7 @@ need (`SEEDBOX_START` in the ConfigMap).
 | 0 | Seedbox live. **Turn off auto-renew.** Install qbt + autobrr. Run the speed test (below). |
 | 0–3 | autobrr grabs freeleech-only to prove the filters, the rotation and the upload. |
 | 3 | Start the paid freeleech pass (one month). Widen the filters to new popular releases. |
-| ~24 | autobrr stops grabbing (filter disabled by hand, or its max-downloads drops to 0). Keeps the handoff small. |
+| 22 | autobrr's `disk-guard` stops accepting grabs (2026-10-23T00:00Z). Anything grabbed after day 15.75 can't finish 14.25 days on the box, so day 22 at ~55 GB/day keeps the handoff near 350 GB. |
 | 25 | `space` phase: report how much the handoff needs vs pool1 free space. |
 | 27 | `handoff` phase: copy torrents that haven't met the rule, add them to home qbt. Retries daily through day 29. |
 | 30 | Seedbox expires. |
@@ -43,9 +43,16 @@ need (`SEEDBOX_START` in the ConfigMap).
 ## autobrr filters (on the seedbox)
 
 - Freeleech only until the pass starts; after that, any new release.
-- Movies and TV, 2–30 GB, 1080p/2160p WEB-DL from popular groups.
-- A max-downloads-per-day cap sized so the 1 TB disk and the 2 TB upload cap last the month. Keep ~350 GB of the cap in reserve for the handoff, since copying data off the box is outbound traffic.
-- Seedbox qbt: remove a torrent and its files once it is **past the seeding rule and idle**, never before the rule.
+The tracker's rule is a flat 14 days of seeding, so the disk, not the 2 TB upload cap, is the binding constraint: every grab occupies its size for the whole hold, but earns most of its upload in the first day or two. The rules therefore pace intake so a fresh release arrives every day.
+
+- Filter `ipt-freeleech`: freeleech, Movies and TV, 1–15 GB, 1080p/2160p, WEB-DL/WEBRip/WEB/BluRay, at most 30 a day. Smaller releases spread the disk over more swarms.
+- `disk-guard` external filter (`~/bin/autobrr-disk-ok.sh`, rejects on error) accepts a grab only while all of these hold:
+  - the account is under 85% of its 932 GB quota (headroom for 4 active downloads);
+  - under 55 GB was added in the last 24 h (85% of quota spread over the hold);
+  - it's before day 22.
+- Seedbox qbt removes a torrent and its files after 14.25 days of seeding (`max_seeding_time` 20520, action "remove with content"); the extra 6 h covers announce gaps.
+- Seedbox qbt upload slots are unlimited and connections are 1000 global / 200 per torrent, so no swarm is throttled by slot limits.
+- Keep ~350 GB of the 2 TB upload cap for the handoff, since copying data off the box is outbound traffic.
 
 ## CronJob: `seedbox-handoff`
 
@@ -112,7 +119,6 @@ Pull a ~5 GB file from the seedbox with the same rclone flags. Plan:
 
 ## Open questions
 
-- Is the tracker's rule a flat 14 days, or "14 days or 1:1"? If 1:1 counts, most popular grabs pass within days and the handoff shrinks to almost nothing; `space` and `handoff` would test for either condition.
 - Does seeding time carry over when the same account seeds the torrent from a new IP? It normally does, because the tracker counts time per account and per torrent.
 - Can the freeleech pass be started on a chosen day, and does a download still in progress when it ends count?
 - Does Ultra.cc's 2 TB cap count SFTP downloads off the box? Assume yes.
