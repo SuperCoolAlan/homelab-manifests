@@ -9,7 +9,7 @@ spec:
     matchExpressions:
       - key: app.kubernetes.io/name
         operator: In
-        values: [warrior, warrior-telegram]
+        values: [warrior, warrior-telegram, warrior-urlteam]
   policyTypes:
     - Ingress
     - Egress

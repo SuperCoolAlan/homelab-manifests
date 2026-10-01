@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: warrior-urlteam
+  namespace: archiveteam-warrior
+  labels:
+    app.kubernetes.io/name: warrior-urlteam
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: warrior-urlteam
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: warrior-urlteam
+      annotations:
+        # Cilium bandwidth manager cap; the three warriors sum to 7M, still below Jellyfin on the Starlink uplink.
+        kubernetes.io/egress-bandwidth: "1M"
+    spec:
+      enableServiceLinks: false
+      # Image is amd64-only.
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      # Upstream stops on SIGINT and finishes in-flight uploads; give it time.
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: warrior
+          # Built from images/archiveteam-warrior; CI only publishes :latest, Renovate bumps the digest.
+          # renovate: datasource=docker depName=ghcr.io/supercoolalan/archiveteam-warrior
+          image: ghcr.io/supercoolalan/archiveteam-warrior:latest@sha256:80abbe879832c07ce809e1470a6e1c29f1890615289988d9341c61df2727d78c
+          # Env only seeds projects/config.json; projects is an emptyDir so these win on every restart.
+          env:
+            - name: DOWNLOADER
+              value: asandov
+            # Shortener scans upload little, so it runs on a smaller cap than the other two.
+            - name: SELECTED_PROJECT
+              value: urlteam2
+            # Warrior UI max; UI edits don't persist, set it here.
+            - name: CONCURRENT_ITEMS
+              value: "6"
+          ports:
+            - name: http
+              containerPort: 8001
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 60
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 2Gi
+              # Caps in-flight items in the writable layer; data/ can't be a volume, the image ships wget-at there.
+              ephemeral-storage: 60Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: projects
+              mountPath: /home/warrior/projects
+        - name: item-log
+          # Same image as the warrior: it already ships tornado.
+          image: ghcr.io/supercoolalan/archiveteam-warrior:latest@sha256:80abbe879832c07ce809e1470a6e1c29f1890615289988d9341c61df2727d78c
+          command: ["python3", "-u", "/item-log/item-log.py"]
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: item-log
+              mountPath: /item-log
+              readOnly: true
+      volumes:
+        - name: projects
+          emptyDir: {}
+        - name: item-log
+          configMap:
+            name: warrior-item-log
