@@ -33,15 +33,16 @@ spec:
       terminationGracePeriodSeconds: 120
       containers:
         - name: warrior
-          # Upstream only publishes :latest; Renovate bumps the digest.
-          # renovate: datasource=docker depName=atdr.meo.ws/archiveteam/warrior-dockerfile
-          image: atdr.meo.ws/archiveteam/warrior-dockerfile:latest@sha256:19337aa9157e04f6cdb8f7c6f8c98e27d14efb0d9525334995fbdb036b95e1ca
+          # Built from images/archiveteam-warrior; CI only publishes :latest, Renovate bumps the digest.
+          # renovate: datasource=docker depName=ghcr.io/supercoolalan/archiveteam-warrior
+          image: ghcr.io/supercoolalan/archiveteam-warrior:latest@sha256:80abbe879832c07ce809e1470a6e1c29f1890615289988d9341c61df2727d78c
           # Env only seeds projects/config.json; projects is an emptyDir so these win on every restart.
           env:
             - name: DOWNLOADER
               value: asandov
+            # Pinned: "auto" re-rolls only when HQ weights change, so it idles on drained projects like navertv.
             - name: SELECTED_PROJECT
-              value: auto
+              value: usgovernment
             # Warrior UI max; UI edits don't persist, set it here.
             - name: CONCURRENT_ITEMS
               value: "6"
@@ -75,7 +76,7 @@ spec:
               mountPath: /home/warrior/projects
         - name: item-log
           # Same image as the warrior: it already ships tornado.
-          image: atdr.meo.ws/archiveteam/warrior-dockerfile:latest@sha256:19337aa9157e04f6cdb8f7c6f8c98e27d14efb0d9525334995fbdb036b95e1ca
+          image: ghcr.io/supercoolalan/archiveteam-warrior:latest@sha256:80abbe879832c07ce809e1470a6e1c29f1890615289988d9341c61df2727d78c
           command: ["python3", "-u", "/item-log/item-log.py"]
           resources:
             requests:
