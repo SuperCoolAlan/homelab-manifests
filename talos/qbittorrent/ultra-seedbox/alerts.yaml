@@ -1,0 +1,38 @@
+# Routed to the homelab Discord channel by `alertgroup: homelab`. Every rule stops at 2026-10-31T00:00Z when the
+# seedbox expires; without that guard they page forever once the box is gone.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: ultra-seedbox
+  namespace: qbittorrent
+spec:
+  groups:
+    - name: ultra-seedbox.alerts
+      rules:
+        - alert: SeedboxQbittorrentDown
+          expr: absent(up{job="qbittorrent-seedbox"} == 1) and on() vector(time()) < 1793404800
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Seedbox qBittorrent has been unreachable for 15m
+            description: The exporter can't reach the seedbox qBittorrent Web UI. Seeding time isn't counting; check the provider's status page, then ssh ultra.
+        - alert: SeedboxAutobrrDown
+          expr: absent(up{job="seedbox-autobrr"} == 1) and on() vector(time()) < 1793404800
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Seedbox autobrr metrics have been unreachable for 15m
+            description: autobrr or the seedbox nginx is down, so no new releases are being grabbed.
+        - alert: SeedboxIrcDisconnected
+          expr: max(autobrr_irc_healthy_total{job="seedbox-autobrr"}) < 1 and on() vector(time()) < 1793404800
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Seedbox autobrr has lost the announce IRC channel for 15m
+            description: autobrr is up but not hearing announces, so nothing is being raced. Restart the IRC network in the autobrr UI.

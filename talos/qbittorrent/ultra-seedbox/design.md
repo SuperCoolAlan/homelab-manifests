@@ -48,11 +48,15 @@ The tracker's rule is a flat 14 days of seeding, so the disk, not the 2 TB uploa
 - Filter `ipt-new-releases` (freeleech-only until the pass started on day 0): Movies and TV, 1–15 GB, 1080p/2160p, WEB-DL/WEBRip/WEB/BluRay, at most 30 a day. Smaller releases spread the disk over more swarms.
 - `disk-guard` external filter (`~/bin/autobrr-disk-ok.sh`, rejects on error) accepts a grab only while all of these hold:
   - the account is under 85% of its 932 GB quota (headroom for 4 active downloads);
-  - under 55 GB was added in the last 24 h (85% of quota spread over the hold);
+  - under 14 GB was added in the last 6 h. That's 55 GB/day (85% of quota spread over the hold), sliced so releases keep arriving through the day instead of one burst that fills the day's budget in an hour;
   - it's before day 22.
 - Seedbox qbt removes a torrent and its files after 14.25 days of seeding (`max_seeding_time` 20520, action "remove with content"); the extra 6 h covers announce gaps.
 - Seedbox qbt upload slots are unlimited and connections are 1000 global / 200 per torrent, so no swarm is throttled by slot limits.
 - Keep ~350 GB of the 2 TB upload cap for the handoff, since copying data off the box is outbound traffic.
+
+## Alerts
+
+`alerts.yaml` pages the homelab Discord channel when seedbox qbt, autobrr, or autobrr's announce IRC connection is down for 15 minutes. The rules switch themselves off when the seedbox expires.
 
 ## CronJob: `seedbox-handoff`
 
