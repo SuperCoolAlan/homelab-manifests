@@ -38,7 +38,7 @@ drops it to make room for the next.
 
 ## Alerts
 
-`alerts.yaml` pages the homelab Discord channel when seedbox qbt, autobrr, or autobrr's announce IRC connection is down for 15 minutes. The rules switch themselves off when the seedbox expires.
+`alerts.yaml` pages the homelab Discord channel when seedbox qbt, autobrr, or autobrr's announce IRC connection is down for 15 minutes, and once when about 90% of the 2 TB upload allowance is used. The rules switch themselves off when the seedbox expires.
 
 ## CronJob: `seedbox-handoff` (cancelled)
 

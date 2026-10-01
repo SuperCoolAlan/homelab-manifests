@@ -36,3 +36,13 @@ spec:
           annotations:
             summary: Seedbox autobrr has lost the announce IRC channel for 15m
             description: autobrr is up but not hearing announces, so nothing is being raced. Restart the IRC network in the autobrr UI.
+        - alert: SeedboxUploadAllowanceLow
+          # qbt was installed on day 0, so its all-time upload tracks the provider's monthly 2 TB allowance.
+          expr: max(qbittorrent_global_alltime_uploaded_bytes{job="qbittorrent-seedbox"}) > 1.8e12 < 2e12 and on() vector(time()) < 1793487600
+          for: 5m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Seedbox has used about 90% of its 2 TB upload allowance
+            description: Upload drops to 100 Mbit/s at the cap until 11-01. Check `ssh ultra app-traffic info` and decide on an extra-upload addon (cancel its renewal right after buying).
