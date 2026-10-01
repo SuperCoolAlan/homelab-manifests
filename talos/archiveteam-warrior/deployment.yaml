@@ -15,8 +15,8 @@ spec:
       labels:
         app.kubernetes.io/name: warrior
       annotations:
-        # Cilium bandwidth manager cap; keeps Jellyfin ahead on the Starlink uplink.
-        kubernetes.io/egress-bandwidth: "5M"
+        # Cilium bandwidth manager cap; with warrior-telegram the two sum to 6M, still below Jellyfin on the Starlink uplink.
+        kubernetes.io/egress-bandwidth: "3M"
     spec:
       enableServiceLinks: false
       # Image is amd64-only.
