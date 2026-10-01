@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- __IPTV_*__ placeholders are filled from the jellyfin-iptv Secret by the seed initContainer; the URLs carry credentials. -->
+<LiveTvOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <GuideDays>3</GuideDays>
+  <!-- Must stay off the 20Gi config PVC; jellyfin owns /mnt/media/tv, not /mnt/media. -->
+  <RecordingPath>/mnt/media/tv/recordings</RecordingPath>
+  <EnableRecordingSubfolders>true</EnableRecordingSubfolders>
+  <TunerHosts>
+    <TunerHostInfo>
+      <!-- Fixed ids: the listing provider and channel mappings reference them. -->
+      <Id>1a7e0c3b9d2f4e6a8b5c7d9e1f3a5b70</Id>
+      <Url>__IPTV_M3U_URL__</Url>
+      <Type>m3u</Type>
+      <FriendlyName>IPTorrents IPTV</FriendlyName>
+      <ImportFavoritesOnly>false</ImportFavoritesOnly>
+      <AllowHWTranscoding>true</AllowHWTranscoding>
+      <AllowFmp4TranscodingContainer>false</AllowFmp4TranscodingContainer>
+      <AllowStreamSharing>true</AllowStreamSharing>
+      <FallbackMaxStreamingBitrate>30000000</FallbackMaxStreamingBitrate>
+      <EnableStreamLooping>false</EnableStreamLooping>
+      <!-- Provider's concurrent-connection limit; more opens than this get refused. -->
+      <TunerCount>__IPTV_TUNER_COUNT__</TunerCount>
+      <IgnoreDts>true</IgnoreDts>
+      <ReadAtNativeFramerate>false</ReadAtNativeFramerate>
+    </TunerHostInfo>
+  </TunerHosts>
+  <ListingProviders>
+    <ListingsProviderInfo>
+      <Id>4c2d8e6f0a1b3c5d7e9f2a4b6c8d0e12</Id>
+      <Type>xmltv</Type>
+      <Path>__IPTV_EPG_URL__</Path>
+      <EnableAllTuners>true</EnableAllTuners>
+    </ListingsProviderInfo>
+  </ListingProviders>
+</LiveTvOptions>
