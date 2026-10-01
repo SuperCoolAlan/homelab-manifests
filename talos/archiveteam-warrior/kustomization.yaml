@@ -8,6 +8,7 @@ resources:
   - networkpolicy.yaml
   - deployment.yaml
   - deployment-telegram.yaml
+  - deployment-urlteam.yaml
   - service.yaml
   - ingress.yaml
 

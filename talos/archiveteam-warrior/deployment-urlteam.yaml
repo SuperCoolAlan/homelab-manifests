@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: warrior-telegram
+  name: warrior-urlteam
   namespace: archiveteam-warrior
   labels:
-    app.kubernetes.io/name: warrior-telegram
+    app.kubernetes.io/name: warrior-urlteam
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: warrior-telegram
+      app.kubernetes.io/name: warrior-urlteam
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: warrior-telegram
+        app.kubernetes.io/name: warrior-urlteam
       annotations:
         # Cilium bandwidth manager cap; the three warriors sum to 7M, still below Jellyfin on the Starlink uplink.
-        kubernetes.io/egress-bandwidth: "3M"
+        kubernetes.io/egress-bandwidth: "1M"
     spec:
       enableServiceLinks: false
       # Image is amd64-only.
@@ -40,9 +40,9 @@ spec:
           env:
             - name: DOWNLOADER
               value: asandov
-            # Second project so one tracker's rate limit doesn't idle the whole warrior.
+            # Shortener scans upload little, so it runs on a smaller cap than the other two.
             - name: SELECTED_PROJECT
-              value: telegram
+              value: urlteam2
             # Warrior UI max; UI edits don't persist, set it here.
             - name: CONCURRENT_ITEMS
               value: "6"
