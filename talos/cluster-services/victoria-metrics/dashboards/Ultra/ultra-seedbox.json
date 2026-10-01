@@ -562,7 +562,7 @@
     },
     {
       "id": 9,
-      "type": "gauge",
+      "type": "bargauge",
       "title": "Upload this month vs 2 TB cap",
       "datasource": {
         "type": "prometheus",
@@ -578,6 +578,7 @@
         "defaults": {
           "unit": "decbytes",
           "min": 0,
+          "decimals": 1,
           "color": {
             "mode": "thresholds"
           },
@@ -610,7 +611,15 @@
           "fields": "",
           "values": false
         },
-        "showThresholdMarkers": true
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "valueMode": "color",
+        "namePlacement": "hidden",
+        "showUnfilled": true,
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "maxVizHeight": 300
       },
       "targets": [
         {
@@ -626,7 +635,7 @@
     },
     {
       "id": 10,
-      "type": "gauge",
+      "type": "bargauge",
       "title": "Disk used vs quota",
       "datasource": {
         "type": "prometheus",
@@ -642,6 +651,7 @@
         "defaults": {
           "unit": "decbytes",
           "min": 0,
+          "decimals": 1,
           "color": {
             "mode": "thresholds"
           },
@@ -674,7 +684,15 @@
           "fields": "",
           "values": false
         },
-        "showThresholdMarkers": true
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "valueMode": "color",
+        "namePlacement": "hidden",
+        "showUnfilled": true,
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "maxVizHeight": 300
       },
       "targets": [
         {
@@ -690,7 +708,7 @@
     },
     {
       "id": 11,
-      "type": "gauge",
+      "type": "stat",
       "title": "Downloaded this month",
       "datasource": {
         "type": "prometheus",
@@ -705,7 +723,6 @@
       "fieldConfig": {
         "defaults": {
           "unit": "decbytes",
-          "min": 0,
           "color": {
             "mode": "thresholds"
           },
@@ -717,11 +734,14 @@
                 "value": null
               }
             ]
-          }
+          },
+          "decimals": 1
         },
         "overrides": []
       },
       "options": {
+        "colorMode": "background",
+        "graphMode": "area",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -729,7 +749,7 @@
           "fields": "",
           "values": false
         },
-        "showThresholdMarkers": true
+        "textMode": "value"
       },
       "targets": [
         {
@@ -738,7 +758,8 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "max(qbittorrent_global_alltime_downloaded_bytes{job=\"qbittorrent-seedbox\"})"
+          "expr": "max(qbittorrent_global_alltime_downloaded_bytes{job=\"qbittorrent-seedbox\"})",
+          "instant": false
         }
       ],
       "description": "Download traffic is unlimited on this plan; freeleech grabs also don't count against the tracker ratio."
