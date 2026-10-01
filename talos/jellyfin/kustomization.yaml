@@ -26,3 +26,7 @@ configMapGenerator:
     files:
       - encoding.xml=config/encoding.xml
       - network.xml=config/network.xml
+      - livetv.xml=config/livetv.xml
+
+generators:
+  - secrets-generator.yaml

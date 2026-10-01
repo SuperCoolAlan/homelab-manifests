@@ -60,12 +60,24 @@ spec:
               mkdir -p /config/config
               cp /seed/encoding.xml /config/config/encoding.xml
               cp /seed/network.xml /config/config/network.xml
+              # XML-escape &, then escape it again for sed's replacement side.
+              esc() { printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/[\\|&]/\\&/g'; }
+              sed -e "s|__IPTV_M3U_URL__|$(esc "$IPTV_M3U_URL")|" \
+                  -e "s|__IPTV_EPG_URL__|$(esc "$IPTV_EPG_URL")|" \
+                  -e "s|__IPTV_TUNER_COUNT__|$(esc "$IPTV_TUNER_COUNT")|" \
+                  /seed/livetv.xml > /config/config/livetv.xml
+              mkdir -p /mnt/media/tv/recordings
+          envFrom:
+            - secretRef:
+                name: jellyfin-iptv
           volumeMounts:
             - name: config
               mountPath: /config
             - name: encoding-config
               mountPath: /seed
               readOnly: true
+            - name: media
+              mountPath: /mnt/media
           resources:
             requests:
               cpu: 10m
