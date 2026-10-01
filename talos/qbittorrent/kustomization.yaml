@@ -11,6 +11,7 @@ resources:
   - local-asandov-ingress.yaml
   - exporter.yaml
   - ultra-seedbox/telemetry.yaml
+  - ultra-seedbox/alerts.yaml
 
 generators:
   - secrets-generator.yaml
