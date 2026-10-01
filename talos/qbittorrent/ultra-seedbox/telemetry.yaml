@@ -1,0 +1,103 @@
+# Seedbox qbt via its public Web UI; URL and login come from the seedbox-handoff secret.
+# The autobrr scrape lives in secrets/seedbox-autobrr-scrape.enc.yaml so the seedbox hostname stays out of the public repo.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent-exporter-seedbox
+  namespace: qbittorrent
+  labels:
+    app.kubernetes.io/name: qbittorrent-exporter-seedbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qbittorrent-exporter-seedbox
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: qbittorrent-exporter-seedbox
+    spec:
+      containers:
+        - name: exporter
+          # renovate: datasource=docker depName=ghcr.io/martabal/qbittorrent-exporter
+          image: ghcr.io/martabal/qbittorrent-exporter:v2.0.3@sha256:bc4fa09481634ee894ebfb4d47c8aa239a32a12567b043afa01fa42a3075d1a5
+          env:
+            - name: QBITTORRENT_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: seedbox-handoff
+                  key: SEEDBOX_QBT_URL
+            - name: QBITTORRENT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: seedbox-handoff
+                  key: SEEDBOX_QBT_USER
+            - name: QBITTORRENT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: seedbox-handoff
+                  key: SEEDBOX_QBT_PASS
+            - name: ENABLE_TRACKER
+              value: "false"
+            - name: EXPORTER_PORT
+              value: "8090"
+          ports:
+            - name: metrics
+              containerPort: 8090
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent-exporter-seedbox
+  namespace: qbittorrent
+  labels:
+    app.kubernetes.io/name: qbittorrent-exporter-seedbox
+spec:
+  selector:
+    app.kubernetes.io/name: qbittorrent-exporter-seedbox
+  ports:
+    - name: metrics
+      port: 8090
+      targetPort: metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: qbittorrent-exporter-seedbox
+  namespace: qbittorrent
+  labels:
+    app.kubernetes.io/name: qbittorrent-exporter-seedbox
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qbittorrent-exporter-seedbox
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 60s
+      relabelings:
+        # Kept apart from home qbt (job="qbittorrent") so dashboards don't sum the two clients.
+        - action: replace
+          targetLabel: job
+          replacement: qbittorrent-seedbox
