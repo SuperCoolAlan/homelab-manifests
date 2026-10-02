@@ -19,6 +19,12 @@ spec:
         kubernetes.io/egress-bandwidth: "1M"
     spec:
       enableServiceLinks: false
+      # ArchiveTeam forbids DNS filtering; cluster DNS blocks ad domains, which would corrupt the WARCs.
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 1.1.1.1
+          - 8.8.8.8
       # Image is amd64-only.
       nodeSelector:
         kubernetes.io/hostname: talos-ramhaus
