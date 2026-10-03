@@ -126,7 +126,7 @@ spec:
           # Monero tags are 4-component (v0.18.5.1), which docker versioning
           # does not parse - loose does.
           # renovate: datasource=docker depName=ghcr.io/sethforprivacy/simple-monerod versioning=loose
-          image: ghcr.io/sethforprivacy/simple-monerod:v0.18.5.1@sha256:0329465ffc599048efd57712d91d3b4b7d66380bd7205d5d0992cd9faf668e38
+          image: ghcr.io/sethforprivacy/simple-monerod:v0.18.5.3@sha256:233f3fa6b59e5b36b2fda105ac10bc91fa5a0f3dadcff8dc657a6ced42123bd7
           # Bypass the image's /entrypoint.sh, which ends in `exec fixuid -q
           # monerod --non-interactive "$@"`. fixuid is setuid-root and needs
           # NoNewPrivileges disabled, so it aborts under
