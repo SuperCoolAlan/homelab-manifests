@@ -96,6 +96,8 @@ spec:
     - port: metrics
       path: /metrics
       interval: 60s
+      # Exporter queries the remote seedbox per scrape; the 10s default times out when it's slow.
+      scrapeTimeout: 30s
       relabelings:
         # Kept apart from home qbt (job="qbittorrent") so dashboards don't sum the two clients.
         - action: replace
