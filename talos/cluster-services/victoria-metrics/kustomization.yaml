@@ -562,6 +562,18 @@ configMapGenerator:
     files:
       - dashboards/Looped/looped-cctv.json
 
+  # Looped audio: transcript search from VictoriaLogs plus the transcription pipeline's health
+  - name: dashboard-looped-transcripts
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Looped"
+    files:
+      - dashboards/Looped/looped-transcripts.json
+
   - name: dashboard-monerod
     namespace: monitoring
     options:
