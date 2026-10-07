@@ -1,0 +1,11 @@
+# Whisper weights from Hugging Face, so a restart doesn't re-download ~3 GB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: models
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 10Gi

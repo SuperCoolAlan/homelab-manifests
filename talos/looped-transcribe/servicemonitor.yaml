@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: looped-transcribe
+  labels:
+    app.kubernetes.io/name: looped-transcribe
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: looped-transcribe
+  endpoints:
+    - port: metrics
+      interval: 60s
