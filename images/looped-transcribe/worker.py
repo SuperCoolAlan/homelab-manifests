@@ -95,6 +95,8 @@ def prune(s3):
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    # huggingface_hub logs every model-file request at INFO
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     start_http_server(9100)
     s3 = boto3.client("s3", endpoint_url=S3_ENDPOINT, region_name="garage")
     model = WhisperModel(MODEL, device="cuda", compute_type=COMPUTE_TYPE)
