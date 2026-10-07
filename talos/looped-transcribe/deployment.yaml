@@ -27,9 +27,11 @@ spec:
           type: RuntimeDefault
       containers:
         - name: worker
-          # Built from images/looped-transcribe; CI only publishes :latest, Renovate bumps the digest.
+          # Built from images/looped-transcribe; CI tags each build sha-<commit>. Bump tag and digest together after a rebuild.
           # renovate: datasource=docker depName=ghcr.io/supercoolalan/looped-transcribe
-          image: ghcr.io/supercoolalan/looped-transcribe:latest
+          image: ghcr.io/supercoolalan/looped-transcribe:sha-61af3a7@sha256:f0ca253ef927545d575d3162a44550aacffb6f6c06c90129c4c3e1a7e7cf92b2
+          # ~1.6 GB image: with the digest pinned, restarts reuse the cached copy instead of asking ghcr every time
+          imagePullPolicy: IfNotPresent
           env:
             - name: S3_ENDPOINT
               value: http://garage.garage.svc.cluster.local:3900
