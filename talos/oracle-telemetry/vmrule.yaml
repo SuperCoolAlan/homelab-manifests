@@ -135,3 +135,22 @@ spec:
           annotations:
             summary: Looped box is not shipping journald to VictoriaLogs
             description: "Metrics still arrive, so the tunnel works; check journalctl -u systemd-journal-upload on the box."
+        # looped_audio_* are written by the box's audio-ship container through the node-exporter textfile collector
+        - alert: LoopedAudioCaptureStalled
+          expr: time() - max(looped_audio_newest_segment_timestamp_seconds{job="looped-node"}) > 600
+          for: 5m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Looped box has written no new audio for 10 minutes
+            description: "Check docker logs audio-capture on the box; the camera's audio track or Frigate's go2rtc restream may be down."
+        - alert: LoopedAudioSpoolBacklog
+          expr: max(looped_audio_spool_files{job="looped-node"}) > 30
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: "Looped box has {{ $value }} audio segments waiting to upload"
+            description: "Uploads to Garage are failing. Check docker logs audio-ship on the box, then the oracle-telemetry gate and Garage."
