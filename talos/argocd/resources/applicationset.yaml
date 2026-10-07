@@ -62,6 +62,10 @@ spec:
           - path: talos/archiveteam-warrior
           # Oracle VPS node metrics (pulled) and journald (pushed, insert-only) over WireGuard (privileged ns for NET_ADMIN)
           - path: talos/oracle-telemetry
+          # S3 store (single node); holds Looped audio segments waiting for transcription
+          - path: talos/garage
+          # Speech-to-text for Looped audio: Garage queue -> faster-whisper on a time-sliced GPU slot -> VictoriaLogs
+          - path: talos/looped-transcribe
           # Security scanning
           - path: talos/security/*
   template:

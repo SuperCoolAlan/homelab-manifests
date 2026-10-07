@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: looped-transcribe
+  labels:
+    app.kubernetes.io/name: looped-transcribe
+spec:
+  selector:
+    app.kubernetes.io/name: looped-transcribe
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: metrics
