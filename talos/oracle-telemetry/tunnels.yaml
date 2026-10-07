@@ -94,7 +94,7 @@ spec:
               memory: 64Mi
         - name: journald-ingest
           # renovate: datasource=docker depName=nginxinc/nginx-unprivileged
-          image: nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:6a23acdfca2b9cfbcec61419e3f1426bcbedb91362f2f19306a8567423bb4612
+          image: nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:26b0bf6fbf07297983cb341998d79c831508787de26627dd2a112321b9c3a4af
           # Skip the image entrypoint scripts; they try to rewrite config on a read-only root.
           command: ["nginx", "-g", "daemon off;"]
           securityContext:
@@ -221,7 +221,7 @@ spec:
               memory: 64Mi
         - name: journald-ingest
           # renovate: datasource=docker depName=nginxinc/nginx-unprivileged
-          image: nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:6a23acdfca2b9cfbcec61419e3f1426bcbedb91362f2f19306a8567423bb4612
+          image: nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:26b0bf6fbf07297983cb341998d79c831508787de26627dd2a112321b9c3a4af
           command: ["nginx", "-g", "daemon off;"]
           securityContext:
             allowPrivilegeEscalation: false
@@ -345,7 +345,7 @@ spec:
               memory: 64Mi
         - name: journald-ingest
           # renovate: datasource=docker depName=nginxinc/nginx-unprivileged
-          image: nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:6a23acdfca2b9cfbcec61419e3f1426bcbedb91362f2f19306a8567423bb4612
+          image: nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:26b0bf6fbf07297983cb341998d79c831508787de26627dd2a112321b9c3a4af
           command: ["nginx", "-g", "daemon off;"]
           securityContext:
             allowPrivilegeEscalation: false
@@ -517,7 +517,7 @@ spec:
               memory: 64Mi
         - name: journald-ingest
           # renovate: datasource=docker depName=nginxinc/nginx-unprivileged
-          image: nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:6a23acdfca2b9cfbcec61419e3f1426bcbedb91362f2f19306a8567423bb4612
+          image: nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:26b0bf6fbf07297983cb341998d79c831508787de26627dd2a112321b9c3a4af
           command: ["nginx", "-g", "daemon off;"]
           securityContext:
             allowPrivilegeEscalation: false
