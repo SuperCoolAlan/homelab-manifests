@@ -13,7 +13,8 @@
   // custom.regex: bumps image tags annotated with "# renovate:" comments
   // dockerfile: bumps FROM digests under images/
   // github-actions: keeps CI workflow actions pinned & current
-  enabledManagers: ['kustomize', 'custom.regex', 'dockerfile', 'github-actions'],
+  // pip_requirements: bumps requirements*.txt next to those Dockerfiles
+  enabledManagers: ['kustomize', 'custom.regex', 'dockerfile', 'github-actions', 'pip_requirements'],
 
   prConcurrentLimit: 5,
   prHourlyLimit: 0,
@@ -44,6 +45,11 @@
       // argocd 3.5 ships Helm 4, and the ksops-provided kustomize still runs `helm version -c`, so every helmCharts app fails to render.
       matchPackageNames: ['quay.io/argoproj/argocd'],
       allowedVersions: '<3.5',
+    },
+    {
+      // ctranslate2 (under faster-whisper) is built against cuDNN 9; a cuDNN 10 wheel would load but fail at the first GPU call.
+      matchPackageNames: ['nvidia-cudnn-cu12'],
+      allowedVersions: '<10',
     },
     {
       // Majors get their own PR and a loud label — read the release notes

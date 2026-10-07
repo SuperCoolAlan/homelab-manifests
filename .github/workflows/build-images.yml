@@ -62,8 +62,10 @@ jobs:
         uses: docker/metadata-action@v6.2.0
         with:
           images: ghcr.io/${{ github.repository_owner }}/looped-transcribe
+          # 0.1.<run> gives Renovate an orderable tag to bump the deployment with; sha-* tags can't be compared
           tags: |
             type=raw,value=latest
+            type=raw,value=0.1.${{ github.run_number }}
             type=sha
 
       - uses: docker/build-push-action@v7.4.0
