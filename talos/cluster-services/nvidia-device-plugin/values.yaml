@@ -27,3 +27,19 @@ resources:
     memory: 64Mi
   limits:
     memory: 256Mi
+
+# Two time-sliced slots on the one GPU so Jellyfin and the Looped speech-to-text
+# worker both stay scheduled. Time-slicing has no memory isolation: the 6 GB is
+# shared, so a second CUDA tenant must stay small enough to fit beside Jellyfin.
+config:
+  default: default
+  map:
+    default: |-
+      version: v1
+      sharing:
+        timeSlicing:
+          # a pod asking for 2 would hold both slots and lock out the other app
+          failRequestsGreaterThanOne: true
+          resources:
+            - name: nvidia.com/gpu
+              replicas: 2
