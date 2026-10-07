@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: garage
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: garage
+  policyTypes: [Ingress]
+  ingress:
+    # the Looped box's uploads, relayed by the insert-only gate on the monero tunnel
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: oracle-telemetry
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: oracle-telemetry
+      ports:
+        - port: s3
+          protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: looped-transcribe
+      ports:
+        - port: s3
+          protocol: TCP
