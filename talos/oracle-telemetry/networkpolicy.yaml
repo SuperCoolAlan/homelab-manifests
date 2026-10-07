@@ -67,6 +67,17 @@ spec:
       ports:
         - port: 8428
           protocol: TCP
+    # Looped box's audio uploads, relayed by nginx
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: garage
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: garage
+      ports:
+        - port: 3900
+          protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
