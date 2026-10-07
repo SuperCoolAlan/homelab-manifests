@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: garage
+spec:
+  serviceName: garage
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: garage
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: garage
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: garage
+          # renovate: datasource=docker depName=dxflrs/garage
+          image: dxflrs/garage:v2.4.1
+          # --single-node lays out this one node on first start; --default-bucket creates the bucket and key from env
+          command: ["/garage", "server", "--single-node", "--default-bucket"]
+          env:
+            - name: GARAGE_CONFIG_FILE
+              value: /etc/garage/garage.toml
+          envFrom:
+            - secretRef:
+                name: garage-secrets
+          ports:
+            - name: s3
+              containerPort: 3900
+            - name: admin
+              containerPort: 3903
+          readinessProbe:
+            tcpSocket:
+              port: s3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/garage
+            - name: meta
+              mountPath: /var/lib/garage/meta
+            - name: data
+              mountPath: /var/lib/garage/data
+      volumes:
+        - name: config
+          configMap:
+            name: garage-config
+        - name: meta
+          persistentVolumeClaim:
+            claimName: garage-meta
+        - name: data
+          persistentVolumeClaim:
+            claimName: garage-data
