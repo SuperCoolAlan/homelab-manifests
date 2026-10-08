@@ -32,6 +32,25 @@ spec:
               value: "America/Chicago"
             - name: ALLOW_SIGNUP
               value: "false"
+            - name: OIDC_AUTH_ENABLED
+              value: "true"
+            - name: OIDC_CONFIGURATION_URL
+              value: "https://auth.asandov.com/application/o/mealie/.well-known/openid-configuration"
+            - name: OIDC_PROVIDER_NAME
+              value: "Authentik"
+            # authentik users can edit their own email, so match on the immutable username instead.
+            - name: OIDC_USER_CLAIM
+              value: "preferred_username"
+            # authentik's email scope always sends email_verified=false; safe only while matching on username.
+            - name: OIDC_REQUIRES_EMAIL_VERIFICATION
+              value: "false"
+            - name: OIDC_ADMIN_GROUP
+              value: "authentik Admins"
+            - name: OIDC_REMEMBER_ME
+              value: "true"
+          envFrom:
+            - secretRef:
+                name: mealie-oidc
           readinessProbe:
             httpGet:
               path: /api/app/about

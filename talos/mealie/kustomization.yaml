@@ -9,3 +9,6 @@ resources:
   - service.yaml
   - pvc.yaml
   - ingress.yaml
+
+generators:
+  - secrets-generator.yaml
