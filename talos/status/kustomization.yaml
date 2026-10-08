@@ -53,6 +53,12 @@ helmCharts:
             interval: 60s
             conditions:
               - "[STATUS] == 200"
+          - name: Mealie
+            group: Public
+            url: https://mealie.asandov.com/api/app/about
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
           # Lands on the authentik login after the forward-auth redirect.
           - name: CrowdSec
             group: CrowdSec
