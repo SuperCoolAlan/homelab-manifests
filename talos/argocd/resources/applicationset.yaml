@@ -66,6 +66,8 @@ spec:
           - path: talos/garage
           # Speech-to-text for Looped audio: Garage queue -> faster-whisper on a time-sliced GPU slot -> VictoriaLogs
           - path: talos/looped-transcribe
+          # Mealie (recipes), public at mealie.asandov.com via the Cloudflare tunnel
+          - path: talos/mealie
           # Security scanning
           - path: talos/security/*
   template:

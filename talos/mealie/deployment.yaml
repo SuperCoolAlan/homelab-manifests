@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mealie
+  namespace: mealie
+  labels:
+    app: mealie
+spec:
+  replicas: 1
+  # RWO zfs-localpv volume: a surge pod can't mount it while the old pod runs ("device already mounted").
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mealie
+  template:
+    metadata:
+      labels:
+        app: mealie
+    spec:
+      containers:
+        - name: mealie
+          # renovate: datasource=docker depName=ghcr.io/mealie-recipes/mealie
+          image: ghcr.io/mealie-recipes/mealie:v3.28.0
+          ports:
+            - containerPort: 9000
+              name: http
+          env:
+            - name: BASE_URL
+              value: "https://mealie.asandov.com"
+            - name: TZ
+              value: "America/Chicago"
+            - name: ALLOW_SIGNUP
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /api/app/about
+              port: http
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mealie-data
