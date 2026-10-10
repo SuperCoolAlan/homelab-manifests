@@ -41,7 +41,7 @@ spec:
         - name: warrior
           # Built from images/archiveteam-warrior; CI only publishes :latest, Renovate bumps the digest.
           # renovate: datasource=docker depName=ghcr.io/supercoolalan/archiveteam-warrior
-          image: ghcr.io/supercoolalan/archiveteam-warrior:latest@sha256:80abbe879832c07ce809e1470a6e1c29f1890615289988d9341c61df2727d78c
+          image: ghcr.io/supercoolalan/archiveteam-warrior:latest@sha256:5bfc4ba1749654efaea11d783d64ad51cfc455660e609cd2199151665b1a8346
           # Env only seeds projects/config.json; projects is an emptyDir so these win on every restart.
           env:
             - name: DOWNLOADER
