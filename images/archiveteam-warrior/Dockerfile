@@ -1,4 +1,4 @@
-FROM atdr.meo.ws/archiveteam/warrior-dockerfile:latest@sha256:19337aa9157e04f6cdb8f7c6f8c98e27d14efb0d9525334995fbdb036b95e1ca
+FROM atdr.meo.ws/archiveteam/warrior-dockerfile:latest@sha256:9eaa5a345e7f1eb9a13ce407eb7943463bfa17ad14c0f0174469af8f4c5447c2
 
 # Project installers apt-get these via sudo, which no_new_privs blocks; they skip the install when dpkg already has them.
 USER root
