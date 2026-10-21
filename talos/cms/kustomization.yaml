@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: cms
+
+resources:
+  - namespace.yaml
+  - resources/cnpg-objectstore.yaml
+  - resources/cnpg-cluster.yaml
+  - resources/cnpg-scheduled-backup.yaml
+
+generators:
+  - secrets-generator.yaml
+
+helmCharts:
+  - name: app-template
+    repo: oci://ghcr.io/bjw-s-labs/helm
+    version: 5.3.0
+    releaseName: cms
+    namespace: cms
+    valuesFile: values.yaml

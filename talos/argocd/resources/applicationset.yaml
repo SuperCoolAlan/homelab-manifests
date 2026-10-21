@@ -68,6 +68,8 @@ spec:
           - path: talos/looped-transcribe
           # Mealie (recipes), public at mealie.asandov.com via the Cloudflare tunnel
           - path: talos/mealie
+          # Payload CMS for the family business sites (static on Cloudflare Pages), admin at cms.asandov.com
+          - path: talos/cms
           # Security scanning
           - path: talos/security/*
   template:

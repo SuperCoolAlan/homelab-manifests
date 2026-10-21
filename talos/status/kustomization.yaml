@@ -59,6 +59,12 @@ helmCharts:
             interval: 60s
             conditions:
               - "[STATUS] == 200"
+          - name: Family Sites CMS
+            group: Public
+            url: https://cms.asandov.com/api/health
+            interval: 60s
+            conditions:
+              - "[STATUS] == 200"
           # Lands on the authentik login after the forward-auth redirect.
           - name: CrowdSec
             group: CrowdSec
