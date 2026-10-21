@@ -22,7 +22,7 @@ spec:
       containers:
         - name: upsd
           # renovate: datasource=docker depName=instantlinux/nut-upsd versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-r(?<build>\d+)$
-          image: instantlinux/nut-upsd:2.8.5-r1@sha256:a4a68e3c56081e3187621ee2a4bf9bce2936eaf0b628c01f81881f25cee0e667
+          image: instantlinux/nut-upsd:2.8.5-r1@sha256:28eae8f3c097b409749ed4a50da57668cf8785a9bccf0db83e521bf343c0e97e
           env:
             # NAME must match the ServiceMonitor's ups param and the liveness probe.
             - name: NAME
