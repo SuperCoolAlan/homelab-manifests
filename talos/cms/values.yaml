@@ -17,7 +17,7 @@ controllers:
         image:
           repository: ghcr.io/supercoolalan/family-sites-cms
           # renovate: datasource=docker depName=ghcr.io/supercoolalan/family-sites-cms
-          tag: "0.1.0"
+          tag: "0.2.0"
         env:
           SERVER_URL: https://cms.asandov.com
           CORS_ORIGINS: https://fuelmechanical.asandov.com,https://poniesdesserts.asandov.com
