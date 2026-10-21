@@ -143,6 +143,7 @@ flowchart LR
     argocd_appset --> Media
     subgraph Apps["Apps"]
         app_actualbudget["actualbudget"]
+        app_cms["cms"]
         app_immich["immich"]
         app_looped_transcribe["looped-transcribe"]
         app_mealie["mealie"]
@@ -188,7 +189,7 @@ flowchart LR
     argocd_appset --> Security
 ```
 
-**48 Argo CD applications.**
+**49 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -220,6 +221,7 @@ flowchart LR
 | Media | [`qbittorrent`](talos/qbittorrent) | qbittorrent |  |
 | Media | [`tracearr`](talos/tracearr) | tracearr |  |
 | Apps | [`actualbudget`](talos/actualbudget) | actualbudget |  |
+| Apps | [`cms`](talos/cms) | cms | Payload CMS for the family business sites (static on Cloudflare Pages), admin at cms.asandov.com |
 | Apps | [`immich`](talos/immich) | immich | Immich (photo management) |
 | Apps | [`looped-transcribe`](talos/looped-transcribe) | looped-transcribe | Speech-to-text for Looped audio: Garage queue -> faster-whisper on a time-sliced GPU slot -> VictoriaLogs |
 | Apps | [`mealie`](talos/mealie) | mealie | Mealie (recipes), public at mealie.asandov.com via the Cloudflare tunnel |

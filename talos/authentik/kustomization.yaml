@@ -15,6 +15,7 @@ resources:
   - resources/local-asandov-ingress.yaml
   - resources/blueprint-cloudflare-access.yaml
   - resources/blueprint-mealie.yaml
+  - resources/blueprint-cms.yaml
 
 generators:
   - secrets-generator.yaml
