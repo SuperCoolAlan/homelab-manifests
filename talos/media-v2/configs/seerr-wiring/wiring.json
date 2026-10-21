@@ -1,4 +1,7 @@
 {
+  "main": {
+    "mediaServerLogin": true
+  },
   "sonarr": [
     {
       "apiKeyEnv": "SONARR_API_KEY",
