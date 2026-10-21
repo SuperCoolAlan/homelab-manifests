@@ -32,6 +32,11 @@ for (const kind of ['sonarr', 'radarr']) {
   }
 }
 
+if (wiring.main && settings.main) {
+  Object.assign(settings.main, wiring.main);
+  console.log(`main: enforced ${Object.keys(wiring.main).join(',')}`);
+}
+
 if (wiring.jellyfin && settings.jellyfin) {
   Object.assign(settings.jellyfin, wiring.jellyfin);
   console.log(`jellyfin: enforced ${Object.keys(wiring.jellyfin).join(',')}`);
