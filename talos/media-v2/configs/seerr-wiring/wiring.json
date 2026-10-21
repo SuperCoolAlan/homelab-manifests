@@ -1,0 +1,56 @@
+{
+  "sonarr": [
+    {
+      "apiKeyEnv": "SONARR_API_KEY",
+      "enforce": {
+        "name": "sonarr",
+        "hostname": "sonarr.media-v2.svc.cluster.local",
+        "port": 8989,
+        "useSsl": false,
+        "activeProfileId": 1,
+        "activeProfileName": "Any",
+        "activeDirectory": "/media/tv",
+        "is4k": false,
+        "isDefault": true
+      },
+      "createOnly": {
+        "tags": [],
+        "animeTags": [],
+        "enableSeasonFolders": false,
+        "syncEnabled": false,
+        "preventSearch": false,
+        "tagRequests": false
+      }
+    }
+  ],
+  "radarr": [
+    {
+      "apiKeyEnv": "RADARR_API_KEY",
+      "enforce": {
+        "name": "radarr",
+        "hostname": "radarr.media-v2.svc.cluster.local",
+        "port": 7878,
+        "useSsl": false,
+        "activeProfileId": 1,
+        "activeProfileName": "Any",
+        "activeDirectory": "/media/film",
+        "is4k": false,
+        "isDefault": true
+      },
+      "createOnly": {
+        "minimumAvailability": "released",
+        "tags": [],
+        "syncEnabled": false,
+        "preventSearch": false,
+        "tagRequests": false
+      }
+    }
+  ],
+  "jellyfin": {
+    "ip": "jellyfin.local.asandov.com",
+    "port": 443,
+    "useSsl": true,
+    "urlBase": "",
+    "externalHostname": "https://jellyfin.asandov.com"
+  }
+}
