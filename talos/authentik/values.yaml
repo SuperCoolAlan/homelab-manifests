@@ -33,11 +33,15 @@ global:
     # client id/secret read by the mealie blueprint (!Env)
     - secretRef:
         name: mealie-oidc
+    # client id/secret read by the cms blueprint (!Env)
+    - secretRef:
+        name: cms-oidc
 
 blueprints:
   configMaps:
     - authentik-blueprint-cloudflare-access
     - authentik-blueprint-mealie
+    - authentik-blueprint-cms
 
 # Disable the bundled PostgreSQL. Despite the previous "using CNPG" note here,
 # authentik has never had a CNPG cluster - authentik.postgresql.host above
