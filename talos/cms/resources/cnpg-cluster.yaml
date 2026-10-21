@@ -1,0 +1,29 @@
+# Payload's Postgres. CNPG generates the app credentials (Secret cms-postgres-app, key `uri`), so none live in git.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cms-postgres
+  namespace: cms
+  annotations:
+    cnpg.io/hibernation: "off"
+spec:
+  # Single instance: the public sites are static on Cloudflare Pages, so a DB outage only pauses editing; WAL archiving + daily base backups cover recovery.
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1
+  bootstrap:
+    initdb:
+      database: payload
+      owner: payload
+      dataChecksums: true
+      encoding: UTF8
+  storage:
+    size: 5Gi
+    # storageClass is immutable on a CNPG cluster; changing it means delete + recreate.
+    storageClass: ssd-array
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: cms-postgres-store
+  nodeMaintenanceWindow:
+    inProgress: false
