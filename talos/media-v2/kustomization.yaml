@@ -10,10 +10,18 @@ resources:
 - resources/jellyseerr-config-pvc.yaml
 - resources/local-asandov-ingresses.yaml
 - configs/setup-rbac.yaml
+- resources/arr-apikey-bootstrap.yaml
 - windscribe-openvpn-configmap.yaml
 
 generators:
 - secrets-generator.yaml
+
+# hashed name rolls Seerr when the wiring changes, which is when the init container applies it
+configMapGenerator:
+- name: seerr-wiring
+  files:
+  - configs/seerr-wiring/merge.js
+  - configs/seerr-wiring/wiring.json
 
 # VPN sidecar for SABnzbd and password substitution
 patches:
@@ -39,6 +47,10 @@ patches:
     kind: Pod
     metadata:
       name: jellyseerr-test-connection
+- target:
+    kind: StatefulSet
+    name: jellyseerr
+  path: patches/seerr-arr-wiring.yaml
 
 
 helmCharts:

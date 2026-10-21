@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: arr-apikey-bootstrap
+  namespace: media-v2
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: arr-apikey-bootstrap
+  namespace: media-v2
+rules:
+# create can't be narrowed by resourceNames; POST-only means existing Secrets are never read or changed
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: arr-apikey-bootstrap
+  namespace: media-v2
+subjects:
+- kind: ServiceAccount
+  name: arr-apikey-bootstrap
+  namespace: media-v2
+roleRef:
+  kind: Role
+  name: arr-apikey-bootstrap
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: arr-apikey-bootstrap
+  namespace: media-v2
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      serviceAccountName: arr-apikey-bootstrap
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 100
+        runAsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: bootstrap
+        # renovate: datasource=docker depName=curlimages/curl
+        image: curlimages/curl:8.22.0@sha256:58adaa4e8dca9c988bae2aba4ab3434a0bb2da16bbe3f92dec39ec7785166777
+        command: ["/bin/sh", "-c"]
+        # Seeds <app>-apikey from the running app's own key so Prowlarr/SABnzbd/Seerr links keep working.
+        # initialize.json is unauthenticated only because the arrs use DisabledForLocalAddresses.
+        args:
+        - |
+          set -eu
+          SA=/var/run/secrets/kubernetes.io/serviceaccount
+          API=https://kubernetes.default.svc/api/v1/namespaces/media-v2/secrets
+          for app in sonarr:8989 radarr:7878; do
+            name=${app%%:*}; port=${app##*:}
+            key=$(curl -fsS --retry 5 --retry-all-errors "http://$name.media-v2.svc.cluster.local:$port/initialize.json" \
+              | sed -n 's/.*"apiKey": *"\([0-9a-f]\{32\}\)".*/\1/p')
+            [ -n "$key" ] || { echo "$name: no apiKey in initialize.json"; exit 1; }
+            code=$(printf '{"apiVersion":"v1","kind":"Secret","metadata":{"name":"%s-apikey","namespace":"media-v2"},"type":"Opaque","stringData":{"apiKey":"%s"}}' "$name" "$key" \
+              | curl -sS -o /dev/null -w '%{http_code}' --cacert "$SA/ca.crt" \
+                  -H "Authorization: Bearer $(cat "$SA/token")" -H 'Content-Type: application/json' \
+                  -X POST --data-binary @- "$API")
+            case "$code" in
+              201) echo "$name-apikey: created" ;;
+              409) echo "$name-apikey: already exists, left untouched" ;;
+              *) echo "$name-apikey: create failed (HTTP $code)"; exit 1 ;;
+            esac
+          done
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            memory: 64Mi
