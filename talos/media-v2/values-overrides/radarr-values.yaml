@@ -46,6 +46,19 @@ deployment:
         claimName: 'media-library'
   # Configure volume mounts with subPath
   container:
+    # Setting env replaces the chart's list, so its PGID/PUID defaults are repeated here.
+    env:
+      - name: PGID
+        value: "1000"
+      - name: PUID
+        value: "1000"
+      # optional: until arr-apikey-bootstrap seeds the Secret, config.xml's key is used
+      - name: RADARR__AUTH__APIKEY
+        valueFrom:
+          secretKeyRef:
+            name: radarr-apikey
+            key: apiKey
+            optional: true
     resources:
       requests:
         memory: "512Mi"

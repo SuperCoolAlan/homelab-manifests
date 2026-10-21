@@ -51,6 +51,13 @@ deployment:
         value: "1000"
       - name: PGID
         value: "3001"
+      # optional: until arr-apikey-bootstrap seeds the Secret, config.xml's key is used
+      - name: SONARR__AUTH__APIKEY
+        valueFrom:
+          secretKeyRef:
+            name: sonarr-apikey
+            key: apiKey
+            optional: true
     resources:
       requests:
         memory: "512Mi"

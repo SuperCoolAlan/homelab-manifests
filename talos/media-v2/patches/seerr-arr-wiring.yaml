@@ -1,0 +1,51 @@
+- op: add
+  path: /spec/template/spec/initContainers
+  value:
+  - name: arr-wiring
+    image: placeholder
+    command: ["node", "/seerr-wiring/merge.js"]
+    env:
+    # optional: a missing key keeps the one already in settings.json instead of blocking Seerr
+    - name: SONARR_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: sonarr-apikey
+          key: apiKey
+          optional: true
+    - name: RADARR_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: radarr-apikey
+          key: apiKey
+          optional: true
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+    volumeMounts:
+    - name: config
+      mountPath: /app/config
+    - name: seerr-wiring
+      mountPath: /seerr-wiring
+      readOnly: true
+# keeps the init image in lockstep with the chart's Seerr image
+- op: copy
+  from: /spec/template/spec/containers/0/image
+  path: /spec/template/spec/initContainers/0/image
+- op: add
+  path: /spec/template/spec/volumes/-
+  value:
+    name: seerr-wiring
+    configMap:
+      name: seerr-wiring
