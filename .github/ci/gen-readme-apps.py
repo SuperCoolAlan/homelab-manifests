@@ -18,7 +18,8 @@ START, END = "<!-- apps:start -->", "<!-- apps:end -->"
 CATEGORIES = [
     ("Platform", ["argocd", "authentik", "twingate"]),
     ("Media", ["jellyfin", "jellyfin-tunnel", "media-v2", "qbittorrent", "tracearr", "maintainerr"]),
-    ("Apps", ["immich", "actualbudget", "piper", "unifi", "status"]),
+    ("Apps", ["immich", "actualbudget", "mealie", "piper", "unifi", "status", "looped-transcribe"]),
+    ("Storage", ["garage"]),
     ("Privacy and crypto", ["monerod", "p2pool", "snowflake"]),
     ("Oracle edge", ["crowdsec-lapi-tunnel", "oracle-telemetry"]),
     ("Internet measurement", ["ripe-atlas"]),

@@ -144,11 +144,17 @@ flowchart LR
     subgraph Apps["Apps"]
         app_actualbudget["actualbudget"]
         app_immich["immich"]
+        app_looped_transcribe["looped-transcribe"]
+        app_mealie["mealie"]
         app_piper["piper"]
         app_status["status"]
         app_unifi["unifi"]
     end
     argocd_appset --> Apps
+    subgraph Storage["Storage"]
+        app_garage["garage"]
+    end
+    argocd_appset --> Storage
     subgraph Privacy_and_crypto["Privacy and crypto"]
         app_monerod["monerod"]
         app_p2pool["p2pool"]
@@ -182,7 +188,7 @@ flowchart LR
     argocd_appset --> Security
 ```
 
-**45 Argo CD applications.**
+**48 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -215,9 +221,12 @@ flowchart LR
 | Media | [`tracearr`](talos/tracearr) | tracearr |  |
 | Apps | [`actualbudget`](talos/actualbudget) | actualbudget |  |
 | Apps | [`immich`](talos/immich) | immich | Immich (photo management) |
+| Apps | [`looped-transcribe`](talos/looped-transcribe) | looped-transcribe | Speech-to-text for Looped audio: Garage queue -> faster-whisper on a time-sliced GPU slot -> VictoriaLogs |
+| Apps | [`mealie`](talos/mealie) | mealie | Mealie (recipes), public at mealie.asandov.com via the Cloudflare tunnel |
 | Apps | [`piper`](talos/piper) | piper | Piper (TTS) |
 | Apps | [`status`](talos/status) | status | Status page |
 | Apps | [`unifi`](talos/unifi) | unifi | UniFi controller |
+| Storage | [`garage`](talos/garage) | garage | S3 store (single node) |
 | Privacy and crypto | [`monerod`](talos/monerod) | monerod | Monero node (P2P via Oracle, tx relay via Tor) |
 | Privacy and crypto | [`p2pool`](talos/p2pool) | p2pool | P2Pool mini + built-in miner, off-peak schedule |
 | Privacy and crypto | [`snowflake`](talos/snowflake) | snowflake | Tor Snowflake proxy (anti-censorship), egress locked to the internet |
