@@ -4,8 +4,8 @@
 # previous run is kept until then so its logs stay readable.
 #
 # Read the results in VictoriaLogs:
-#   kubernetes.pod_namespace:=cameras msg:=camera-candidate
-#   kubernetes.pod_namespace:=cameras msg:in(self, host, open-ports, camera-candidate, done)
+#   kubernetes.pod_namespace:=cameras _msg:=camera-candidate
+#   kubernetes.pod_namespace:=cameras _msg:in(self, host, open-ports, camera-candidate, done)
 apiVersion: batch/v1
 kind: Job
 metadata:
