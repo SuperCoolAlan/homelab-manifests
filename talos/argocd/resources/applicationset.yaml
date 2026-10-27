@@ -48,6 +48,8 @@ spec:
           - path: talos/twingate
           # UniFi controller (phase 1: DNS only — see talos/unifi/README.md)
           - path: talos/unifi
+          # Cameras (phase 0: host-network nmap discovery job, results in VictoriaLogs)
+          - path: talos/cameras
           # Immich (photo management)
           - path: talos/immich
           # Monero node (P2P via Oracle, tx relay via Tor)
