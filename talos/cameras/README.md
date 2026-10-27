@@ -20,8 +20,8 @@ Result lines are JSON. The collector turns them into fields, so you can query
 them in VictoriaLogs (`vl.local.asandov.com`):
 
 ```
-kubernetes.pod_namespace:=cameras msg:=camera-candidate
-kubernetes.pod_namespace:=cameras msg:in(self, sweep-summary, host, open-ports, camera-candidate, done)
+kubernetes.pod_namespace:=cameras _msg:=camera-candidate
+kubernetes.pod_namespace:=cameras _msg:in(self, sweep-summary, host, open-ports, camera-candidate, done)
 kubernetes.pod_namespace:=cameras "camscan |"        # raw nmap output
 ```
 
