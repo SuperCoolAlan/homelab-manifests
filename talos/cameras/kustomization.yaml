@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: cameras
+
+resources:
+  - namespace.yaml
+  - discovery-job.yaml
+
+# Hash-suffixed, so editing the script changes the Job spec and the PostSync
+# hook re-runs on the next sync.
+configMapGenerator:
+  - name: camera-discovery
+    files:
+      - discover.sh
