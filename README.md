@@ -222,7 +222,7 @@ flowchart LR
 | Media | [`qbittorrent`](talos/qbittorrent) | qbittorrent |  |
 | Media | [`tracearr`](talos/tracearr) | tracearr |  |
 | Apps | [`actualbudget`](talos/actualbudget) | actualbudget |  |
-| Apps | [`cameras`](talos/cameras) | cameras | Cameras (phase 0: host-network nmap discovery job, results in VictoriaLogs) |
+| Apps | [`cameras`](talos/cameras) | cameras | Cameras: Frigate NVR for the Reolink, plus the host-network nmap discovery job |
 | Apps | [`cms`](talos/cms) | cms | Payload CMS for the family business sites (static on Cloudflare Pages), admin at cms.asandov.com |
 | Apps | [`immich`](talos/immich) | immich | Immich (photo management) |
 | Apps | [`looped-transcribe`](talos/looped-transcribe) | looped-transcribe | Speech-to-text for Looped audio: Garage queue -> faster-whisper on a time-sliced GPU slot -> VictoriaLogs |

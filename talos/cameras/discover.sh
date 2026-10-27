@@ -13,8 +13,12 @@
 set -eu
 
 CAMERA_PORTS=${CAMERA_PORTS:-80,443,554,1935,2020,8000,8080,8443,8554,9000,34567,37777}
-# OUIs and names seen on consumer/prosumer cameras and the chips inside them.
-VENDOR_RE='reolink|hikvision|dahua|amcrest|lorex|axis|uniview|foscam|wyze|tp-link|tapo|eufy|anker|ezviz|imou|hangzhou|shenzhen|espressif|ubiquiti|annke|swann|arlo|ring|nest|google'
+# Makers whose OUI alone means "camera" (or close enough) ...
+VENDOR_RE='reolink|hikvision|dahua|amcrest|lorex|axis|uniview|foscam|wyze|ezviz|imou|annke|swann|arlo'
+# ... and makers that also ship routers, APs, speakers and ESP gadgets: these
+# only count when a camera media port is open too. (First scan flagged the
+# TP-Link switch and the UniFi AP on vendor alone.)
+WEAK_VENDOR_RE='tp-link|tapo|eufy|anker|hangzhou|shenzhen|espressif|ubiquiti|ring|nest|google'
 
 say()  { printf 'camscan | %s\n' "$*"; }
 dump() { sed 's/^/camscan | /'; }
@@ -102,8 +106,14 @@ while IFS="$(printf '\t')" read -r ip mac vendor; do
   ports=$(grep "Host: $ip " /tmp/ports.gnmap 2>/dev/null | sed 's/.*Ports: //' \
     | tr ',' '\n' | awk -F/ '$2=="open"{gsub(/ /,"",$1); printf "%s%s", sep, $1; sep=","}' || true)
   why=""
-  printf '%s' "$vendor" | grep -Eiq "$VENDOR_RE" && why="vendor"
-  printf ',%s,' "$ports" | grep -Eq ',(554|8554|9000|1935|34567|37777),' && why="${why:+$why+}ports"
+  media=no
+  printf ',%s,' "$ports" | grep -Eq ',(554|8554|9000|1935|34567|37777),' && media=yes
+  if printf '%s' "$vendor" | grep -Eiq "$VENDOR_RE"; then
+    why="vendor"
+  elif [ "$media" = yes ] && printf '%s' "$vendor" | grep -Eiq "$WEAK_VENDOR_RE"; then
+    why="vendor"
+  fi
+  [ "$media" = yes ] && why="${why:+$why+}ports"
   if [ -n "$why" ]; then
     FOUND=$((FOUND + 1))
     emit "{\"msg\":\"camera-candidate\",\"ip\":\"$ip\",\"mac\":\"$mac\",\"vendor\":\"$(esc "$vendor")\",\"ports\":\"$ports\",\"reason\":\"$why\"}"
