@@ -1,0 +1,64 @@
+# One-shot LAN sweep to find the camera(s). PostSync hook, same pattern as
+# media-v2's arr-apikey-bootstrap: it re-runs whenever the app syncs with a
+# changed spec (e.g. discover.sh edited -> new ConfigMap hash), and the
+# previous run is kept until then so its logs stay readable.
+#
+# Read the results in VictoriaLogs:
+#   kubernetes.pod_namespace:=cameras msg:=camera-candidate
+#   kubernetes.pod_namespace:=cameras msg:in(self, host, open-ports, camera-candidate, done)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: camera-discovery
+  namespace: cameras
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 1
+  activeDeadlineSeconds: 1800
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: camera-discovery
+    spec:
+      restartPolicy: Never
+      # Host network so the job sits on the real LAN (10.0.1.0/24) with the
+      # node's IP and MAC: ARP sweeps and WS-Discovery multicast don't cross
+      # Cilium's pod network. ramhaus is the node on that segment.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      enableServiceLinks: false
+      containers:
+        - name: discover
+          # Tools are apk-installed at start; nmap isn't worth a custom image
+          # for a job that runs a handful of times.
+          # renovate: datasource=docker depName=alpine
+          image: alpine:3.22
+          command: ["/bin/sh", "/scripts/discover.sh"]
+          env:
+            # Leave empty to scan the node's own subnet. Add an IoT/camera VLAN
+            # here if the cameras live on one (routed: no MAC/vendor, still ports).
+            - name: EXTRA_CIDRS
+              value: ""
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              add: ["NET_RAW", "NET_ADMIN"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+      volumes:
+        - name: scripts
+          configMap:
+            name: camera-discovery

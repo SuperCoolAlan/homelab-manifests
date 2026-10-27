@@ -1,0 +1,12 @@
+# Privileged because the discovery job runs on the host network with NET_RAW and
+# NET_ADMIN (ARP sweep, SYN scan, multicast WS-Discovery) — all outside baseline.
+# The camera app itself, once picked, may want to move to its own baseline
+# namespace the way jellyfin/jellyfin-tunnel are split.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cameras
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
