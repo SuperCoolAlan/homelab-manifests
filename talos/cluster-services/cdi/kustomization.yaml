@@ -5,3 +5,15 @@ resources:
   - https://github.com/kubevirt/containerized-data-importer/releases/download/v1.64.0/cdi-operator.yaml
   - cdi-cr.yaml
   - storageprofiles.yaml
+
+# cdi-operator strips CRD versions missing from status.storedVersions, so keeping v1alpha1 here makes Argo and the operator fight forever.
+patches:
+  - target:
+      kind: CustomResourceDefinition
+      name: cdis.cdi.kubevirt.io
+    patch: |-
+      - op: test
+        path: /spec/versions/0/name
+        value: v1alpha1
+      - op: remove
+        path: /spec/versions/0

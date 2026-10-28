@@ -80,6 +80,9 @@ spec:
     metadata:
       name: '{{.path.basename}}'
       namespace: argocd
+      annotations:
+        # diff via API dry-run: client-side diffs can't see webhook/API-server defaults (CNPG, StatefulSet PVC templates) and flap OutOfSync
+        argocd.argoproj.io/compare-options: ServerSideDiff=true
     spec:
       project: default
       source:
