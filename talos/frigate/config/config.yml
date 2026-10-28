@@ -34,8 +34,6 @@ go2rtc:
 
 cameras:
   test:
-    # off until the secret holds the camera's real password; repeated bad logins lock the Reolink account
-    enabled: false
     ffmpeg:
       output_args:
         record: preset-record-generic-audio-copy
