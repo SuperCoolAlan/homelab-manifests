@@ -36,6 +36,30 @@ spec:
           annotations:
             summary: Seedbox autobrr has lost the announce IRC channel for 15m
             description: autobrr is up but not hearing announces, so nothing is being raced. Restart the IRC network in the autobrr UI.
+        - alert: SeedboxGrabsAllRejected
+          # rejected > 0 keeps quiet hours with no matching announces from paging
+          expr: |
+            increase(autobrr_release_push_approved_total{job="seedbox-autobrr"}[3h]) == 0
+              and increase(autobrr_release_push_rejected_total{job="seedbox-autobrr"}[3h]) > 0
+              and on() vector(time()) < 1793487600
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Seedbox autobrr has rejected every grab for 3h
+            description: Filters match but nothing reaches qbt. Usually dead downloads holding all max-active slots or disk-guard at quota; see release_action_status.rejections in ~/.apps/autobrr/autobrr.db.
+        - alert: SeedboxDownloadsStalled
+          expr: |
+            sum(qbittorrent_torrent_states{job="qbittorrent-seedbox", name=~"stalledDL|metaDL"}) >= 3
+              and on() vector(time()) < 1793487600
+          for: 2h
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: "{{ $value }} seedbox downloads have been stalled for 2h"
+            description: Stalled downloads count against autobrr's 6 max-active slots; at 6 every grab is rejected. Delete the 0-seed ones in the seedbox qbt.
         - alert: SeedboxUploadAllowanceLow
           # qbt was installed on day 0, so its all-time upload tracks the provider's monthly 2 TB allowance.
           expr: max(qbittorrent_global_alltime_uploaded_bytes{job="qbittorrent-seedbox"}) > 1.8e12 < 2e12 and on() vector(time()) < 1793487600
