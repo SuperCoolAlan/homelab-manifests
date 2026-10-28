@@ -53,7 +53,9 @@ spec:
               mountPath: /work
         - name: seed-config
           # renovate: datasource=docker depName=ghcr.io/blakeblackshear/frigate versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-tensorrt$
-          image: ghcr.io/blakeblackshear/frigate:0.18.2-tensorrt
+          image: ghcr.io/blakeblackshear/frigate:0.18.2-tensorrt@sha256:1cafb6ebbaff0aaf275cc3f31951bcf7e29f3989f18a10ba9565091367d8736c
+          # 5 GB compressed, 30+ min over Starlink: never re-pull one that is already on the node
+          imagePullPolicy: IfNotPresent
           command: ["cp", "/seed/config.yml", "/config/config.yml"]
           volumeMounts:
             - name: seed
@@ -63,7 +65,9 @@ spec:
       containers:
         - name: frigate
           # renovate: datasource=docker depName=ghcr.io/blakeblackshear/frigate versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-tensorrt$
-          image: ghcr.io/blakeblackshear/frigate:0.18.2-tensorrt
+          image: ghcr.io/blakeblackshear/frigate:0.18.2-tensorrt@sha256:1cafb6ebbaff0aaf275cc3f31951bcf7e29f3989f18a10ba9565091367d8736c
+          # 5 GB compressed, 30+ min over Starlink: never re-pull one that is already on the node
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8971
               name: http
