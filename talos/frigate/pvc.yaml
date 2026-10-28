@@ -1,0 +1,27 @@
+# fast-array: sqlite's small sync writes want the mirror pool, not raidz2 `ssd`.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-config
+  namespace: frigate
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 5Gi
+---
+# zfs-localpv sets the dataset quota to this size; Frigate reads it as the disk size for its emergency prune.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-media
+  namespace: frigate
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 200Gi

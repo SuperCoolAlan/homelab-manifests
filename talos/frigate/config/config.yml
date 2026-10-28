@@ -1,0 +1,86 @@
+mqtt:
+  enabled: false
+
+# Traefik terminates TLS; Frigate's own cert would only add browser warnings
+tls:
+  enabled: false
+
+# NVDEC decodes the streams; the ONNX detector runs YOLOv9 on the GPU through TensorRT
+ffmpeg:
+  hwaccel_args: preset-nvidia
+
+detectors:
+  onnx:
+    type: onnx
+
+# exported by the export-yolov9 init container; width/height must match its --imgsz
+model:
+  model_type: yolo-generic
+  width: 320
+  height: 320
+  input_tensor: nchw
+  input_dtype: float
+  path: /config/model_cache/yolov9-s-320.onnx
+  labelmap_path: /labelmap/coco-80.txt
+
+# RTSP (554) is closed on this Reolink; http-flv needs RTMP (1935) left on in the camera UI.
+# Avoid & # ? in the password: it is embedded in the URL.
+go2rtc:
+  streams:
+    test:
+      - "ffmpeg:http://{FRIGATE_CAMERA_IP}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_REOLINK_USER}&password={FRIGATE_REOLINK_PASSWORD}#video=copy#audio=copy"
+    test_sub:
+      - "ffmpeg:http://{FRIGATE_CAMERA_IP}/flv?port=1935&app=bcs&stream=channel0_sub.bcs&user={FRIGATE_REOLINK_USER}&password={FRIGATE_REOLINK_PASSWORD}"
+
+cameras:
+  test:
+    # off until the secret holds the camera's real password; repeated bad logins lock the Reolink account
+    enabled: false
+    ffmpeg:
+      output_args:
+        record: preset-record-generic-audio-copy
+      inputs:
+        - path: rtsp://127.0.0.1:8554/test
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+        - path: rtsp://127.0.0.1:8554/test_sub
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+    detect:
+      enabled: true
+      fps: 5
+    live:
+      streams:
+        Main: test
+        Sub: test_sub
+
+objects:
+  track:
+    - person
+
+record:
+  enabled: true
+  continuous:
+    days: 3
+  motion:
+    days: 7
+  alerts:
+    retain:
+      days: 14
+  detections:
+    retain:
+      days: 14
+
+snapshots:
+  enabled: true
+  timestamp: true
+  retain:
+    default: 30
+
+birdseye:
+  enabled: false
+
+ui:
+  timezone: America/Chicago

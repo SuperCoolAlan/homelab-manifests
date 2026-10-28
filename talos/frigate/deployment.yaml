@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frigate
+  namespace: frigate
+  labels:
+    app: frigate
+spec:
+  replicas: 1
+  # RWO zfs-localpv volume: a surge pod can't mount it while the old pod runs ("device already mounted").
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: frigate
+  template:
+    metadata:
+      labels:
+        app: frigate
+    spec:
+      runtimeClassName: nvidia
+      # git owns config.yml; edits made in Frigate's UI are overwritten on the next restart.
+      initContainers:
+        # Frigate ships no GPU model; this follows its YOLOv9 export recipe once and is skipped while the file exists.
+        # Delete /config/model_cache/yolov9-s-320.onnx to rebuild; the name must match model.path in config.yml.
+        - name: export-yolov9
+          image: python:3.11.18-slim-bookworm
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              out=/config/model_cache/yolov9-s-320.onnx
+              [ -s "$out" ] && { echo "model present"; exit 0; }
+              apt-get update && apt-get install --no-install-recommends -y git cmake libgl1 libglib2.0-0
+              git clone --depth 1 https://github.com/WongKinYiu/yolov9.git /work/yolov9
+              cd /work/yolov9
+              # CPU torch: the export runs on the CPU, and the CUDA wheels are several GB of downloads
+              pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple \
+                -r requirements.txt onnx==1.18.0 onnxruntime 'onnx-simplifier==0.4.*' onnxscript
+              python3 -c "import urllib.request; urllib.request.urlretrieve('https://github.com/WongKinYiu/yolov9/releases/download/v0.1/yolov9-s-converted.pt', 'yolov9-s.pt')"
+              sed -i "s/ckpt = torch.load(attempt_download(w), map_location='cpu')/ckpt = torch.load(attempt_download(w), map_location='cpu', weights_only=False)/g" models/experimental.py
+              python3 export.py --weights ./yolov9-s.pt --imgsz 320 --simplify --include onnx
+              mkdir -p /config/model_cache
+              cp yolov9-s.onnx "$out.tmp" && mv "$out.tmp" "$out"
+          resources:
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: work
+              mountPath: /work
+        - name: seed-config
+          # renovate: datasource=docker depName=ghcr.io/blakeblackshear/frigate versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-tensorrt$
+          image: ghcr.io/blakeblackshear/frigate:0.18.2-tensorrt
+          command: ["cp", "/seed/config.yml", "/config/config.yml"]
+          volumeMounts:
+            - name: seed
+              mountPath: /seed
+            - name: config
+              mountPath: /config
+      containers:
+        - name: frigate
+          # renovate: datasource=docker depName=ghcr.io/blakeblackshear/frigate versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-tensorrt$
+          image: ghcr.io/blakeblackshear/frigate:0.18.2-tensorrt
+          ports:
+            - containerPort: 8971
+              name: http
+            - containerPort: 5000
+              name: internal
+          env:
+            - name: TZ
+              value: "America/Chicago"
+            - name: FRIGATE_CAMERA_IP
+              value: "10.0.1.18"
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: compute,video,utility
+          envFrom:
+            - secretRef:
+                name: frigate-camera
+          readinessProbe:
+            httpGet:
+              path: /api/version
+              port: internal
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /api/version
+              port: internal
+            periodSeconds: 10
+            failureThreshold: 30
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1000m"
+            limits:
+              # one of the three time-sliced slots; the 6 GB of VRAM is shared with jellyfin and looped-transcribe
+              nvidia.com/gpu: 1
+              # memory-backed emptyDirs (shm, cache) count against this
+              memory: "4Gi"
+              cpu: "4000m"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media/frigate
+            - name: cache
+              mountPath: /tmp/cache
+            - name: shm
+              mountPath: /dev/shm
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      volumes:
+        - name: seed
+          configMap:
+            name: frigate-config
+        - name: config
+          persistentVolumeClaim:
+            claimName: frigate-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: frigate-media
+        - name: work
+          emptyDir: {}
+        - name: cache
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
