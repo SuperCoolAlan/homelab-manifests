@@ -1,5 +1,4 @@
-# Replacement for the immich photo library, moving off TrueNAS NFS onto the
-# local ZFS `ssd` pool (4x 480G SAS raidz2).
+# The immich photo library, on the local ZFS `ssd` pool (4x 480G SAS raidz2).
 #
 # ssd-array rather than fast-array: raidz2 tolerates ANY two disk failures where
 # the fast mirrors guarantee only one, and photos are the one genuinely

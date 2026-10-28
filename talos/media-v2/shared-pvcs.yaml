@@ -61,8 +61,7 @@ spec:
     requests:
       storage: 5Ti
 ---
-# media-downloads was 0.1 MB in use and is effectively a landing zone. Pointing
-# it at a dataset on the media pool rather than recreating it on TrueNAS.
+# media-downloads is effectively a landing zone, on a dataset in the media pool.
 # Create the dataset before applying:
 #   zfs create media/downloads
 apiVersion: v1

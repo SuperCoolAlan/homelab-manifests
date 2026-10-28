@@ -1,23 +1,11 @@
 # external-snapshotter: the snapshot.storage.k8s.io CRDs and snapshot-controller.
 #
-# Extracted from talos/cluster-services/democratic-csi on 2026-08-10, ahead of
-# that app being deleted with the TrueNAS decommission.
+# ⚠️ THIS IS NOT OPTIONAL INFRASTRUCTURE. The CRDs and controller are cluster-wide
+# and underpin VolSync: immich-photos uses copyMethod: Snapshot, because
+# zfs-localpv refuses a second mount of a volume its application already holds
+# open - so any future ReplicationSource needs these too.
 #
-# ⚠️ THIS IS NOT OPTIONAL INFRASTRUCTURE. It looked like a democratic-csi
-# implementation detail - the chart renders a VolumeSnapshotClass and so needed
-# the CRDs - but the CRDs and controller are cluster-wide and now underpin
-# VolSync in this cluster. immich-photos uses copyMethod: Snapshot, because
-# zfs-localpv enforces verifyMount and refuses a second mount of a volume its
-# application already holds open - so any future ReplicationSource needs these
-# too.
-#
-# Deleting democratic-csi while it still owned these would have pruned the CRDs,
-# and deleting a CRD cascade-deletes its custom resources: every VolumeSnapshot
-# and VolumeSnapshotContent, including any mid-backup. With
-# zfs-localpv-snapshot's deletionPolicy: Delete, the underlying ZFS snapshots go
-# too.
-#
-# Vendored rather than referenced remotely, same reason as before: git fetches
+# Vendored rather than referenced remotely, because git fetches
 # to GitHub's origin crawl at ~1Mbps over this network's Starlink transit,
 # blowing kustomize's 27s remote timeout on every ArgoCD render. To bump: copy
 # client/config/crd and deploy/kubernetes/snapshot-controller from the new tag
@@ -37,12 +25,8 @@ resources:
 # VolumeSnapshotContent in the cluster with it, and zfs-localpv-snapshot's
 # deletionPolicy: Delete then removes the underlying ZFS snapshots.
 #
-# Set during the democratic-csi removal on 2026-08-10, where exactly that was
-# the failure mode: that app carried resources-finalizer.argocd.argoproj.io and
-# tracked these CRDs, so deleting its directory would have cascade-deleted them.
-# The finalizer could not simply be removed - the ApplicationSet re-adds it,
-# because preserveResourcesOnDeletion defaults to false and the finalizer is how
-# that is implemented.
+# The ApplicationSet's resources-finalizer would otherwise cascade-delete these
+# CRDs if this app's directory were ever removed.
 #
 # Keeping it means this app cannot prune them either. That is the intent: CRDs
 # holding live custom resources should never disappear because a manifest moved.

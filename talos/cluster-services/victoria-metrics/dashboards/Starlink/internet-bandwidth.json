@@ -621,7 +621,7 @@
           "legendFormat": "{{instance}} {{device}} tx"
         }
       ],
-      "description": "Physical NICs, includes LAN traffic such as NFS to TrueNAS. Transmit is drawn below zero."
+      "description": "Physical NICs, includes LAN traffic. Transmit is drawn below zero."
     },
     {
       "id": 12,

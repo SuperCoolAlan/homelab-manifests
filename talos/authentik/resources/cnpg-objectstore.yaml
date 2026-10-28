@@ -11,9 +11,6 @@
 #   talos/authentik/secrets/cnpg-b2-credentials.enc.yaml
 #   + a files: entry in talos/authentik/secrets-generator.yaml
 # Apply this ObjectStore only once that secret exists.
-#
-# Worth noting this is a net gain in safety: the TrueNAS Postgres this replaces
-# has no backup story at all that we found.
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:

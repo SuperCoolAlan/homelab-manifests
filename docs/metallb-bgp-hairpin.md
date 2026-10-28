@@ -134,6 +134,5 @@ Move the Talos nodes onto their own VLAN so client → VIP → node is genuinely
 inter-subnet. The reply would then have to return via its gateway, pf would see
 both directions, and strict state tracking could come back.
 
-Deferred: it means re-IPing both nodes, and TrueNAS NFS exports are
-host-restricted, so it's entangled with the TrueNAS migration work. Worth
-folding in if the nodes are ever re-addressed for other reasons.
+Deferred: it means re-IPing both nodes. Worth folding in if the nodes are
+ever re-addressed for other reasons.

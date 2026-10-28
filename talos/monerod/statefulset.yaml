@@ -272,9 +272,8 @@ spec:
         name: bitmonero
       spec:
         accessModes: ["ReadWriteOnce"]
-        # NOT fast-array (the cluster default) - that pool is degraded, and
-        # NOT truenas-nfs: LMDB does memory-mapped random writes, which are
-        # slow and corruption-prone over NFS.
+        # NOT fast-array (the cluster default) - that pool is degraded.
+        # Never NFS either: LMDB's memory-mapped random writes are slow and corruption-prone over it.
         storageClassName: ssd-array
         resources:
           requests:

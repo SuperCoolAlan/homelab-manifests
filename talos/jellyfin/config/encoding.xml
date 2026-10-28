@@ -11,7 +11,7 @@
   drops comments - so if you ever capture the live file back into git, this
   header has to be re-added by hand.
 
-  These values came off TrueNAS with the 2026-08-10 migration and are correct
+  These values are correct
   for the GTX 1660 Ti (TU116) in talos-ramhaus. Verified against the 4K HDR10
   source that exposed the GPU outage:
     NVDEC -> scale_cuda -> h264_nvenc             4.5x realtime

@@ -1,9 +1,8 @@
 # VolumeSnapshotClass for zfs-localpv.
 #
 # The CSI driver and the zfssnapshots.zfs.openebs.io CRD were both installed by
-# the chart, and snapshot-controller runs in kube-system - but no
-# VolumeSnapshotClass existed, so nothing could actually request a snapshot. The
-# only class in the cluster was truenas-nfs (democratic-csi).
+# the chart, and snapshot-controller runs in kube-system; this class is what lets
+# anything actually request a snapshot.
 #
 # Needed by VolSync: copyMethod Direct cannot work against zfs-localpv, because
 # the driver refuses a second mount of a volume even on the same node -

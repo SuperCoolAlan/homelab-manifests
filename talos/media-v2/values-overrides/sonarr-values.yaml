@@ -44,7 +44,7 @@ deployment:
     media-library:
       persistentVolumeClaim:
         claimName: 'media-library'
-  # Use specific UID/GID that matches TrueNAS NFS user
+  # PUID/PGID own the shared media dataset; hardlinks break if the apps disagree
   container:
     env:
       - name: PUID

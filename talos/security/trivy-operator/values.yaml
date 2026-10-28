@@ -4,8 +4,7 @@
 trivy:
   # Ignore vulnerabilities with no fix available
   ignoreUnfixed: true
-  # Local disk for the server's vuln-DB cache — the default truenas-nfs class
-  # fails fsGroup chown on remount (root-squashed export denies kubelet)
+  # Local disk for the server's vuln-DB cache
   storageClassName: trivy-local
 
 operator:

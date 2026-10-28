@@ -15,8 +15,7 @@
   <LocalNetworkAddresses />
   <!-- Trust XFF from the pod network (jellyfin-tunnel/Caddy path, traefik,
        cloudflared). Without this jellyfin logs the proxy pod IP and CrowdSec's
-       private-range whitelist discards every failed-auth event. The old
-       10.0.1.28/36/37 entries were the decommissioned TrueNAS proxies. -->
+       private-range whitelist discards every failed-auth event. -->
   <KnownProxies>
     <string>10.244.0.0/16</string>
   </KnownProxies>

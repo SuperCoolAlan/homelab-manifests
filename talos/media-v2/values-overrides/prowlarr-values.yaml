@@ -39,7 +39,6 @@ application:
         <InstanceName>Prowlarr</InstanceName>
       </Config>
 
-# Use specific UID/GID that matches TrueNAS NFS user
 deployment:
   nodeSelector:
     kubernetes.io/hostname: talos-ramhaus

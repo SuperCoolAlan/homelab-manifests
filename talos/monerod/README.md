@@ -39,7 +39,7 @@ later requires either `monero-blockchain-prune` or a resync.
 - **Not `fast-array`**, even though it is the cluster-default StorageClass —
   that pool is currently degraded. Anything in this repo that creates a PVC
   without an explicit `storageClassName` still lands there.
-- **Not `truenas-nfs`.** monerod's LMDB does memory-mapped random writes.
+- **Never NFS.** monerod's LMDB does memory-mapped random writes.
   Over NFS that is both slow and a corruption risk.
 
 ## Exposure

@@ -35,8 +35,7 @@ spec:
           # utilization.decoder, which are the two that actually matter for
           # jellyfin.
           #
-          # It also emits nvidia_smi_* metric names, which is what the
-          # dashboard inherited from TrueNAS already queries.
+          # It also emits nvidia_smi_* metric names, which the NVIDIA dashboards query.
           # renovate: datasource=docker depName=ghcr.io/utkuozdemir/nvidia_gpu_exporter
           image: ghcr.io/utkuozdemir/nvidia_gpu_exporter:1.15.1
           args:

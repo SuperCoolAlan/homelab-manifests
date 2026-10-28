@@ -301,7 +301,6 @@ Other apps are listed explicitly, and the comment above each entry becomes its n
 | [cilium-migration.md](docs/cilium-migration.md) | flannel to Cilium cutover |
 | [metallb-bgp-hairpin.md](docs/metallb-bgp-hairpin.md) | BGP LoadBalancer IPs and LAN hairpin |
 | [renovate-ci.md](docs/renovate-ci.md) | Renovate and PR validation |
-| [authentik-postgres-migration.md](docs/authentik-postgres-migration.md) | Authentik onto CNPG |
 | [torrent-hardlink-migration.md](docs/torrent-hardlink-migration.md) | single-copy media with hardlinks |
 
 Per-app notes: [jellyfin](talos/jellyfin/README.md), [monerod](talos/monerod/README.md), [p2pool](talos/p2pool/README.md), [unifi](talos/unifi/README.md).

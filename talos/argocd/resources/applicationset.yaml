@@ -46,7 +46,7 @@ spec:
           - path: talos/status
           # Twingate
           - path: talos/twingate
-          # UniFi controller (phase 1: DNS only — see talos/unifi/README.md)
+          # UniFi controller (see talos/unifi/README.md)
           - path: talos/unifi
           # Cameras (phase 0: host-network nmap discovery job, results in VictoriaLogs)
           - path: talos/cameras

@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "Disk health, liveness and I/O for the Talos nodes. Built 2026-08-10 after the TrueNAS decommission, when the `fast` pool was found DEGRADED with two SATA SSDs missing - a failure that produced zero ZFS errors and no alert. The Health & liveness row exists to make that state impossible to miss.",
+  "description": "Disk health, liveness and I/O for the Talos nodes. Built 2026-08-10, when the `fast` pool was found DEGRADED with two SATA SSDs missing - a failure that produced zero ZFS errors and no alert. The Health & liveness row exists to make that state impossible to miss.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,

@@ -86,8 +86,7 @@ spec:
               memory: 64Mi
       containers:
         - name: jellyfin
-          # Pinned to what TrueNAS was running, so the config database is opened
-          # by the same version that wrote it. Upgrade deliberately, afterwards.
+          # Upgrade deliberately: a newer version migrates the config database and there is no way back.
           # renovate: datasource=docker depName=jellyfin/jellyfin versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
           image: jellyfin/jellyfin:10.11.11
           ports:
@@ -110,9 +109,7 @@ spec:
               mountPath: /cache
             - name: media
               mountPath: /mnt/media
-            # TrueNAS backed both of these with a /mnt/transcode-ram RAM disk;
-            # a Memory-medium emptyDir is the direct equivalent and keeps
-            # transcode churn off the SSDs entirely.
+            # Memory-medium emptyDir keeps transcode churn off the SSDs.
             - name: iptv-private
               mountPath: /iptv
               readOnly: true

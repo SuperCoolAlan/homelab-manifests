@@ -9,11 +9,6 @@
 # serving video through their proxy - so it takes this path instead. See
 # docs/oracle-wireguard-jumphost.md.
 #
-# Until 2026-08-10 this tunnel terminated on TrueNAS. It never actually broke:
-# it was still handshaking days after the migration, with jellyfin long gone
-# behind it, so Caddy answered every request with a 502. Moving the endpoint
-# here was the last thing keeping TrueNAS powered on.
-#
 # Two design points worth not undoing:
 #
 # 1. The WireGuard interface is created by an INIT container, not a long-running
@@ -24,9 +19,7 @@
 #
 # 2. There is no Service, no NodePort and no Ingress. Traffic arrives inside
 #    this pod's own network namespace over the tunnel, so nothing is published
-#    on the LAN at all. That is a deliberate improvement on the TrueNAS setup,
-#    where jellyfin listened on a host port and the tunnel was constrained by
-#    hand-maintained nftables rules. Here the blast radius is the pod: even with
+#    on the LAN at all. The blast radius is the pod: even with
 #    the Oracle VPS fully compromised, the only thing reachable through the
 #    tunnel is whatever socat forwards to.
 apiVersion: apps/v1

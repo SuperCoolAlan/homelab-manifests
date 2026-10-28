@@ -2,9 +2,6 @@
 
 How `jellyfin.asandov.com` reaches the internet.
 
-**Updated 2026-08-10:** the home end of this tunnel moved from TrueNAS into the
-cluster. See [History](#history) for what changed and why.
-
 ## Why this exists at all
 
 Every other public service here (authentik, immich, gatus, jellyseerr) goes
@@ -454,25 +451,12 @@ curl -s https://jellyfin.asandov.com/health                            # expect:
 | Handshake fine, video stalls | MTU. Confirm `wg0` is 1420 in the init container log. |
 | Stream drops after a while | Caddy timeouts - confirm `read_timeout 0` / `write_timeout 0` survived a config edit. |
 
-## History
+## Why the home end runs in the cluster
 
-Originally the tunnel terminated on TrueNAS: `10.100.0.2` was TrueNAS, and
-jellyfin was a Docker container reached on host port 30013 with hand-maintained
-nftables rules in Docker's `DOCKER-USER` chain restricting `wg0` to port 8096,
-persisted through a `@reboot` cron entry.
-
-When jellyfin moved into the cluster, that tunnel **kept working** - it was
-still handshaking days later with 4.79 GiB transferred - but the jellyfin behind
-it was gone, so Caddy returned 502 for every request. It was also the last live
-service on TrueNAS, and the reason the box was still powered on.
-
-Moving it into the cluster rather than onto the Talos host was deliberate: a
-host-level `wg0` in the machine config would have been fewer moving parts, but
-machine configs are gitignored here, so it would not have been in gitops, and it
-would have needed a NodePort publishing jellyfin on 30013 across the LAN.
-
-The keypair was rotated at the same time, since the old private key had been
-sitting on a host being decommissioned.
+Running it in the cluster rather than on the Talos host is deliberate: a
+host-level `wg0` in the machine config would be fewer moving parts, but
+machine configs are gitignored here, so it would not be in gitops, and it
+would need a NodePort publishing jellyfin on 30013 across the LAN.
 
 ## Maintenance
 

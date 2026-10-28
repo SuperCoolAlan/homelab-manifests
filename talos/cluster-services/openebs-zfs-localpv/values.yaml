@@ -13,7 +13,6 @@ analytics:
 crds:
   csi:
     volumeSnapshots:
-      # VolumeSnapshot CRDs already owned by the democratic-csi app
-      # (cluster-services/democratic-csi vendors external-snapshotter);
+      # VolumeSnapshot CRDs are owned by cluster-services/external-snapshotter;
       # rendering them twice makes two Argo apps fight over the same CRDs
       enabled: false

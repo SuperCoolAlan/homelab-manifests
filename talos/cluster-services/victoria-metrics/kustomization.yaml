@@ -481,9 +481,7 @@ configMapGenerator:
       - dashboards/Power/ups-nut.json
 
   # NVIDIA (added 2026-08-10 alongside the GPU fix). Fed by
-  # talos/monitoring/nvidia-gpu-exporter, which emits nvidia_smi_* - the same family the
-  # old TrueNAS/nvidia-gpu.json queried. That one stays disabled rather than being ported:
-  # it pointed at a host that no longer exists, and these three supersede it.
+  # talos/monitoring/nvidia-gpu-exporter, which emits nvidia_smi_*.
   #
   # Every query in all three was run against live vmsingle before commit; 56 of 56 return
   # data. Split three ways deliberately - hardware health, transcode activity, and whether
@@ -680,70 +678,3 @@ configMapGenerator:
 #         grafana_folder: "Traefik"
 #     files:
 #       - dashboards/Traefik/traefik-official.json
-# 
-#   # TrueNAS
-#   - name: dashboard-truenas-app-health
-#     namespace: monitoring
-#     options:
-#       disableNameSuffixHash: true
-#       labels:
-#         grafana_dashboard: "1"
-#       annotations:
-#         grafana_folder: "TrueNAS"
-#     files:
-#       - dashboards/TrueNAS/app-health-overview.json
-# 
-#   - name: dashboard-nvidia-gpu
-#     namespace: monitoring
-#     options:
-#       disableNameSuffixHash: true
-#       labels:
-#         grafana_dashboard: "1"
-#       annotations:
-#         grafana_folder: "TrueNAS"
-#     files:
-#       - dashboards/TrueNAS/nvidia-gpu.json
-# 
-#   - name: dashboard-truenas-disk-insight
-#     namespace: monitoring
-#     options:
-#       disableNameSuffixHash: true
-#       labels:
-#         grafana_dashboard: "1"
-#       annotations:
-#         grafana_folder: "TrueNAS"
-#     files:
-#       - dashboards/TrueNAS/truenas-disk-insight.json
-# 
-#   - name: dashboard-truenas-overview
-#     namespace: monitoring
-#     options:
-#       disableNameSuffixHash: true
-#       labels:
-#         grafana_dashboard: "1"
-#       annotations:
-#         grafana_folder: "TrueNAS"
-#     files:
-#       - dashboards/TrueNAS/truenas-overview.json
-# 
-#   - name: dashboard-truenas-temperature
-#     namespace: monitoring
-#     options:
-#       disableNameSuffixHash: true
-#       labels:
-#         grafana_dashboard: "1"
-#       annotations:
-#         grafana_folder: "TrueNAS"
-#     files:
-#       - dashboards/TrueNAS/truenas-temperature.json
-# 
-#   - name: dashboard-ups-status
-#     namespace: monitoring
-#     options:
-#       disableNameSuffixHash: true
-#       labels:
-#         grafana_dashboard: "1"
-#       annotations:
-#         grafana_folder: "TrueNAS"
-#     files:
-#       - dashboards/TrueNAS/ups-status.json

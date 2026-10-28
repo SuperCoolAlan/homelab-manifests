@@ -1,8 +1,7 @@
 # Media library for jellyfin, on the local ZFS pool (cutover 2026-08-10).
 #
 # The 6TB pair now lives in ramhaus; ST6000NM0095-pool1 is imported with its
-# media dataset mounted at /var/mnt/media. This was previously an nfs: PV
-# against truenas.asandov.local, which no longer exists.
+# media dataset mounted at /var/mnt/media.
 #
 # A PV's source and a PVC's volumeName are both immutable, so the swap meant
 # deleting and recreating both objects rather than editing them. Reclaim policy

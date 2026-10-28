@@ -10,9 +10,8 @@ double-coverage; each byte gets stored once per location.
 
 | Data type | Local tier | Offsite tier |
 |---|---|---|
-| Postgres DBs on CNPG (k8s) | *(none — PV is on local NVMe, not ZFS)* | CNPG plugin `barman-cloud.cloudnative-pg.io` → `asandov-cnpg` |
-| Postgres DB on TrueNAS (Authentik, future) | `pg_dump` cron (local, short retention) | `pg_dump` pushed to `asandov-truenas` (separate prefix) |
-| NFS-backed files (photos, *arr configs, etc.) | TrueNAS periodic ZFS snapshots | TrueNAS `cloud_backup` (restic) → `asandov-truenas` |
+| Postgres DBs on CNPG (immich, authentik, cms) | none | CNPG plugin `barman-cloud.cloudnative-pg.io` → `asandov-cnpg` |
+| Immich photo library (`immich-library-fast`, zfs-localpv) | none | VolSync restic (`copyMethod: Snapshot`) → `asandov-volsync` |
 | Bulk/re-obtainable (downloads, media library) | none | none |
 | Oracle jumphost boot volumes (jelly, monero, snowflake, signal proxy) | none | OCI policy-based boot volume backups (us-chicago-1, see schedules) |
 
@@ -24,16 +23,17 @@ application-aware backup (barman-cloud / pg_dump) for DBs.
 | Bucket | Purpose | B2 keyID | Key capability | Where the secret lives |
 |---|---|---|---|---|
 | `asandov-cnpg` | CNPG `ObjectStore` destination (plugin-barman-cloud) | `004b93bd8d0e47d0000000003` | scoped write | `talos/immich/secrets/b2-asandov-cnpg-credentials.enc.yaml` |
-| `asandov-truenas` | TrueNAS cloud_backup + cloud_sync destination | `004b93bd8d0e47d0000000004` | scoped write + listAllBucketNames | TrueNAS cred id=2 (`b2-asandov-truenas-s3`, S3-compat type) |
+| `asandov-volsync` | VolSync restic repos, one prefix per source (`immich-photos/`) | see secret | read + write + delete (prune) | `talos/immich/secrets/immich-photos-restic.enc.yaml` |
+| `asandov-truenas` | **Legacy, no longer written.** Restic repo of the photo library, 30 daily snapshots 2026-07-01 → 07-30 | `004b93bd8d0e47d0000000004` | scoped write + listAllBucketNames | not in this repo |
 
 The original `immich-asandov` bucket + its app key `004b93bd8d0e47d0000000001`
 were deleted on 2026-04-22 after the new buckets took over. No live
 references remain — don't recreate it.
 
-Restic repository password for the TrueNAS cloud_backup:
-`truenas/secrets/b2-restic-immich-pw.enc.yaml` (SOPS, project GPG key).
-**Required** to restore from `asandov-truenas` — if TrueNAS is lost, this
-file is the only way back.
+Restic repository password for the legacy `asandov-truenas` repo:
+`truenas/secrets/b2-restic-immich-pw.enc.yaml` (SOPS, project GPG key). It is
+the only way to read those July snapshots. Keep the bucket and this file until
+a restore from `asandov-volsync` has been verified.
 
 ## Automated schedules (currently running)
 
@@ -41,9 +41,9 @@ file is the only way back.
 |---|---|---|---|---|
 | CNPG WAL archiving (via plugin sidecar in `immich-postgres-1`) | k8s (`plugin-barman-cloud` sidecar) | continuous, cap 5 min (`archive_timeout`) | 30d (ObjectStore `retentionPolicy`) | `s3://asandov-cnpg/immich-postgres/wals/` |
 | CNPG daily base backup (`ScheduledBackup immich-postgres-daily`, `method: plugin`) | k8s | `0 0 2 * * *` (02:00 UTC, 6-field cron) | 30d | `s3://asandov-cnpg/immich-postgres/base/` |
-| TrueNAS ZFS snapshot — `immich-photos` (task id=1, recursive) | TrueNAS `pool.snapshottask` | every 6h | 30d | pool-local only |
-| TrueNAS ZFS snapshot — `media/nfs/v` (task id=2, recursive + exclude `pvc-58505e09-…`) | TrueNAS `pool.snapshottask` | every 6h | 30d | pool-local only |
-| TrueNAS cloud_backup — `immich-photos/v1` (task id=1, restic, via S3-compat cred id=2) | TrueNAS `cloud_backup` | `0 3 * * *` (03:00 UTC) | `keep_last=30` | `s3://asandov-truenas/immich-photos/` |
+| CNPG daily base backup (`ScheduledBackup cms-postgres-daily`) | k8s | `0 30 2 * * *` (02:30 UTC) | 30d | `s3://asandov-cnpg/cms-postgres/` |
+| CNPG daily base backup (`ScheduledBackup authentik-postgres-daily`) | k8s | `0 0 3 * * *` (03:00 UTC) | 30d | `s3://asandov-cnpg/authentik-postgres/` |
+| VolSync `ReplicationSource immich-photos` (restic, snapshot clone of `immich-library-fast`) | k8s (`immich` ns) | `0 4 * * *` | 30 daily, 8 weekly, 12 monthly; prune every 14d | `s3://asandov-volsync/immich-photos/` |
 | OCI boot volume backup — jelly (`jelly-weekly-mon`) | OCI volume backup policy | weekly Mon 11:00 UTC, incremental | 8d | OCI (Always Free) |
 | OCI boot volume backup — monero (`monero-weekly-wed`) | OCI volume backup policy | weekly Wed 11:00 UTC, incremental | 8d | OCI (Always Free) |
 | OCI boot volume backup — snowflake (`snowflake-weekly-fri`) | OCI volume backup policy | weekly Fri 11:00 UTC, incremental | 8d | OCI (Always Free) |
@@ -98,8 +98,7 @@ Don't align the days or use bronze/silver/gold (they retain 12+ backups each).
 ### Deferred (after this cleanup)
 
 - [ ] Set up Authentik OIDC for Immich login (waiting on Authentik stability)
-- [ ] Migrate Authentik postgres to its own dedicated TrueNAS dataset + pg_dump→B2 cron
-- [ ] Democratic-csi split: two helm releases with separate parent datasets (configs vs bulk) so new PVCs auto-partition
+- [ ] Verify a restore from `asandov-volsync/immich-photos`, then retire `asandov-truenas` and `truenas/secrets/`
 - [ ] Keep ArgoCD auto-sync **off** for `immich` — per user policy, never auto-enable
 
 ## Recovery playbooks
@@ -124,32 +123,19 @@ With the plugin now installed, recovery uses `externalClusters` that reference t
 11. Scale immich-server back to 1; reset the Immich admin password via `immich-admin reset-admin-password` if needed.
 12. Commit the final manifest state to `main`.
 
-### TrueNAS ZFS rollback (same pool)
+### Legacy photo snapshots (restic, `asandov-truenas`)
 
-```bash
-# Read-only browse of snapshot
-ls /mnt/<pool>/<dataset>/.zfs/snapshot/<snap-name>/
-
-# Destructive rollback (DISCARDS all changes since the snapshot)
-zfs rollback -r <pool>/<dataset>@<snap-name>
-```
-
-### TrueNAS cloud_backup (restic) restore from B2
-
-1. Need the restic password from `truenas/secrets/b2-restic-immich-pw.enc.yaml`.
-2. `midclt call cloud_backup.list_snapshots <task-id>` to enumerate snapshots.
-3. `midclt call cloud_backup.restore <task-id> <snapshot-id> <subfolder> <destination-path>`.
-4. If TrueNAS itself is lost, install restic on any machine and point at
-   `s3:s3.us-west-004.backblazeb2.com/asandov-truenas/immich-photos` using
-   B2 keyID `...000000004` + the SOPS-stored restic password.
+Install restic anywhere and point it at
+`s3:s3.us-west-004.backblazeb2.com/asandov-truenas/immich-photos`, with B2 keyID
+`...000000004` and the restic password from
+`truenas/secrets/b2-restic-immich-pw.enc.yaml`.
 
 ## Pitfalls hit during the 2026-04-21 recovery
 
 1. **"Expected empty archive"**: CNPG 1.28 refuses `bootstrap.recovery` when `spec.backup.barmanObjectStore` points at a non-empty destination, even if that's the same path we're recovering from. Fix = comment the `backup:` block during recovery; re-enable afterward (at a different bucket).
 2. **Password drift after PITR**: CNPG restores the Postgres role password from the backup. The k8s Secret may have been rotated since. Reconcile by `ALTER USER … WITH PASSWORD` from the current secret value.
-3. **B2 `ListBuckets` 403 "not entitled"**: rclone S3 backend calls `ListBuckets` during TrueNAS task creation. A bucket-scoped B2 app key must have the **"Allow List All Bucket Names"** capability ticked, or task creation fails.
-4. **TrueNAS cloud_backup and B2**: `cloud_backup` (restic-based) does *not* support the native B2 rclone backend (`NotImplementedError`). Use the **S3-compatible endpoint** (`https://s3.us-west-<region>.backblazeb2.com`) with provider type `S3` instead. Credential region: `us-west-004`.
-5. **Interactive `immich-admin` CLI**: `reset-admin-password` prompts for a new password. Piping a single word via `<<<'y'` sets the literal password to that word — pipe the real desired password or a strong random one.
-6. **CNPG `ScheduledBackup` uses 6-field cron** (`sec min hour dom mon dow`), not the 5-field standard. A 5-field `0 2 * * *` gets parsed as `sec=0 min=2 hour=*` → fires every hour at `HH:02`. Caught this 2026-04-22 after the 2026-04-21 recovery: 9 unnecessary base backups in 9 h. Same bug caused the "12 base backups in 22 min" on 2026-03-16 that we initially flagged as a crash loop. Use e.g. `"0 0 2 * * *"` for daily 02:00 UTC.
-7. **CNPG app secret `username` must match `bootstrap.initdb.owner`**. CNPG auto-generates `<cluster>-app` with `username: app` by default. If your Cluster spec sets a custom owner (e.g. `immich`), you MUST also set `stringData.username: immich` in the secret. Otherwise the instance-manager spams `"while updating database owner password: wrong username 'app' in secret, expected 'immich'"` every reconcile and cannot rotate the role password. Fix: `kubectl -n <ns> patch secret <cluster>-app -p '{"data":{"username":"<base64>"}}'`.
-8. **First plugin backup restart pulls a ~100 MB sidecar image**. Switching a Cluster to `spec.plugins.[].name=barman-cloud.cloudnative-pg.io` makes CNPG restart the primary to inject a `plugin-barman-cloud` sidecar (image `ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar:vX.Y.Z`, ~100 MiB). First-time pull added ~40s to the pod start in our case. Shows as "Primary instance is being restarted without a switchover" with the pod in `PodInitializing` — this is normal. Don't panic-delete the cluster.
+3. **B2 `ListBuckets` 403 "not entitled"**: rclone's S3 backend calls `ListBuckets` before it writes. A bucket-scoped B2 app key must have the **"Allow List All Bucket Names"** capability ticked, or task creation fails.
+4. **Interactive `immich-admin` CLI**: `reset-admin-password` prompts for a new password. Piping a single word via `<<<'y'` sets the literal password to that word — pipe the real desired password or a strong random one.
+5. **CNPG `ScheduledBackup` uses 6-field cron** (`sec min hour dom mon dow`), not the 5-field standard. A 5-field `0 2 * * *` gets parsed as `sec=0 min=2 hour=*` → fires every hour at `HH:02`. Caught this 2026-04-22 after the 2026-04-21 recovery: 9 unnecessary base backups in 9 h. Same bug caused the "12 base backups in 22 min" on 2026-03-16 that we initially flagged as a crash loop. Use e.g. `"0 0 2 * * *"` for daily 02:00 UTC.
+6. **CNPG app secret `username` must match `bootstrap.initdb.owner`**. CNPG auto-generates `<cluster>-app` with `username: app` by default. If your Cluster spec sets a custom owner (e.g. `immich`), you MUST also set `stringData.username: immich` in the secret. Otherwise the instance-manager spams `"while updating database owner password: wrong username 'app' in secret, expected 'immich'"` every reconcile and cannot rotate the role password. Fix: `kubectl -n <ns> patch secret <cluster>-app -p '{"data":{"username":"<base64>"}}'`.
+7. **First plugin backup restart pulls a ~100 MB sidecar image**. Switching a Cluster to `spec.plugins.[].name=barman-cloud.cloudnative-pg.io` makes CNPG restart the primary to inject a `plugin-barman-cloud` sidecar (image `ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar:vX.Y.Z`, ~100 MiB). First-time pull added ~40s to the pod start in our case. Shows as "Primary instance is being restarted without a switchover" with the pod in `PodInitializing` — this is normal. Don't panic-delete the cluster.

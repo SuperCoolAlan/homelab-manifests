@@ -6,18 +6,6 @@
 # immich-library-fast PVC and are NOT in Postgres. Restoring only the database
 # gives you an immich that knows about every photo and has none of them.
 #
-# HISTORY: a restic job on TrueNAS backed these up daily at ~10:11 to
-# s3://asandov-truenas/immich-photos - 30 snapshots, 2026-07-01 through
-# 2026-07-30, then it stopped. Nothing replaced it, so from 2026-07-30 the photo
-# library existed only on live storage. This re-homes that job into the cluster.
-#
-# NEW REPO, deliberately. The old bucket was named for a machine being
-# decommissioned, so this starts fresh in s3://asandov-volsync/immich-photos.
-# That costs a full 22 GB re-upload and loses the July snapshot history -
-# accepted, because B2 does not charge for ingress (uploads are free, and
-# b2_upload_file is a free Class A transaction), so the only real cost is
-# wall-clock on the first run.
-#
 # Bucket is per-tool rather than per-app, mirroring asandov-cnpg: further
 # VolSync sources get their own prefix in the same bucket, keeping the number of
 # buckets and application keys flat as more apps are added.
@@ -25,8 +13,8 @@
 # VolSync's restic mover runs `restic init` when the repository does not exist,
 # so no manual setup is needed - the first run just takes a while.
 #
-# ⚠️ Keep s3://asandov-truenas until this repo has a verified snapshot. Those 30
-# snapshots are the only historical photo backup that exists until then.
+# ⚠️ The legacy July 2026 snapshots in s3://asandov-truenas stay until a restore
+# from this repo is verified (docs/backup-and-recovery.md).
 #
 # PREREQUISITE - fill in secrets/immich-photos-restic.enc.yaml:
 #

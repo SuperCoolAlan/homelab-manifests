@@ -48,6 +48,5 @@ spec:
 #     and no tunnel configuration change could land for any of them. They kept
 #     working only because their records already existed.
 #
-# If public jellyfin is broken, the fault is on the Oracle instance - most
-# likely its upstream still points at the old TrueNAS jellyfin rather than the
-# in-cluster Service. That host is not managed from this repo.
+# If public jellyfin is broken, check the Oracle instance and talos/jellyfin-tunnel;
+# the Oracle host is not managed from this repo.
