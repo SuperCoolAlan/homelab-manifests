@@ -68,6 +68,8 @@ spec:
           - path: talos/oracle-telemetry
           # S3 store (single node); holds Looped audio segments waiting for transcription
           - path: talos/garage
+          # Home Assistant OS as a KubeVirt VM (replaces the ODROID-C4)
+          - path: talos/home-assistant
           # Speech-to-text for Looped audio: Garage queue -> faster-whisper on a time-sliced GPU slot -> VictoriaLogs
           - path: talos/looped-transcribe
           # Mealie (recipes), public at mealie.asandov.com via the Cloudflare tunnel

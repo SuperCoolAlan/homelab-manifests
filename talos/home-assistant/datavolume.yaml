@@ -1,0 +1,16 @@
+# HAOS boot disk; HA's config and backups live on it, so Argo must never prune it. The image only seeds a fresh disk; HAOS updates itself after.
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: haos-rootdisk
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  source:
+    http:
+      url: https://github.com/home-assistant/operating-system/releases/download/18.4/haos_ova-18.4.qcow2.xz
+  storage:
+    storageClassName: fast-array
+    resources:
+      requests:
+        storage: 64Gi

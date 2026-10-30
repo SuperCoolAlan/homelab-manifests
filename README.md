@@ -145,6 +145,8 @@ flowchart LR
         app_actualbudget["actualbudget"]
         app_cameras["cameras"]
         app_cms["cms"]
+        app_frigate["frigate"]
+        app_home_assistant["home-assistant"]
         app_immich["immich"]
         app_looped_transcribe["looped-transcribe"]
         app_mealie["mealie"]
@@ -190,7 +192,7 @@ flowchart LR
     argocd_appset --> Security
 ```
 
-**50 Argo CD applications.**
+**52 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -224,6 +226,8 @@ flowchart LR
 | Apps | [`actualbudget`](talos/actualbudget) | actualbudget |  |
 | Apps | [`cameras`](talos/cameras) | cameras | Cameras (phase 0: host-network nmap discovery job, results in VictoriaLogs) |
 | Apps | [`cms`](talos/cms) | cms | Payload CMS for the family business sites (static on Cloudflare Pages), admin at cms.asandov.com |
+| Apps | [`frigate`](talos/frigate) | frigate | Frigate NVR for the home cameras, LAN-only at frigate.local.asandov.com |
+| Apps | [`home-assistant`](talos/home-assistant) | home-assistant | Home Assistant OS as a KubeVirt VM (replaces the ODROID-C4) |
 | Apps | [`immich`](talos/immich) | immich | Immich (photo management) |
 | Apps | [`looped-transcribe`](talos/looped-transcribe) | looped-transcribe | Speech-to-text for Looped audio: Garage queue -> faster-whisper on a time-sliced GPU slot -> VictoriaLogs |
 | Apps | [`mealie`](talos/mealie) | mealie | Mealie (recipes), public at mealie.asandov.com via the Cloudflare tunnel |

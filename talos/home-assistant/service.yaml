@@ -1,0 +1,16 @@
+# Same port the ODROID served; IP pinned so phones and satellites keep one address.
+apiVersion: v1
+kind: Service
+metadata:
+  name: haos
+  annotations:
+    metallb.io/loadBalancerIPs: 10.0.7.205
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: haos
+  ports:
+    - name: http
+      port: 8123
+      targetPort: 8123
+      protocol: TCP
