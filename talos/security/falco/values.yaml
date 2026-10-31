@@ -32,9 +32,13 @@ nodeSelector:
 customRules:
   # Loaded from /etc/falco/rules.d after the stock rules, so overrides here win.
   homelab-exceptions.yaml: |-
-    # containerd runs Cilium's CNI plugin (installed onto the host by the agent) for every pod sandbox; container.id=runtime is containerd itself.
+    # Cilium's CNI plugin (installed onto the host by the agent) runs for every pod sandbox: from containerd itself (container.id=runtime),
+    # or from the thick multus daemon, which delegates through its /hostroot chroot.
     - macro: known_drop_and_execute_activities
-      condition: (container.id = runtime and proc.pname = containerd and proc.exepath startswith /opt/cni/bin/)
+      condition: >-
+        (container.id = runtime and proc.pname = containerd and proc.exepath startswith /opt/cni/bin/)
+        or (container.image.repository = ghcr.io/k8snetworkplumbingwg/multus-cni and proc.pname = multus-daemon
+            and proc.exepath startswith /hostroot/opt/cni/bin/)
       override:
         condition: replace
     # nvidia-container-toolkit's runtime hook runs ldconfig from a memfd while starting every GPU container.
