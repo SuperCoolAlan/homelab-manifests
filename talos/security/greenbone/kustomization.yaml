@@ -9,6 +9,7 @@ resources:
   - exporter-service.yaml
   - servicemonitor.yaml
   - vmrule.yaml
+  - feed-pvc.yaml
 
 generators:
   - secrets-generator.yaml
@@ -40,7 +41,8 @@ patches:
       metadata:
         name: openvas-ingress-cert-fp-pki
   - path: exporter-patch.yaml
-  # Init containers pull ~4 GiB of feed images one after another; the chart's 600s marks every restart Degraded.
+  - path: feed-sync-patch.yaml
+  # The first feed sync takes well over the chart's 600s, which would mark the rollout Degraded.
   - target:
       kind: Deployment
       name: openvas

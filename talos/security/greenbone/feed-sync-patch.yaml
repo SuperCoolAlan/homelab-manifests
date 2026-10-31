@@ -1,0 +1,56 @@
+# Feed via greenbone-feed-sync (rsync) instead of the chart's feed images: a single 1.5 GiB layer from
+# Greenbone's registry never survives Starlink, while rsync resumes and only fetches what changed.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openvas
+  namespace: greenbone
+spec:
+  template:
+    spec:
+      initContainers:
+        - {name: notus-data, $patch: delete}
+        - {name: scap-data, $patch: delete}
+        - {name: cert-bund-data, $patch: delete}
+        - {name: dfn-cert-data, $patch: delete}
+        - {name: data-objects, $patch: delete}
+        - {name: report-formats, $patch: delete}
+        - {name: vulnerability-tests, $patch: delete}
+        - name: feed-sync
+          image: registry.community.greenbone.net/community/greenbone-feed-sync:stable@sha256:8dca5e614bba125ecf00df10af8b1ebdd89ea7a0b5e65da1a538e878090134bb
+          imagePullPolicy: IfNotPresent
+          # Mount points are created root-owned; the entrypoint drops to gvm (1001) before rsync writes into them.
+          command:
+            - /bin/sh
+            - -c
+            - |
+              chown -R 1001:1001 /var/lib/openvas/plugins /var/lib/notus /var/lib/gvm/scap-data /var/lib/gvm/cert-data /var/lib/gvm/data-objects/gvmd
+              exec /usr/local/bin/entrypoint greenbone-feed-sync --feed-release 24.10
+          env:
+            # A stalled transfer exits instead of hanging; kubelet reruns the container and rsync --partial resumes.
+            - name: GREENBONE_FEED_SYNC_RSYNC_TIMEOUT
+              value: "300"
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+          volumeMounts:
+            - {name: feed-storage, mountPath: /var/lib/openvas/plugins, subPath: vt-data}
+            - {name: feed-storage, mountPath: /var/lib/notus, subPath: notus-data}
+            - {name: gvmd-storage, mountPath: /var/lib/gvm/scap-data, subPath: scap-data}
+            - {name: gvmd-storage, mountPath: /var/lib/gvm/cert-data, subPath: cert-data}
+            - {name: gvmd-storage, mountPath: /var/lib/gvm/data-objects/gvmd, subPath: data-objects/gvmd}
+      containers:
+        - name: gvmd
+          volumeMounts:
+            - {name: feed-storage, mountPath: /var/lib/openvas/plugins, subPath: vt-data}
+        - name: openvasd
+          volumeMounts:
+            - {name: feed-storage, mountPath: /var/lib/openvas/plugins, subPath: vt-data}
+            - {name: feed-storage, mountPath: /var/lib/notus, subPath: notus-data}
+        - name: ospd-openvas
+          volumeMounts:
+            - {name: feed-storage, mountPath: /var/lib/openvas/plugins, subPath: vt-data}
+            - {name: feed-storage, mountPath: /var/lib/notus, subPath: notus-data}
+      volumes:
+        - name: feed-storage
+          persistentVolumeClaim:
+            claimName: feed-pvc

@@ -20,7 +20,7 @@ images:
     repository: ghcr.io/greenbone/gvm-tools
     tag: "26.1.2"
 
-# Feed images only publish floating tags; Always is what makes the weekly restart pull a new feed.
+# Only gpg-data still comes from a feed image; feed-sync-patch.yaml replaces the rest with rsync.
 feedImages:
   registry: registry.community.greenbone.net/community
   tag: latest

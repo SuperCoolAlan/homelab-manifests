@@ -1,0 +1,12 @@
+# Keeps VT and Notus data across restarts so each sync is incremental; the chart holds them in an emptyDir.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: feed-pvc
+  namespace: greenbone
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 10Gi
