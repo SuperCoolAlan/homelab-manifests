@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: greenbone
+
+resources:
+  - namespace.yaml
+  - ingress.yaml
+  - exporter-service.yaml
+  - servicemonitor.yaml
+  - vmrule.yaml
+
+generators:
+  - secrets-generator.yaml
+
+# chart/openvas is fpm-git/Greenbone-Community-Edition-Helm 1.2.1 @ 53a43a8, unmodified; it has no helm repo, so Renovate can't bump it.
+helmGlobals:
+  chartHome: chart
+helmCharts:
+  - name: openvas
+    releaseName: openvas
+    namespace: greenbone
+    valuesFile: values.yaml
+
+configMapGenerator:
+  - name: greenbone-exporter
+    files:
+      - exporter/exporter.py
+      - exporter/scan.json
+
+patches:
+  # Always rendered and hardwired to a step-ca issuer group this cluster doesn't have.
+  - target:
+      kind: Certificate
+      name: openvas-ingress-cert-fp-pki
+    patch: |
+      $patch: delete
+      apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: openvas-ingress-cert-fp-pki
+  - path: exporter-patch.yaml

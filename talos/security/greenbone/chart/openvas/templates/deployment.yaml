@@ -1,0 +1,390 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "openvas.fullname" . }}
+  namespace: {{ template "openvas.namespace" . }}
+  labels:
+    {{- include "openvas.labels" . | nindent 4 }}
+  {{- with .Values.podAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      {{- include "openvas.selectorLabels" . | nindent 6 }}
+  minReadySeconds: 10
+  progressDeadlineSeconds: 600
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "openvas.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "openvas.serviceAccountName" . }}
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{ if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: pg-init
+          {{- include "openvas.image" (dict "root" . "image" .Values.psgvm.image) | nindent 10 }}
+          command: ["/bin/sh", "-c", "/init-scripts/init-postgres.sh"]
+          env:
+            - name: POSTGRES_VERSION
+              value: "{{ .Values.psgvm.POSTGRES_VERSION }}"
+          volumeMounts:
+            - name: psql-storage
+              mountPath: /mnt/postgresql
+            - name: init-scripts
+              mountPath: /init-scripts
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        - name: notus-data
+          {{- include "openvas.feedImage" (dict "root" . "name" "notus-data") | nindent 10 }}
+          volumeMounts:
+            - name: shared-storage
+              mountPath: /mnt
+              subPath: notus-data
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        - name: scap-data
+          {{- include "openvas.feedImage" (dict "root" . "name" "scap-data") | nindent 10 }}
+          volumeMounts:
+            - name: gvmd-storage
+              mountPath: /mnt
+              subPath: scap-data
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        - name: cert-bund-data
+          {{- include "openvas.feedImage" (dict "root" . "name" "cert-bund-data") | nindent 10 }}
+          volumeMounts:
+            - name: gvmd-storage
+              mountPath: /mnt
+              subPath: cert-data
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        - name: dfn-cert-data
+          {{- include "openvas.feedImage" (dict "root" . "name" "dfn-cert-data") | nindent 10 }}
+          volumeMounts:
+            - name: gvmd-storage
+              mountPath: /mnt
+              subPath: cert-data
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        - name: data-objects
+          {{- include "openvas.feedImage" (dict "root" . "name" "data-objects") | nindent 10 }}
+          env:
+            - name: FEED_RELEASE
+              value: "{{ .Values.FEED_RELEASE }}"
+          volumeMounts:
+            - name: gvmd-storage
+              mountPath: /mnt
+              subPath: data-objects/gvmd
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        - name: report-formats
+          {{- include "openvas.feedImage" (dict "root" . "name" "report-formats") | nindent 10 }}
+          env:
+            - name: FEED_RELEASE
+              value: "{{ .Values.FEED_RELEASE }}"
+          volumeMounts:
+            - name: gvmd-storage
+              mountPath: /mnt
+              subPath: data-objects/gvmd
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        - name: gpg-data
+          {{- include "openvas.feedImage" (dict "root" . "name" "gpg-data") | nindent 10 }}
+          volumeMounts:
+            - name: openvas-storage
+              mountPath: /mnt
+              # becomes /etc/openvas/gnupg (GNUPGHOME) in openvasd/ospd-openvas
+              subPath: gnupg
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        - name: vulnerability-tests
+          {{- include "openvas.feedImage" (dict "root" . "name" "vulnerability-tests") | nindent 10 }}
+          env:
+            - name: FEED_RELEASE
+              value: "{{ .Values.FEED_RELEASE }}"
+          volumeMounts:
+            - name: shared-storage
+              mountPath: /mnt
+              subPath: vt-data
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        - name: configure-openvas
+          {{- include "openvas.image" (dict "root" . "image" .Values.images.openvasScanner) | nindent 10 }}
+          volumeMounts:
+            - name: openvas-storage
+              mountPath: /mnt
+            - name: shared-storage
+              mountPath: /var/log/openvas
+              subPath: openvas-log-data
+          {{- $notusPort := splitList ":" .Values.openvasd.listening | last }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              cat > /mnt/openvas.conf <<'EOF'
+              table_driven_lsc = yes
+              {{- /* openvasd_server, not notus_url: ospd-openvas only disables its MQTT client when this key is set. openvas appends /notus/. */}}
+              openvasd_server = http://127.0.0.1:{{ $notusPort }}
+              {{- range $key, $value := .Values.openvasConf }}
+              {{ $key }} = {{ $value }}
+              {{- end }}
+              EOF
+              sed "s/127/{{ .Values.logLevel }}/" /etc/openvas/openvas_log.conf | sed 's/gvm/openvas/' > /mnt/openvas_log.conf
+              chmod 644 /mnt/openvas.conf /mnt/openvas_log.conf
+              touch /var/log/openvas/openvas.log
+              chmod 666 /var/log/openvas/openvas.log
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        {{- if .Values.nativeSidecars }}
+        {{- include "openvas.redisContainer" (dict "root" . "sidecar" true) | nindent 8 }}
+        {{- include "openvas.pgContainer" (dict "root" . "sidecar" true) | nindent 8 }}
+        {{- end }}
+
+      containers:
+        {{- if not .Values.nativeSidecars }}
+        {{- include "openvas.redisContainer" (dict "root" . "sidecar" false) | nindent 8 }}
+        {{- include "openvas.pgContainer" (dict "root" . "sidecar" false) | nindent 8 }}
+        {{- end }}
+
+        - name: gvmd
+          {{- include "openvas.image" (dict "root" . "image" .Values.images.gvmd) | nindent 10 }}
+          volumeMounts:
+            - name: gvmd-storage
+              mountPath: /var/lib/gvm
+            - name: shared-storage
+              mountPath: /var/lib/openvas/plugins
+              subPath: vt-data
+            - name: psql-storage
+              mountPath: /var/lib/postgresql
+            - name: gvmd-socket
+              mountPath: /run/gvmd
+            - name: shared-storage
+              mountPath: /run/ospd
+              subPath: ospd-openvas-socket
+            - name: shared-storage
+              mountPath: /var/run/postgresql
+              subPath: psql-socket
+          {{- with .Values.gvmd }}
+          {{- if .existingSecret }}
+          envFrom:
+          - secretRef:
+              name: {{ .existingSecret }}
+              optional: false
+          {{- end }}
+
+          {{- if .env }}
+          env:
+            {{- range $key, $value := .env }}
+            {{- if $value }}
+            - name: "{{ $key }}"
+              value: |-
+                {{ $value }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+          {{- include "openvas.probes" (dict "root" . "name" "gvmd") | nindent 10 }}
+          {{- include "openvas.resources" (dict "root" . "name" "gvmd") | nindent 10 }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    set -eu
+                    if [ ! -s /run/gvmd/gvmd.pid ]; then
+                      echo "gvmd has no PID file; initialization has not completed"
+                      exit 0
+                    fi
+                    pid=$(cat /run/gvmd/gvmd.pid)
+                    case "$pid" in
+                      ''|*[!0-9]*|0|1)
+                        echo "Invalid gvmd PID: $pid" >&2
+                        exit 1
+                        ;;
+                    esac
+                    if kill -0 "$pid" 2>/dev/null; then
+                      if [ "$(cat "/proc/$pid/comm")" != gvmd ]; then
+                        echo "PID $pid does not belong to gvmd" >&2
+                        exit 1
+                      fi
+                      echo "Sending SIGTERM to gvmd PID $pid and waiting for shutdown"
+                      kill -TERM "$pid"
+                      while kill -0 "$pid" 2>/dev/null; do
+                        sleep 1
+                      done
+                    fi
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c", "chown -R gvmd:gvmd /run/gvmd; mkdir -p /var/lib/gvm/gvmd; chown -R gvmd:gvmd /var/lib/gvm"]
+
+        - name: gsa
+          {{- include "openvas.image" (dict "root" . "image" .Values.images.gsa) | nindent 10 }}
+          ports:
+            - containerPort: 9392
+              protocol: TCP
+          volumeMounts:
+            - name: gvmd-socket
+              mountPath: /run/gvmd
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+          {{- include "openvas.probes" (dict "root" . "name" "gsa") | nindent 10 }}
+          {{- include "openvas.resources" (dict "root" . "name" "gsa") | nindent 10 }}
+
+        - name: openvas
+          {{- include "openvas.image" (dict "root" . "image" .Values.images.openvasScanner) | nindent 10 }}
+          volumeMounts:
+            - name: openvas-storage
+              mountPath: /etc/openvas
+            - name: shared-storage
+              mountPath: /var/log/openvas
+              subPath: openvas-log-data
+          command: ["/bin/sh", "-c", "cat /etc/openvas/openvas.conf && tail -f /var/log/openvas/openvas.log"]
+          securityContext:
+            {{- include "openvas.logSecurityContext" . | nindent 12 }}
+          {{- include "openvas.resources" (dict "root" . "name" "openvas") | nindent 10 }}
+
+        - name: openvasd
+          {{- include "openvas.image" (dict "root" . "image" .Values.images.openvasScanner) | nindent 10 }}
+          env:
+            - name: OPENVASD_MODE
+              value: "service_notus"
+            - name: GNUPGHOME
+              value: "/etc/openvas/gnupg"
+            - name: LISTENING
+              value: {{ .Values.openvasd.listening | quote }}
+          volumeMounts:
+            - name: openvas-storage
+              mountPath: /etc/openvas
+            - name: shared-storage
+              mountPath: /var/log/openvas
+              subPath: openvas-log-data
+            - name: shared-storage
+              mountPath: /var/lib/notus
+              subPath: notus-data
+            - name: shared-storage
+              mountPath: /var/lib/openvas/plugins
+              subPath: vt-data
+          {{- include "openvas.resources" (dict "root" . "name" "openvasd") | nindent 10 }}
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+
+        - name: ospd-openvas
+          {{- include "openvas.image" (dict "root" . "image" .Values.ospd.image) | nindent 10 }}
+          securityContext:
+            {{- include "openvas.ospdSecurityContext" . | nindent 12 }}
+          env:
+            - name: GNUPGHOME
+              value: "/etc/openvas/gnupg"
+          command: ["ospd-openvas", "-f", "--config", "/etc/gvm/ospd-openvas.conf", "--notus-feed-dir", "/var/lib/notus/advisories", "-m", "666"]
+          volumeMounts:
+            - name: shared-storage
+              mountPath: /var/lib/openvas/plugins
+              subPath: vt-data
+            - name: shared-storage
+              mountPath: /var/lib/notus
+              subPath: notus-data
+            - name: shared-storage
+              mountPath: /run/ospd
+              subPath: ospd-openvas-socket
+            - name: redis-socket
+              mountPath: /run/redis
+            - name: openvas-storage
+              mountPath: /etc/openvas/
+            - name: shared-storage
+              mountPath: /var/log/openvas
+              subPath: openvas-log-data
+          {{- include "openvas.probes" (dict "root" . "name" "ospd-openvas") | nindent 10 }}
+          {{- with (.Values.ospdOpenvas.resources | default (get (default dict .Values.resources) "ospd-openvas")) }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+        {{- if .Values.gvmTools.enabled }}
+        - name: gvm-tools
+          {{- include "openvas.image" (dict "root" . "image" .Values.images.gvmTools) | nindent 10 }}
+          volumeMounts:
+            - name: gvmd-socket
+              mountPath: /run/gvmd
+            - name: shared-storage
+              mountPath: /run/ospd
+              subPath: ospd-openvas-socket
+          args:
+            - gosu gvm /bin/bash; while true; do sleep 600; done
+          command:
+            - sh
+            - '-c'
+          securityContext:
+            {{- include "openvas.containerSecurityContext" . | nindent 12 }}
+          {{- include "openvas.resources" (dict "root" . "name" "gvm-tools") | nindent 10 }}
+        {{- end }}
+
+      volumes:
+        - name: shared-storage
+          emptyDir: {}
+        - name: gvmd-storage
+          persistentVolumeClaim:
+            claimName: gvmd-pvc
+        - name: openvas-storage
+          persistentVolumeClaim:
+            claimName: openvas-pvc
+        - name: psql-storage
+          persistentVolumeClaim:
+            claimName: psql-pvc
+        - name: init-scripts
+          configMap:
+            name: init-scripts-config
+            defaultMode: 0755
+        - name: gvmd-socket
+          emptyDir: {}
+        - name: redis-socket
+          emptyDir: {}
+        - name: redis-data
+          emptyDir: {}
+        - name: redis-config
+          configMap:
+            name: {{ include "openvas.fullname" . }}-redis
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

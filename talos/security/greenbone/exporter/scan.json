@@ -1,0 +1,21 @@
+{
+  "scan_config": "Full and fast",
+  "port_list": "All IANA assigned TCP",
+  "scanner": "OpenVAS Default",
+  "alive_test": "ICMP & TCP-ACK Service Ping",
+  "preferences": {
+    "max_hosts": "4",
+    "max_checks": "3"
+  },
+  "schedule": {
+    "name": "weekly-saturday",
+    "dtstart": "20261031T060000Z",
+    "rrule": "FREQ=WEEKLY;BYDAY=SA",
+    "timezone": "America/Chicago"
+  },
+  "targets": [
+    {"name": "LAN", "hosts": ["10.0.1.0/24"]},
+    {"name": "IoT VLAN", "hosts": ["10.0.67.0/24"], "exclude_hosts": ["10.0.67.1"]},
+    {"name": "LoadBalancer VIPs", "hosts": ["10.0.7.200-10.0.7.210"]}
+  ]
+}

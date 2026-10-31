@@ -1,0 +1,259 @@
+# Default values for openvas.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+hostname: openvas.example.com
+
+# Default pull policy. "Always" with the "stable" tags below means every pod
+# restart (e.g. the feedUpdate CronJob) also picks up new scanner releases.
+imagePullPolicy: Always
+
+# Greenbone application images. Each accepts repository, tag and pullPolicy.
+# Pin tag to a version (e.g. gvmd 26.42.0) to control upgrades.
+images:
+  gvmd:
+    repository: ghcr.io/greenbone/gvmd
+    tag: stable
+  gsa:
+    repository: ghcr.io/greenbone/gsa
+    tag: stable
+  # Used by openvasd, configure-openvas and the openvas log container
+  openvasScanner:
+    repository: ghcr.io/greenbone/openvas-scanner
+    tag: stable
+  gvmTools:
+    repository: ghcr.io/greenbone/gvm-tools
+    tag: stable
+
+# Feed data images (copied in by init containers on every pod start).
+# These are only published to the Greenbone community registry.
+feedImages:
+  registry: registry.community.greenbone.net/community
+  tag: latest
+
+psgvm:
+  POSTGRES_VERSION: "17"
+  # Pin a version: the PostgreSQL major in the image must match the data dir.
+  image:
+    repository: ghcr.io/greenbone/pg-gvm
+    tag: 22.6.18
+  persistence:
+    enabled: true
+    storageClass: "default"
+    accessMode: ReadWriteOnce
+    size: 50Gi
+
+# ospd-openvas is not published to ghcr.io
+ospd:
+  image:
+    repository: registry.community.greenbone.net/community/ospd-openvas
+    tag: stable
+
+# In-pod Redis used by ospd-openvas/openvas for the scan knowledge base.
+# It only listens on a unix socket shared with ospd-openvas.
+redis:
+  image:
+    repository: registry.community.greenbone.net/community/redis-server
+    tag: latest
+  # Alternative: the official image, which gets Redis security fixes sooner.
+  # "8-trixie" follows Redis 8.x releases without jumping to a new major.
+  #   image:
+  #     repository: docker.io/library/redis
+  #     tag: 8-trixie
+  # Merged over containerSecurityContext. Redis needs no root or capabilities.
+  securityContext:
+    runAsUser: 999
+    runAsGroup: 999
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
+  # Extra redis.conf directives, e.g. {maxmemory: 2gb}
+  extraConfig: {}
+
+# Run pg-gvm and redis-server as native sidecars (Kubernetes >= 1.29) so
+# they start before and stop after gvmd/ospd-openvas. Without this,
+# PostgreSQL can shut down underneath gvmd, which aborts and marks running
+# tasks as Interrupted.
+nativeSidecars: true
+
+# Time for gvmd/ospd-openvas, then PostgreSQL, to shut down cleanly.
+terminationGracePeriodSeconds: 120
+
+#  4  Errors.
+#  8  Critical situation.
+# 16  Warnings.
+# 32  Messages.
+# 64  Information.
+#128  Debug.  (Lots of output.)
+logLevel: 16
+
+FEED_RELEASE: "24.10"
+
+ospdOpenvas:
+  resources:
+    requests:
+      cpu: '3'
+      memory: 250Mi
+  # Raw socket access (NET_RAW) and NET_ADMIN are needed for ICMP/ARP host
+  # discovery, SYN port scans and several NASL checks. Removing them reduces
+  # scan coverage.
+  capabilities:
+    add: ["NET_ADMIN", "NET_RAW"]
+  # Upstream docker compose runs ospd-openvas with seccomp=unconfined. Set to
+  # RuntimeDefault to harden further (test scans afterwards).
+  seccompProfile:
+    type: Unconfined
+
+# Extra settings appended to /etc/openvas/openvas.conf, e.g.
+#   openvasConf:
+#     plugins_timeout: 600
+# table_driven_lsc and openvasd_server are always set by the chart.
+openvasConf: {}
+
+openvasd:
+  # openvasd (notus service) is only used by the scanner inside the pod, so it
+  # listens on localhost and is not exposed via the Service. It has no auth.
+  listening: "127.0.0.1:81"
+
+# Idle debug container with gvm-tools (gvm-cli/gvm-pyshell) and the gvmd socket.
+gvmTools:
+  enabled: false
+
+# Feed data (VTs, Notus, SCAP, CERT, data objects) is copied in by init
+# containers on pod start, so a pod restart is what pulls a new feed.
+# This CronJob does a "rollout restart" of the deployment on a schedule.
+# Running scans are interrupted, so schedule it when no scans run.
+feedUpdate:
+  enabled: false
+  schedule: "0 6 * * 6"
+  timeZone: "Etc/UTC"
+  image:
+    repository: docker.io/curlimages/curl
+    tag: latest
+
+# Resources per container name, e.g.
+#   resources:
+#     gvmd:
+#       requests: {cpu: 500m, memory: 1Gi}
+# ospd-openvas uses ospdOpenvas.resources.
+resources: {}
+
+gvmd:
+# https://github.com/registry.community.greenbone.net/community/docs/blob/main/src/22.4/container/workflows.md?plain=1#L336
+#  env:
+#    MTA_HOST: "smtp.gmail.com"
+#    MTA_PORT: 587
+#    MTA_TLS: "on"
+#    MTA_STARTTLS: "on"
+#    MTA_AUTH: "on"
+#    MTA_USER: "<username>"
+#    MTA_FROM: "<username>@gmail.com"
+#  existingSecret: "gvmd-secrets"
+
+cert:
+  issuerRef:
+    group: certmanager.step.sm
+    kind: ClusterIssuer
+    name: default
+  duration: 730h
+  renewBefore: 72h
+
+ingress:
+  enabled: true
+  annotations:
+    "kubernetes.io/ingress.class": "traefik"
+    "traefik.ingress.kubernetes.io/router.entrypoints": "websecure"
+    "traefik.ingress.kubernetes.io/router.tls": "true"
+  hosts:
+    - host: openvas.example.com
+  tls:
+    - secretName: openvas-ingress-tls-pki
+      hosts:
+        - openvas.example.com
+
+fullnameOverride: ""
+nameOverride: ""
+namespaceOverride: ""
+
+persistence:
+  enabled: true
+  storageClass: "default"
+  accessMode: ReadWriteOnce
+  size: 25Gi
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "openvas-serviceaccount"
+  # The pod never mounts the token (automountServiceAccountToken: false); it
+  # does not talk to the Kubernetes API.
+
+podAnnotations:
+  reloader.stakater.com/auto: "true"
+
+# The Greenbone images start as root and drop privileges themselves (gosu),
+# and postStart hooks chown data dirs, so the pod runs as uid 0.
+# Do not set fsGroup: it recursively changes group permissions on the
+# PostgreSQL data dir, which PostgreSQL refuses to start with.
+podSecurityContext:
+  runAsUser: 0
+  seccompProfile:
+    type: RuntimeDefault
+
+# Applied to every container (ospd-openvas gets its capabilities and
+# seccomp profile from ospdOpenvas.*).
+containerSecurityContext:
+  privileged: false
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["NET_RAW"]
+
+service:
+  type: ClusterIP
+
+
+
+# Probes per container name. There are no liveness probes on purpose: a
+# restart kills running scans. startupProbes on the sidecars hold back
+# gvmd/ospd-openvas until PostgreSQL and Redis accept connections.
+probes:
+  pg-gvm:
+    startupProbe:
+      exec:
+        # "started" is written after the init phase, before the final start
+        command: ["/bin/sh", "-c", "test -f /var/lib/postgresql/started && pg_isready -q -h /var/run/postgresql -p 5432 -U \"${POSTGRES_USER:-gvmd}\" -d \"${POSTGRES_DB:-gvmd}\""]
+      periodSeconds: 5
+      timeoutSeconds: 5
+      # up to 1h for crash recovery on a large database
+      failureThreshold: 720
+  redis-server:
+    startupProbe:
+      exec:
+        command: ["/bin/sh", "-c", "redis-cli -s /run/redis/redis.sock ping | grep -q PONG"]
+      periodSeconds: 2
+      timeoutSeconds: 5
+      failureThreshold: 150
+  gvmd:
+    readinessProbe:
+      exec:
+        command: ["test", "-S", "/run/gvmd/gvmd.sock"]
+      periodSeconds: 10
+      failureThreshold: 3
+  gsa:
+    readinessProbe:
+      tcpSocket:
+        port: 9392
+      periodSeconds: 10
+      failureThreshold: 3
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+topologySpreadConstraints: []

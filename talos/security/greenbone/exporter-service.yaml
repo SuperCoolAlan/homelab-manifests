@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenbone-exporter
+  labels:
+    app.kubernetes.io/name: greenbone-exporter
+spec:
+  selector:
+    app.kubernetes.io/name: openvas
+    app.kubernetes.io/component: scanner
+  ports:
+    - name: metrics
+      port: 9966
+      targetPort: metrics

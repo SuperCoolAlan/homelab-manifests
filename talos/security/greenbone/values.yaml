@@ -1,0 +1,92 @@
+# Overrides for the vendored chart in chart/openvas.
+hostname: greenbone.local.asandov.com
+
+imagePullPolicy: IfNotPresent
+
+images:
+  gvmd:
+    repository: ghcr.io/greenbone/gvmd
+    # renovate: datasource=docker depName=ghcr.io/greenbone/gvmd
+    tag: "26.43.0"
+  gsa:
+    repository: ghcr.io/greenbone/gsa
+    # renovate: datasource=docker depName=ghcr.io/greenbone/gsa
+    tag: "28.7.0"
+  openvasScanner:
+    repository: ghcr.io/greenbone/openvas-scanner
+    # renovate: datasource=docker depName=ghcr.io/greenbone/openvas-scanner
+    tag: "23.52.8"
+  gvmTools:
+    repository: ghcr.io/greenbone/gvm-tools
+    tag: "26.1.2"
+
+# Feed images only publish floating tags; Always is what makes the weekly restart pull a new feed.
+feedImages:
+  registry: registry.community.greenbone.net/community
+  tag: latest
+  pullPolicy: Always
+
+psgvm:
+  # Must match the PostgreSQL major inside the pg-gvm image, or the data dir won't open.
+  POSTGRES_VERSION: "17"
+  image:
+    repository: ghcr.io/greenbone/pg-gvm
+    tag: "22.6.18"
+  persistence:
+    storageClass: fast-array
+    size: 20Gi
+
+# ospd-openvas and redis-server only publish floating tags, so pin the digest.
+ospd:
+  image:
+    repository: registry.community.greenbone.net/community/ospd-openvas
+    tag: "stable@sha256:31a85272abc77521c98451ce6834ed7d2f887e98ff1b26ff3fd94f00d000b169"
+
+redis:
+  image:
+    repository: registry.community.greenbone.net/community/redis-server
+    tag: "latest@sha256:6da6a7c7221aa3ab231961fd6ca001d552b6a2c7727ac6201c6d8a360baa963a"
+
+ospdOpenvas:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+resources:
+  gvmd:
+    requests: {cpu: 200m, memory: 1Gi}
+  pg-gvm:
+    requests: {cpu: 100m, memory: 512Mi}
+  openvasd:
+    requests: {cpu: 50m, memory: 256Mi}
+  gsa:
+    requests: {cpu: 20m, memory: 64Mi}
+  redis-server:
+    requests: {cpu: 50m, memory: 256Mi}
+
+# Thursday 03:00 Chicago: well clear of the Saturday scans, since the restart kills running ones.
+feedUpdate:
+  enabled: true
+  schedule: "0 3 * * 4"
+  timeZone: America/Chicago
+  image:
+    repository: docker.io/curlimages/curl
+    tag: "8.23.0"
+
+# Holds PASSWORD for start-gvmd's first-run admin; it is ignored once the admin user exists.
+gvmd:
+  existingSecret: greenbone-admin
+
+# Ingress is ours (ingress.yaml): the chart's has no namespace and no Authentik middleware.
+ingress:
+  enabled: false
+
+persistence:
+  storageClass: fast-array
+  size: 10Gi
+
+podAnnotations: {}
+
+nodeSelector:
+  kubernetes.io/hostname: talos-ramhaus

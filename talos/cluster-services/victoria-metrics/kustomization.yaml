@@ -454,6 +454,18 @@ configMapGenerator:
     files:
       - dashboards/Security/trivy-operator.json
 
+  # Greenbone network scans; metrics come from the exporter sidecar in talos/security/greenbone.
+  - name: dashboard-greenbone
+    namespace: monitoring
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Security"
+    files:
+      - dashboards/Security/greenbone.json
+
   # Storage (added 2026-08-10: every query validated against live vmsingle data
   # before commit - node_zfs_zpool_state, node_disk_*, node_filesystem_*{fstype=zfs},
   # node_hwmon_temp_celsius and node_zfs_arc_* all present and returning series)

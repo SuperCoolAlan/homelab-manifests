@@ -1,0 +1,66 @@
+# Routed to the homelab Discord channel by `alertgroup: homelab`.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: greenbone
+spec:
+  groups:
+    - name: greenbone.alerts
+      rules:
+        # Fires once per finding that wasn't there 2 days ago, so a weekly scan pings only what changed.
+        - alert: GreenboneNewFinding
+          expr: |
+            max by (task, host, hostname, port, name, cve) (greenbone_result_severity >= 7)
+              unless max by (task, host, hostname, port, name, cve) (greenbone_result_severity offset 2d)
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: "New {{ if ge $value 9.0 }}critical{{ else }}high{{ end }} finding on {{ $labels.host }}{{ with $labels.hostname }} ({{ . }}){{ end }}: {{ $labels.name }}"
+            description: "CVSS {{ $value }} on {{ $labels.port }}{{ with $labels.cve }} ({{ . }}){{ end }}. Details at https://greenbone.local.asandov.com"
+        # Repeats on Alertmanager's 12h interval until every critical is fixed or overridden in GSA.
+        - alert: GreenboneCriticalFindingsOpen
+          expr: count(greenbone_result_severity >= 9) > 0
+          for: 1h
+          labels:
+            severity: critical
+            alertgroup: homelab
+          annotations:
+            summary: "{{ $value }} critical (CVSS >= 9) findings still open on the network"
+            description: "Hosts: {{ range query \"count by (host, hostname) (greenbone_result_severity >= 9)\" }}{{ .Labels.host }}{{ with .Labels.hostname }} ({{ . }}){{ end }} {{ end }}"
+        - alert: GreenboneScanStale
+          expr: time() - max by (task) (greenbone_task_last_scan_end_timestamp_seconds) > 8 * 86400
+          for: 1h
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: "Greenbone task {{ $labels.task }} hasn't finished a scan in {{ $value | humanizeDuration }}"
+            description: The weekly scan didn't complete. Check the task in GSA and the ospd-openvas logs.
+        - alert: GreenboneScanInterrupted
+          expr: max by (task, status) (greenbone_task_status{status=~"Interrupted|Stopped"}) == 1
+          for: 1h
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: "Greenbone task {{ $labels.task }} is {{ $labels.status }}"
+            description: Usually a pod restart mid-scan (the Thursday feed update or a node reboot). The next scheduled run resets it.
+        - alert: GreenboneFeedStale
+          expr: time() - min by (type) (greenbone_feed_version_timestamp_seconds) > 14 * 86400
+          for: 6h
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: "Greenbone {{ $labels.type }} feed is {{ $value | humanizeDuration }} old"
+            description: The Thursday feed-update CronJob restarts the pod to pull new feed images. Check its last Job in the greenbone namespace.
+        - alert: GreenboneExporterDown
+          expr: max(greenbone_up) == 0 or absent(greenbone_up)
+          for: 30m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: The Greenbone exporter can't reach gvmd
+            description: "Findings metrics are frozen at the last good read. Check: kubectl -n greenbone logs deploy/openvas -c exporter"

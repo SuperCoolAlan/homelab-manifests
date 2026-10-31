@@ -1,0 +1,20 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: openvas-ingress-cert-fp-pki
+  namespace: {{ template "openvas.namespace" . }}
+spec:
+  # The secret name to store the signed certificate
+  secretName: openvas-ingress-tls-fp-pki
+  # Common Name
+  commonName: {{ .Values.hostname }}
+  # DNS SAN
+  dnsNames:
+    - {{ .Values.hostname }}
+  duration: {{ .Values.cert.duration }}
+  renewBefore: {{ .Values.cert.renewBefore }}
+  issuerRef:
+    group: certmanager.step.sm
+    kind: {{ .Values.cert.issuerRef.kind }}
+    name: {{ .Values.cert.issuerRef.name }}
