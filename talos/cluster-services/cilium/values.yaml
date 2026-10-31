@@ -5,6 +5,9 @@ ipam:
 
 # kube-proxy (nftables mode) still owns Services; replacing it is a separate change.
 kubeProxyReplacement: false
+# Multus writes its own CNI config beside Cilium's; exclusive mode deletes it.
+cni:
+  exclusive: false
 
 # KubePrism, so the agent reaches the apiserver without depending on kube-proxy or the pod network.
 k8sServiceHost: localhost

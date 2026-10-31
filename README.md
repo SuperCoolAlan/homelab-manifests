@@ -124,6 +124,7 @@ flowchart LR
         app_kubevirt["kubevirt"]
         app_kubevirt_manager["kubevirt-manager"]
         app_metallb["metallb"]
+        app_multus["multus"]
         app_nvidia_device_plugin["nvidia-device-plugin"]
         app_openebs_zfs_localpv["openebs-zfs-localpv"]
         app_traefik["traefik"]
@@ -192,7 +193,7 @@ flowchart LR
     argocd_appset --> Security
 ```
 
-**52 Argo CD applications.**
+**53 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -211,6 +212,7 @@ flowchart LR
 | Cluster services | [`kubevirt`](talos/cluster-services/kubevirt) | — |  |
 | Cluster services | [`kubevirt-manager`](talos/cluster-services/kubevirt-manager) | kubevirt-manager |  |
 | Cluster services | [`metallb`](talos/cluster-services/metallb) | metallb-system |  |
+| Cluster services | [`multus`](talos/cluster-services/multus) | — |  |
 | Cluster services | [`nvidia-device-plugin`](talos/cluster-services/nvidia-device-plugin) | nvidia-device-plugin |  |
 | Cluster services | [`openebs-zfs-localpv`](talos/cluster-services/openebs-zfs-localpv) | openebs-zfs |  |
 | Cluster services | [`traefik`](talos/cluster-services/traefik) | — |  |

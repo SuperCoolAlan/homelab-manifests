@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Upstream deployments/multus-daemonset-thick.yml at v4.3.1, vendored because remote GitHub bases crawl over Starlink.
+resources:
+  - multus-daemonset-thick.yaml
+
+# Upstream ships the floating snapshot-thick tag even on release tags.
+images:
+  - name: ghcr.io/k8snetworkplumbingwg/multus-cni
+    newTag: v4.3.1-thick@sha256:a357a79359b80ddd5f4699117946cacf3b54f5baecf7944535594863e875fc25
+
+patches:
+  # Only ramhaus hosts VMs with secondary NICs; blackbox is RAM-starved.
+  - target:
+      kind: DaemonSet
+      name: kube-multus-ds
+    patch: |-
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          kubernetes.io/hostname: talos-ramhaus
+      # 50Mi OOMs per the Talos Multus guide
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 150Mi
