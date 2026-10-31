@@ -226,7 +226,7 @@ flowchart LR
 | Media | [`qbittorrent`](talos/qbittorrent) | qbittorrent |  |
 | Media | [`tracearr`](talos/tracearr) | tracearr |  |
 | Apps | [`actualbudget`](talos/actualbudget) | actualbudget |  |
-| Apps | [`cameras`](talos/cameras) | cameras | Cameras (phase 0: host-network nmap discovery job, results in VictoriaLogs) |
+| Apps | [`cameras`](talos/cameras) | cameras | Cameras: Frigate NVR for the Reolink, plus the host-network nmap discovery job |
 | Apps | [`cms`](talos/cms) | cms | Payload CMS for the family business sites (static on Cloudflare Pages), admin at cms.asandov.com |
 | Apps | [`frigate`](talos/frigate) | frigate | Frigate NVR for the home cameras, LAN-only at frigate.local.asandov.com |
 | Apps | [`home-assistant`](talos/home-assistant) | home-assistant | Home Assistant OS as a KubeVirt VM (replaces the ODROID-C4) |

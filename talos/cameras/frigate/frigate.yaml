@@ -1,0 +1,218 @@
+# Config DB, model cache and the seeded config.yml. fast-array: SQLite wants the
+# mirror pool, same reasoning as mealie.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-config
+  namespace: cameras
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Recordings on the 6 TB media mirror. Same host path as the media library
+# PVs (one local PV per consuming namespace; see talos/jellyfin/media-pv.yaml),
+# but the deployment mounts only the frigate/ subPath, which kubelet creates on
+# first mount. Frigate never sees, or prunes, anything outside it.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: cameras-media-local
+spec:
+  capacity:
+    storage: 5Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: media-local
+  local:
+    path: /var/mnt/media
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - talos-ramhaus
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-media
+  namespace: cameras
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: media-local
+  volumeName: cameras-media-local
+  resources:
+    requests:
+      storage: 5Ti
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frigate
+  namespace: cameras
+  labels:
+    app.kubernetes.io/name: frigate
+spec:
+  replicas: 1
+  # RWO config PVC plus a SQLite DB: never two at once.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frigate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: frigate
+    spec:
+      # The recordings PV and the camera's L2 segment are both on ramhaus.
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      enableServiceLinks: false
+      initContainers:
+        # Git is the source of truth for config.yml; see frigate/config.yml.
+        # A copy, not a subPath mount: Frigate migrates and rewrites the file
+        # on upgrade and needs it writable.
+        - name: seed-config
+          # renovate: datasource=docker depName=busybox
+          image: busybox:1.38.0@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e
+          command: ["/bin/sh", "-c", "cp /seed/config.yml /config/config.yml && echo seeded config.yml"]
+          resources:
+            requests:
+              cpu: 1m
+              memory: 4Mi
+            limits:
+              memory: 16Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: seed
+              mountPath: /seed
+              readOnly: true
+      containers:
+        - name: frigate
+          # renovate: datasource=docker depName=ghcr.io/blakeblackshear/frigate
+          image: ghcr.io/blakeblackshear/frigate:0.18.2
+          env:
+            - name: TZ
+              value: America/Chicago
+          envFrom:
+            # FRIGATE_REOLINK_USER / FRIGATE_REOLINK_PASSWORD
+            - secretRef:
+                name: frigate-reolink
+          ports:
+            - name: http
+              containerPort: 8971
+            - name: internal
+              containerPort: 5000
+            - name: rtsp
+              containerPort: 8554
+          resources:
+            requests:
+              cpu: "1"
+              memory: 1Gi
+            limits:
+              memory: 4Gi
+          # First start compiles the OpenVINO model and builds the DB.
+          startupProbe:
+            httpGet:
+              path: /api/version
+              port: internal
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /api/version
+              port: internal
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media/frigate
+              subPath: frigate
+            - name: shm
+              mountPath: /dev/shm
+            # Recording segments are staged here before being moved to /media.
+            - name: cache
+              mountPath: /tmp/cache
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: frigate-config
+        - name: seed
+          configMap:
+            name: frigate-seed
+        - name: media
+          persistentVolumeClaim:
+            claimName: frigate-media
+        # Frigate's frame buffers. One camera needs well under 256Mi.
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+        - name: cache
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frigate
+  namespace: cameras
+  labels:
+    app.kubernetes.io/name: frigate
+spec:
+  selector:
+    app.kubernetes.io/name: frigate
+  ports:
+    - name: http
+      port: 8971
+      targetPort: http
+    # Unauthenticated API. Cluster-internal only; used for metrics scraping.
+    - name: internal
+      port: 5000
+      targetPort: internal
+    - name: rtsp
+      port: 8554
+      targetPort: rtsp
+---
+# LAN only. Frigate's own login guards it. Live view uses MSE over this
+# websocket, so WebRTC (8555) isn't exposed.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frigate
+  namespace: cameras
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    external-dns.alpha.kubernetes.io/target: 10.0.7.200
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: frigate.local.asandov.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frigate
+                port:
+                  name: http
+  tls:
+    - hosts:
+        - frigate.local.asandov.com
+      secretName: frigate-local-tls

@@ -1,7 +1,7 @@
 # One-shot LAN sweep to find the camera(s). PostSync hook, same pattern as
-# media-v2's arr-apikey-bootstrap: it re-runs whenever the app syncs with a
-# changed spec (e.g. discover.sh edited -> new ConfigMap hash), and the
-# previous run is kept until then so its logs stay readable.
+# media-v2's arr-apikey-bootstrap: it re-runs on every sync of the cameras app
+# (any commit under talos/cameras), and the previous run is kept until then so
+# its logs stay readable. Cheap: ~1 minute of nmap.
 #
 # Read the results in VictoriaLogs:
 #   kubernetes.pod_namespace:=cameras _msg:=camera-candidate
