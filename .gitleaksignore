@@ -1,0 +1,29 @@
+# Reviewed false positives; anything not listed here is a real finding.
+# SOPS GPG key fingerprint (public)
+713f352cc748c8f94c3f680be6aa85c8fe75e699:CLAUDE.md:generic-api-key:8
+# SOPS GPG key fingerprint (public)
+9af8ca9335afe1b223e0c5e9b748a0947656c780:MEDIA_V2_PROGRESS_NOTES.md:generic-api-key:10
+# SOPS GPG key fingerprint (public)
+a69a379b7cb4398148098b5b7e9aadb34c1ef15e:migrate-sops.sh:generic-api-key:7
+# upstream chart example
+effc1d5ed5ecd7c0a54c8ad971b544189bad083f:talos/argocd/helm/argo-cd/values.yaml:private-key:534
+# upstream chart example
+82ed52cd7b6541a0803027bdc0da9a98f082f852:talos/cluster-services/cnpg-operator/charts/plugin-barman-cloud/v0.12.0/manifest.yaml:kubernetes-secret-yaml:943
+# upstream chart example
+93621aafd5b4ad9ebbb27507cba15f8a5728bb3f:talos/cluster-services/monitoring/helm/kube-prometheus-stack/charts/grafana/ci/with-image-renderer-values.yaml:kubernetes-secret-yaml:101
+# upstream chart example
+93621aafd5b4ad9ebbb27507cba15f8a5728bb3f:talos/cluster-services/monitoring/helm/kube-prometheus-stack/charts/grafana/ci/with-image-renderer-values.yaml:kubernetes-secret-yaml:101
+# YOUR_API_KEY placeholder
+f51e832db87a56060854e5f6eeb713b3d1815601:talos/media-v2/MANUAL_SETUP.md:curl-auth-header:25
+# YOUR_API_KEY placeholder
+f51e832db87a56060854e5f6eeb713b3d1815601:talos/media-v2/MANUAL_SETUP.md:curl-auth-header:30
+# YOUR_API_KEY placeholder
+538033fbd5619d9fcb792395415de4b892b15c31:talos/media-v2/MANUAL_SETUP.md:curl-auth-header:56
+# YOUR_API_KEY placeholder
+538033fbd5619d9fcb792395415de4b892b15c31:talos/media-v2/MANUAL_SETUP.md:curl-auth-header:61
+# YOUR_API_KEY placeholder
+538033fbd5619d9fcb792395415de4b892b15c31:talos/media-v2/MANUAL_SETUP.md:curl-auth-header:87
+# YOUR_API_KEY placeholder
+538033fbd5619d9fcb792395415de4b892b15c31:talos/media-v2/MANUAL_SETUP.md:curl-auth-header:92
+# placeholder in an example file
+058e977e1fa7be05a0c3ed586082b9429b6080fd:tpot-sensor/terraform/terraform.tfvars.example:generic-api-key:17
