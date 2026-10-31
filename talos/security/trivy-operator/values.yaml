@@ -6,6 +6,10 @@ trivy:
   ignoreUnfixed: true
   # Local disk for the server's vuln-DB cache
   storageClassName: trivy-local
+  # Public tokens hardcoded in upstream packages (yt-dlp extractors, python-ldap test certs, Debian snakeoil), not our secrets.
+  # Applies to every scanner, so only skip paths that hold no package metadata.
+  skipDirs: "**/yt_dlp/extractor,**/slapdtest/certs"
+  skipFiles: "/etc/ssl/private/ssl-cert-snakeoil.key"
 
 operator:
   # Limit concurrent scan jobs for single-node cluster

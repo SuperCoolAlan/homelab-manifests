@@ -40,3 +40,11 @@ patches:
       metadata:
         name: openvas-ingress-cert-fp-pki
   - path: exporter-patch.yaml
+  # Init containers pull ~4 GiB of feed images one after another; the chart's 600s marks every restart Degraded.
+  - target:
+      kind: Deployment
+      name: openvas
+    patch: |
+      - op: replace
+        path: /spec/progressDeadlineSeconds
+        value: 7200
