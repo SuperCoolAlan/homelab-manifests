@@ -1,0 +1,43 @@
+# Image tag follows the chart's appVersion.
+ollama:
+  gpu:
+    enabled: true
+    type: nvidia
+    # one time-sliced slot; the 6 GiB of VRAM is shared with Jellyfin, Frigate and looped-transcribe
+    number: 1
+  models:
+    pull:
+      - qwen2.5:3b
+    run:
+      - qwen2.5:3b
+
+runtimeClassName: nvidia
+
+extraEnv:
+  # stay resident: a cold load on each voice command adds seconds
+  - name: OLLAMA_KEEP_ALIVE
+    value: "-1"
+  - name: OLLAMA_MAX_LOADED_MODELS
+    value: "1"
+  - name: OLLAMA_CONTEXT_LENGTH
+    value: "8192"
+  # keep 1.5 GiB free for Jellyfin's transcode spikes; layers that don't fit run on CPU instead
+  - name: OLLAMA_GPU_OVERHEAD
+    value: "1610612736"
+
+persistentVolume:
+  enabled: true
+  existingClaim: ollama-data-fast
+
+nodeSelector:
+  kubernetes.io/hostname: talos-ramhaus
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    memory: 8Gi
+
+tests:
+  enabled: false

@@ -1,0 +1,12 @@
+# Downloaded speech models (/models) and the trained per-entity model (/train); both regenerable.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: speech-to-phrase-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 5Gi

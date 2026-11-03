@@ -151,7 +151,9 @@ flowchart LR
         app_immich["immich"]
         app_looped_transcribe["looped-transcribe"]
         app_mealie["mealie"]
+        app_ollama["ollama"]
         app_piper["piper"]
+        app_speech_to_phrase["speech-to-phrase"]
         app_status["status"]
         app_unifi["unifi"]
     end
@@ -188,12 +190,13 @@ flowchart LR
     argocd_appset --> Monitoring
     subgraph Security["Security"]
         app_falco["falco"]
+        app_greenbone["greenbone"]
         app_trivy_operator["trivy-operator"]
     end
     argocd_appset --> Security
 ```
 
-**53 Argo CD applications.**
+**56 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -233,7 +236,9 @@ flowchart LR
 | Apps | [`immich`](talos/immich) | immich | Immich (photo management) |
 | Apps | [`looped-transcribe`](talos/looped-transcribe) | looped-transcribe | Speech-to-text for Looped audio: Garage queue -> faster-whisper on a time-sliced GPU slot -> VictoriaLogs |
 | Apps | [`mealie`](talos/mealie) | mealie | Mealie (recipes), public at mealie.asandov.com via the Cloudflare tunnel |
+| Apps | [`ollama`](talos/ollama) | ollama |  |
 | Apps | [`piper`](talos/piper) | piper | Piper (TTS) |
+| Apps | [`speech-to-phrase`](talos/speech-to-phrase) | speech-to-phrase | Voice assistant for Home Assistant: speech-to-phrase (STT) + Ollama (LLM fallback) |
 | Apps | [`status`](talos/status) | status | Status page |
 | Apps | [`unifi`](talos/unifi) | unifi | UniFi controller |
 | Storage | [`garage`](talos/garage) | garage | S3 store (single node) |
@@ -249,6 +254,7 @@ flowchart LR
 | Monitoring | [`opnsense-exporter`](talos/monitoring/opnsense-exporter) | monitoring |  |
 | Monitoring | [`starlink`](talos/monitoring/starlink) | monitoring |  |
 | Security | [`falco`](talos/security/falco) | falco |  |
+| Security | [`greenbone`](talos/security/greenbone) | greenbone |  |
 | Security | [`trivy-operator`](talos/security/trivy-operator) | trivy-system |  |
 <!-- apps:end -->
 

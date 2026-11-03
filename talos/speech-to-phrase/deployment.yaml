@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: speech-to-phrase
+spec:
+  replicas: 1
+  # RWO zfs volume: a surge pod could never mount it
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: speech-to-phrase
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: speech-to-phrase
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: speech-to-phrase
+          # renovate: datasource=docker depName=rhasspy/wyoming-speech-to-phrase
+          image: rhasspy/wyoming-speech-to-phrase:1.4.3@sha256:e532f0dbc6b21285c4c784212003865b9167041927328a767cb0beb1a0beaa20
+          # /run.sh already sets --uri tcp://0.0.0.0:10300, --models-dir /models, --train-dir /train
+          args:
+            - --hass-websocket-uri
+            - ws://haos.home-assistant.svc:8123/api/websocket
+            - --hass-token
+            - $(HASS_TOKEN)
+            - --retrain-on-start
+            # picks up renamed/new entities; unchanged entity lists skip training
+            - --retrain-seconds
+            - "300"
+          env:
+            - name: HASS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hass-token
+                  key: HASS_TOKEN
+          ports:
+            - name: wyoming
+              containerPort: 10300
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: wyoming
+          livenessProbe:
+            tcpSocket:
+              port: wyoming
+            initialDelaySeconds: 60
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            - name: data
+              mountPath: /models
+              subPath: models
+            - name: data
+              mountPath: /train
+              subPath: train
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: speech-to-phrase-data

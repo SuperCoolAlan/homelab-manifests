@@ -1,0 +1,12 @@
+# Declared here and adopted via persistentVolume.existingClaim, so ArgoCD tracks it. Holds pulled models.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-data-fast
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 20Gi

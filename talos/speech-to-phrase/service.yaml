@@ -1,0 +1,13 @@
+# Wyoming is raw TCP; only the in-cluster Home Assistant VM connects.
+apiVersion: v1
+kind: Service
+metadata:
+  name: speech-to-phrase
+spec:
+  selector:
+    app.kubernetes.io/name: speech-to-phrase
+  ports:
+    - name: wyoming
+      port: 10300
+      targetPort: wyoming
+      protocol: TCP
