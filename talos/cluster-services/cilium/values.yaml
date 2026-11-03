@@ -8,6 +8,9 @@ kubeProxyReplacement: false
 # Multus writes its own CNI config beside Cilium's; exclusive mode deletes it.
 cni:
   exclusive: false
+# Cilium's eno1 program drops tagged frames; without 67 the HA VM's br67 (eno1.67) receives nothing.
+bpf:
+  vlanBypass: [67]
 
 # KubePrism, so the agent reaches the apiserver without depending on kube-proxy or the pod network.
 k8sServiceHost: localhost
