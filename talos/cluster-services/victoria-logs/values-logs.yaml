@@ -4,8 +4,8 @@
 server:
   enabled: true
 
-  # 90 day retention for logs
-  retentionPeriod: 90d
+  # ~0.1 GB/day; the disk cap below still bounds a log flood
+  retentionPeriod: 365d
 
   # Limit disk usage to 100GB
   retentionDiskSpaceUsage: 100GB
