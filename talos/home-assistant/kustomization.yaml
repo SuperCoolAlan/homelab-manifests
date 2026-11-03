@@ -5,6 +5,8 @@ namespace: home-assistant
 
 resources:
   - namespace.yaml
+  - network-attachment.yaml
+  - networkpolicy.yaml
   - datavolume.yaml
   - vm.yaml
   - service.yaml

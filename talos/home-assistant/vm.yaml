@@ -33,13 +33,21 @@ spec:
           interfaces:
             - name: default
               masquerade: {}
+              macAddress: "6a:c5:38:84:cc:e1"
               ports:
                 - name: http
                   port: 80
                   protocol: TCP
+            # VLAN 67; MAC pinned so HAOS keeps its static-IP profile on this NIC
+            - name: iot
+              bridge: {}
+              macAddress: "02:00:0a:00:43:02"
       networks:
         - name: default
           pod: {}
+        - name: iot
+          multus:
+            networkName: iot
       volumes:
         - name: rootdisk
           dataVolume:
