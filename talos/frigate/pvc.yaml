@@ -24,4 +24,4 @@ spec:
   storageClassName: fast-array
   resources:
     requests:
-      storage: 200Gi
+      storage: 400Gi
