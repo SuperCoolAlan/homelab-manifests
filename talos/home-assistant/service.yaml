@@ -3,6 +3,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: haos
+  # ServiceMonitor selects on this label
+  labels:
+    app.kubernetes.io/name: haos
   annotations:
     metallb.io/loadBalancerIPs: 10.0.7.205
 spec:

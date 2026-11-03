@@ -1,0 +1,18 @@
+# HA's prometheus integration (/api/prometheus) needs a long-lived token; this one belongs to vmagent alone.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: haos
+  labels:
+    app.kubernetes.io/name: haos
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: haos
+  endpoints:
+    - port: http
+      path: /api/prometheus
+      interval: 60s
+      bearerTokenSecret:
+        name: ha-prometheus-token
+        key: token
