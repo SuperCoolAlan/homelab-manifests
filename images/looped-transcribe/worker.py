@@ -9,8 +9,10 @@ import logging
 import os
 import tempfile
 import time
+import urllib.error
 import urllib.request
 
+import av
 import boto3
 from faster_whisper import WhisperModel
 from prometheus_client import Counter, Gauge, start_http_server
@@ -32,6 +34,10 @@ SPEECH_SEGMENTS = Counter("looped_transcribe_speech_segments_total", "Speech seg
 BACKLOG = Gauge("looped_transcribe_backlog", "Objects waiting in incoming/")
 OLDEST = Gauge("looped_transcribe_oldest_pending_age_seconds", "Age of the oldest object in incoming/")
 FAILED = Gauge("looped_transcribe_failed_objects", "Objects parked in failed/")
+
+
+class SinkDown(Exception):
+    """VictoriaLogs couldn't take the insert; the segment itself is fine."""
 
 
 def keys(s3, prefix):
@@ -80,7 +86,15 @@ def transcribe(model, s3, key):
             VLOGS_URL + "/insert/jsonline?_stream_fields=site,source",
             data="\n".join(lines).encode(), method="POST",
         )
-        urllib.request.urlopen(req, timeout=30).read()
+        try:
+            urllib.request.urlopen(req, timeout=30).read()
+        except urllib.error.HTTPError as e:
+            # a 4xx is a bad payload, so it must still count toward MAX_ATTEMPTS
+            if e.code < 500:
+                raise
+            raise SinkDown(f"HTTP {e.code}") from e
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            raise SinkDown(str(e)) from e
     AUDIO_SECONDS.inc(info.duration)
     SPEECH_SEGMENTS.inc(len(lines))
     return len(lines)
@@ -114,6 +128,17 @@ def main():
                     attempts.pop(key, None)
                     CHUNKS.labels("ok").inc()
                     log.info("%s: %d speech segments", key, n)
+                except av.error.EOFError:
+                    # capture restarts leave empty or cut-off segments; retrying can't fix them
+                    move(s3, key, "done/")
+                    attempts.pop(key, None)
+                    CHUNKS.labels("truncated").inc()
+                    log.warning("%s: truncated segment, skipped", key)
+                except SinkDown as e:
+                    # VictoriaLogs restarts outlast MAX_ATTEMPTS polls; wait for it instead of parking good audio
+                    CHUNKS.labels("error").inc()
+                    log.warning("%s: VictoriaLogs unavailable (%s), retrying next pass", key, e)
+                    break
                 except Exception:
                     attempts[key] = attempts.get(key, 0) + 1
                     log.exception("%s: attempt %d failed", key, attempts[key])
