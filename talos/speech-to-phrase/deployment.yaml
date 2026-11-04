@@ -17,7 +17,13 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: talos-ramhaus
+      # The image defaults to root; fsGroup re-owns the root-owned /models and /train so UID 1000 can write them.
       securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -53,6 +59,8 @@ spec:
             initialDelaySeconds: 60
           securityContext:
             allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
           resources:
             requests:
               cpu: 100m
