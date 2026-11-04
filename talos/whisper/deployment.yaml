@@ -34,8 +34,9 @@ spec:
               value: "1000"
             - name: TZ
               value: America/Chicago
+            # base.en: ~280 ms vs small.en's ~800 ms on the 1660 Ti, same accuracy on voice commands
             - name: WHISPER_MODEL
-              value: small.en
+              value: base.en
             - name: WHISPER_LANG
               value: en
             - name: WHISPER_BEAM
