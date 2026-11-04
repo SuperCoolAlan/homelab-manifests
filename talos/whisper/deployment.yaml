@@ -24,8 +24,9 @@ spec:
       containers:
         - name: whisper
           # gpu (not gpu-legacy): the GTX 1660 Ti is Turing. s6 starts as root and drops to PUID via s6-setuidgid.
-          # renovate: datasource=docker depName=lscr.io/linuxserver/faster-whisper
-          image: lscr.io/linuxserver/faster-whisper:gpu-v3.8.1-ls74@sha256:5451c1dae4ac75e147e61444fb045cfe29c413f5054421b80838182572da07ec
+          # Docker Hub, not lscr.io/ghcr: its one 1.5 GB layer pulls ~8x faster per stream over Starlink.
+          # renovate: datasource=docker depName=docker.io/linuxserver/faster-whisper
+          image: docker.io/linuxserver/faster-whisper:gpu-v3.8.1-ls74@sha256:5451c1dae4ac75e147e61444fb045cfe29c413f5054421b80838182572da07ec
           env:
             - name: PUID
               value: "1000"
