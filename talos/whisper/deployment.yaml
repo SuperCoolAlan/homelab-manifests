@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whisper
+spec:
+  replicas: 1
+  # RWO zfs volume: a surge pod could never mount it
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: whisper
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: whisper
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: talos-ramhaus
+      runtimeClassName: nvidia
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: whisper
+          # gpu (not gpu-legacy): the GTX 1660 Ti is Turing. s6 starts as root and drops to PUID via s6-setuidgid.
+          # renovate: datasource=docker depName=lscr.io/linuxserver/faster-whisper
+          image: lscr.io/linuxserver/faster-whisper:gpu-v3.8.1-ls74@sha256:5451c1dae4ac75e147e61444fb045cfe29c413f5054421b80838182572da07ec
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: America/Chicago
+            - name: WHISPER_MODEL
+              value: small.en
+            - name: WHISPER_LANG
+              value: en
+            - name: WHISPER_BEAM
+              value: "1"
+          ports:
+            - name: wyoming
+              containerPort: 10300
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: wyoming
+          # first start downloads the model before the port opens
+          startupProbe:
+            tcpSocket:
+              port: wyoming
+            periodSeconds: 10
+            failureThreshold: 60
+          livenessProbe:
+            tcpSocket:
+              port: wyoming
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 100m
+              memory: 1Gi
+            limits:
+              # one time-sliced slot (Ollama's); the 6 GiB of VRAM is shared with Jellyfin, Frigate and looped-transcribe
+              nvidia.com/gpu: 1
+              memory: 4Gi
+          volumeMounts:
+            - name: data
+              mountPath: /config
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: whisper-data

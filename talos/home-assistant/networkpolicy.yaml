@@ -35,6 +35,13 @@ spec:
     - to:
         - namespaceSelector:
             matchLabels:
+              kubernetes.io/metadata.name: whisper
+      ports:
+        - port: 10300
+          protocol: TCP
+    - to:
+        - namespaceSelector:
+            matchLabels:
               kubernetes.io/metadata.name: piper
       ports:
         - port: 10200

@@ -70,8 +70,9 @@ spec:
           - path: talos/garage
           # Home Assistant OS as a KubeVirt VM (replaces the ODROID-C4)
           - path: talos/home-assistant
-          # Voice assistant for Home Assistant: speech-to-phrase (STT) + Ollama (LLM fallback); TTS is talos/piper
+          # Voice assistant for Home Assistant: speech-to-phrase and Whisper (STT) + Ollama (LLM fallback); TTS is talos/piper
           - path: talos/speech-to-phrase
+          - path: talos/whisper
           - path: talos/ollama
           # Speech-to-text for Looped audio: Garage queue -> faster-whisper on a time-sliced GPU slot -> VictoriaLogs
           - path: talos/looped-transcribe

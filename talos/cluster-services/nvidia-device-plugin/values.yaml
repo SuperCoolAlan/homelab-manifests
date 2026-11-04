@@ -29,7 +29,7 @@ resources:
     memory: 256Mi
 
 # Four time-sliced slots on the one GPU so Jellyfin, the Looped speech-to-text
-# worker, Frigate and Ollama all stay scheduled. Time-slicing has no memory isolation: the 6 GB is
+# worker, Frigate and voice Whisper all stay scheduled (Ollama is at 0 replicas to free that slot). Time-slicing has no memory isolation: the 6 GB is
 # shared, so the other CUDA tenants must stay small enough to fit beside Jellyfin.
 config:
   default: default

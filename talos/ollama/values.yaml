@@ -1,4 +1,6 @@
 # Image tag follows the chart's appVersion.
+# Scaled to 0: Whisper took its GPU slot. Raise to 1 only with a free slot in nvidia-device-plugin.
+replicaCount: 0
 ollama:
   gpu:
     enabled: true

@@ -1,0 +1,13 @@
+# Wyoming is raw TCP; only the in-cluster Home Assistant VM connects.
+apiVersion: v1
+kind: Service
+metadata:
+  name: whisper
+spec:
+  selector:
+    app.kubernetes.io/name: whisper
+  ports:
+    - name: wyoming
+      port: 10300
+      targetPort: wyoming
+      protocol: TCP

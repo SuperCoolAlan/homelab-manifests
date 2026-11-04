@@ -1,0 +1,12 @@
+# Whisper models downloaded from Hugging Face on first start; regenerable.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: whisper-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-array
+  resources:
+    requests:
+      storage: 5Gi

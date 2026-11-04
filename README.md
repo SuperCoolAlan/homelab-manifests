@@ -156,6 +156,7 @@ flowchart LR
         app_speech_to_phrase["speech-to-phrase"]
         app_status["status"]
         app_unifi["unifi"]
+        app_whisper["whisper"]
     end
     argocd_appset --> Apps
     subgraph Storage["Storage"]
@@ -196,7 +197,7 @@ flowchart LR
     argocd_appset --> Security
 ```
 
-**56 Argo CD applications.**
+**57 Argo CD applications.**
 
 | Category | App | Namespace | Notes |
 |---|---|---|---|
@@ -238,9 +239,10 @@ flowchart LR
 | Apps | [`mealie`](talos/mealie) | mealie | Mealie (recipes), public at mealie.asandov.com via the Cloudflare tunnel |
 | Apps | [`ollama`](talos/ollama) | ollama |  |
 | Apps | [`piper`](talos/piper) | piper | Piper (TTS) |
-| Apps | [`speech-to-phrase`](talos/speech-to-phrase) | speech-to-phrase | Voice assistant for Home Assistant: speech-to-phrase (STT) + Ollama (LLM fallback) |
+| Apps | [`speech-to-phrase`](talos/speech-to-phrase) | speech-to-phrase | Voice assistant for Home Assistant: speech-to-phrase and Whisper (STT) + Ollama (LLM fallback) |
 | Apps | [`status`](talos/status) | status | Status page |
 | Apps | [`unifi`](talos/unifi) | unifi | UniFi controller |
+| Apps | [`whisper`](talos/whisper) | whisper |  |
 | Storage | [`garage`](talos/garage) | garage | S3 store (single node) |
 | Privacy and crypto | [`monerod`](talos/monerod) | monerod | Monero node (P2P via Oracle, tx relay via Tor) |
 | Privacy and crypto | [`p2pool`](talos/p2pool) | p2pool | P2Pool mini + built-in miner, off-peak schedule |
