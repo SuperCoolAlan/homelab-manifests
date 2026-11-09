@@ -1,0 +1,27 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: gatus
+spec:
+  groups:
+    - name: gatus.alerts
+      rules:
+        # 10m rides out the ≤4m Starlink blips Gatus sees daily; real outages run for hours.
+        - alert: GatusEndpointDown
+          expr: max by (group, name) (gatus_results_endpoint_success{job="gatus"}) == 0
+          for: 10m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: "{{ $labels.group }} / {{ $labels.name }} is failing its Gatus check"
+            description: "Gatus has seen {{ $labels.name }} fail for 10m. Details on the status page; conditions live in talos/status/kustomization.yaml."
+        - alert: GatusMetricsMissing
+          expr: absent(gatus_results_endpoint_success{job="gatus"})
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Gatus metrics are missing
+            description: "No gatus_results_endpoint_success samples for 15m, so GatusEndpointDown can't fire. Check the gatus pod in the status namespace and its serviceMonitor."

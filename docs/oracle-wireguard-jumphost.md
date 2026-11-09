@@ -113,6 +113,12 @@ jellyfin.asandov.com {
 The disabled timeouts and `flush_interval -1` are what keep long video streams
 and the playback WebSocket alive. Without them the stream drops mid-playback.
 
+`/etc/systemd/system/caddy.service.d/restart.conf` (`Restart=on-failure`,
+`RestartSec=10s`, `StartLimitIntervalSec=0`) brings Caddy back if it crashes or a
+restart during unattended upgrades fails. node-exporter's systemd `unit-include`
+adds `caddy\.service`, and `JellyCaddyDown` (critical, `homelab` → Discord) fires
+after 5 min.
+
 ### Firewall (nftables)
 
 ```
@@ -284,7 +290,7 @@ Signal.
 |---|---|
 | nginx | Ubuntu `nginx` + `libnginx-mod-stream`; `/etc/nginx/nginx.conf` is the merged terminate + relay config (no sites-enabled). Logs off, as upstream |
 | nginx restart | `/etc/systemd/system/nginx.service.d/restart.conf`: `Restart=on-failure`, `RestartSec=10s`, `StartLimitIntervalSec=0`, after `network-online.target nss-lookup.target`. nginx resolves the Signal upstreams at startup, and needrestart restarts it alongside systemd-resolved after library upgrades; without the retry it stays dead |
-| Down alert | node-exporter's systemd `unit-include` adds `nginx\.service`; `SignalProxyNginxDown` (critical, `homelab` → Discord) fires after 5 min. Gatus has no alerting |
+| Down alert | node-exporter's systemd `unit-include` adds `nginx\.service`; `SignalProxyNginxDown` (critical, `homelab` → Discord) fires after 5 min. Gatus' `GatusEndpointDown` also covers the outer TLS check after 10 min |
 | Certificate | `certbot certonly --webroot -w /var/www/certbot`, no email (as upstream), `certbot.timer` renews, deploy hook reloads nginx. TLS params from certbot's repo in `/etc/letsencrypt/` |
 | Upstream drift | `signal-proxy-upstream-check.timer` (daily) compares upstream `data/nginx-relay/nginx.conf` with `/usr/local/share/signal-proxy/nginx-relay.pinned.conf` and writes `signal_proxy_upstream_{drift,check_success,last_check_timestamp_seconds}` to node-exporter's textfile dir. Alerts `SignalProxyUpstreamChanged` / `SignalProxyUpstreamCheckStale` |
 | Re-syncing | copy upstream's map/upstreams into the `stream` block, replace the pinned copy and `PINNED_SHA`, `nginx -t`, `systemctl reload nginx`. Signal gives ~30 days before a change is required |
@@ -373,8 +379,8 @@ ended log shipping on three boxes on 2026-09-15. Each box has
 **Alerting on it.** node-exporter runs with
 `--collector.systemd --collector.systemd.unit-include=systemd-journal-upload\.service`
 in `/etc/default/prometheus-node-exporter`, which exposes only that unit's state
-(the signal box uses `(systemd-journal-upload|nginx)\.service`, see
-[Signal TLS proxy](#signal-tls-proxy)).
+(the signal box adds `nginx`, the jelly box adds `caddy`; see
+[Signal TLS proxy](#signal-tls-proxy) and [Caddy](#caddy-etccaddycaddyfile)).
 `OracleJournalUploadDown` (alertgroup `homelab`, to Discord) fires after 15 min
 when the unit isn't active or the state metric is missing while the box is up.
 

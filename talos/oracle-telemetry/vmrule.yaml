@@ -57,6 +57,16 @@ spec:
     - name: signal-proxy.alerts
       rules:
         # Fed by signal-proxy-upstream-check.timer via node-exporter's textfile collector on the signal VPS.
+        # Needs caddy in node-exporter's systemd unit-include on the jelly box.
+        - alert: JellyCaddyDown
+          expr: max(node_systemd_unit_state{job="oracle-node",instance="jelly",name="caddy.service",state="active"}) == 0 or (max(up{job="oracle-node",instance="jelly"}) == 1 unless max(node_systemd_unit_state{job="oracle-node",instance="jelly",name="caddy.service"}))
+          for: 5m
+          labels:
+            severity: critical
+            alertgroup: homelab
+          annotations:
+            summary: Caddy on the jelly jumphost is down
+            description: "Caddy on oracle-jellyfin-jumphost is not active, so jellyfin.asandov.com and photos.asandov.com are unreachable from outside. Check `journalctl -u caddy` there."
         # Needs nginx in node-exporter's systemd unit-include on the signal box.
         - alert: SignalProxyNginxDown
           expr: max(node_systemd_unit_state{job="oracle-node",instance="signal",name="nginx.service",state="active"}) == 0 or (max(up{job="oracle-node",instance="signal"}) == 1 unless max(node_systemd_unit_state{job="oracle-node",instance="signal",name="nginx.service"}))
