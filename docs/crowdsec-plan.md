@@ -89,6 +89,13 @@ Caveats (from research):
 > Recovery path if banned anyway: Twingate → kubectl exec →
 > `cscli decisions delete --ip <ip>` (VPS bans never affect cluster access).
 >
+> Jelly parser whitelist `/etc/crowdsec/parsers/s02-enrich/immich-thumbnail-404-whitelist.yaml`
+> (added 2026-11-09) drops GET 404s on `photos.asandov.com/api/assets/<uuid>/thumbnail`.
+> The Immich apps send these in bursts for deleted or edited assets, which trips
+> `http-probing`. A ban on the home IP also drops WireGuard, so every jelly tunnel
+> goes dark for 4h (2026-11-03). The `trusted-admin` allowlist can't cover this
+> because the Starlink IP rotates almost daily.
+>
 > Original notes (agent): crowdsec 1.7.8 (pinned
 > to LAPI version) registered as `oracle-jellyfin-jumphost` via
 > 10.100.0.2:8080 (lapi-forwarder socat in the jellyfin-tunnel pod; wg0
