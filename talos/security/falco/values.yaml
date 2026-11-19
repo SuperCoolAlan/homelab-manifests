@@ -46,3 +46,21 @@ customRules:
       condition: or (container.id = runtime and proc.pname = "nvidia-containe" and proc.exepath = "memfd:/usr/local/glibc/sbin/ldconfig")
       override:
         condition: append
+    # CNPG replicas pull WAL from the archive through a shell; stock postgres_running_cnpg only covers wal-archive.
+    - macro: user_shell_container_exclusions
+      condition: (container.image.repository = ghcr.io/cloudnative-pg/postgresql and proc.pname = postgres
+                  and proc.cmdline startswith "sh -c /controller/manager wal-restore")
+      override:
+        condition: replace
+    # p2pool's busybox stats httpd hands each accepted socket to its handler on stdin/stdout.
+    - macro: user_known_stand_streams_redirect_activities
+      condition: (k8s.ns.name = p2pool and container.image.repository = docker.io/library/busybox and proc.name = httpd)
+      override:
+        condition: replace
+    # Controllers whose job is talking to the API server.
+    - macro: user_known_contact_k8s_api_server_activities
+      condition: >-
+        (container.image.repository in (docker.io/twinproduction/gatus, quay.io/argoproj/argocd,
+                                         ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar, ghcr.io/goauthentik/server))
+      override:
+        condition: replace

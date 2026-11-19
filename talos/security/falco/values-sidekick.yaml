@@ -36,9 +36,9 @@ webui:
     storageEnabled: true
     storageClass: fast-array
     storageSize: 10Gi
-    # maxmemory must stay under the container limit, or a persisted dataset OOM-loops on reload.
+    # Keep maxmemory at half the limit: a BGSAVE fork under write load can double RSS, and the cgroup counts both.
     customConfig:
-      - maxmemory 3gb
+      - maxmemory 2gb
       - maxmemory-policy allkeys-lru
     resources:
       requests:
