@@ -16,6 +16,7 @@ resources:
   - resources/blueprint-cloudflare-access.yaml
   - resources/blueprint-mealie.yaml
   - resources/blueprint-cms.yaml
+  - resources/blueprint-immich.yaml
 
 generators:
   - secrets-generator.yaml
