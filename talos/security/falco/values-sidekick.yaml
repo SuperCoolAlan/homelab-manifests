@@ -36,7 +36,7 @@ webui:
     storageEnabled: true
     storageClass: fast-array
     storageSize: 10Gi
-    # Keep maxmemory at half the limit: a BGSAVE fork under write load can double RSS, and the cgroup counts both.
+    # Limit must hold a full RDB reload (loaded before maxmemory evicts) plus a BGSAVE fork; 3x maxmemory covers both.
     customConfig:
       - maxmemory 2gb
       - maxmemory-policy allkeys-lru
@@ -44,7 +44,7 @@ webui:
       requests:
         memory: 2Gi
       limits:
-        memory: 4Gi
+        memory: 6Gi
 
 resources:
   requests:
