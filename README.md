@@ -41,7 +41,7 @@ flowchart TB
         signal[signal box<br/>Signal TLS proxy]
     end
 
-    subgraph Home["Home · Starlink"]
+    subgraph Home["Home · Cox fiber"]
         opnsense[OPNsense<br/>router · DNS · BGP peer]
 
         subgraph Cluster["Talos Kubernetes"]
@@ -186,7 +186,6 @@ flowchart LR
         app_nut["nut"]
         app_nvidia_gpu_exporter["nvidia-gpu-exporter"]
         app_opnsense_exporter["opnsense-exporter"]
-        app_starlink["starlink"]
     end
     argocd_appset --> Monitoring
     subgraph Security["Security"]
@@ -254,7 +253,6 @@ flowchart LR
 | Monitoring | [`nut`](talos/monitoring/nut) | monitoring |  |
 | Monitoring | [`nvidia-gpu-exporter`](talos/monitoring/nvidia-gpu-exporter) | monitoring |  |
 | Monitoring | [`opnsense-exporter`](talos/monitoring/opnsense-exporter) | monitoring |  |
-| Monitoring | [`starlink`](talos/monitoring/starlink) | monitoring |  |
 | Security | [`falco`](talos/security/falco) | falco |  |
 | Security | [`greenbone`](talos/security/greenbone) | greenbone |  |
 | Security | [`trivy-operator`](talos/security/trivy-operator) | trivy-system |  |

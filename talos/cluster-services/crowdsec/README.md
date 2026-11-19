@@ -124,8 +124,8 @@ never committed to git — they live only in each LAPI's database:
 3. **jelly engine** `trusted-admin`
    (`ssh oracle-jellyfin-jumphost sudo cscli allowlists inspect trusted-admin`).
 
-Home egress is **Starlink CGNAT and rotates**; re-add it on **every** engine
-when it changes: `cscli allowlists add trusted-admin <ip> -d "home"`.
+Home egress is a Cox DHCP address and can change on lease loss or a modem
+swap; re-add it on **every** engine when it changes: `cscli allowlists add trusted-admin <ip> -d "home"`.
 
 ### Testing a bouncer without banning yourself
 

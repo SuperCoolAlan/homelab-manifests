@@ -1,5 +1,5 @@
 # ServiceMonitor rather than VMServiceScrape purely for consistency with the
-# other hand-written exporters here (opnsense, starlink). The VictoriaMetrics
+# other hand-written exporters here (opnsense). The VictoriaMetrics
 # operator converts these, so both kinds end up as the same scrape config.
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
