@@ -21,10 +21,11 @@ images:
     tag: "26.1.2"
 
 # Only gpg-data still comes from a feed image; feed-sync-patch.yaml replaces the rest with rsync.
+# Digest-pinned + IfNotPresent: the weekly feed restart must start from cache when the community registry is down.
 feedImages:
   registry: registry.community.greenbone.net/community
-  tag: latest
-  pullPolicy: Always
+  tag: "latest@sha256:1fe6303bd47671737d2d3325f025cee36d4f8c4107dae7e85f0cb7ec4caac01f"
+  pullPolicy: IfNotPresent
 
 psgvm:
   # Must match the PostgreSQL major inside the pg-gvm image, or the data dir won't open.
