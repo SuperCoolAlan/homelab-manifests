@@ -6,10 +6,19 @@ namespace: cameras
 resources:
   - namespace.yaml
   - discovery-job.yaml
+  - frigate/frigate.yaml
+  - frigate/monitoring.yaml
 
-# Hash-suffixed, so editing the script changes the Job spec and the PostSync
-# hook re-runs on the next sync.
+generators:
+  - secrets-generator.yaml
+
+# Hash-suffixed, so editing a file changes the pod spec that mounts it and
+# Frigate restarts and re-seeds its config. (The discovery PostSync hook re-runs
+# on every sync of this app regardless.)
 configMapGenerator:
   - name: camera-discovery
     files:
       - discover.sh
+  - name: frigate-seed
+    files:
+      - frigate/config.yml

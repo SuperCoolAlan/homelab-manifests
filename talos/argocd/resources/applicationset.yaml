@@ -48,7 +48,7 @@ spec:
           - path: talos/twingate
           # UniFi controller (see talos/unifi/README.md)
           - path: talos/unifi
-          # Cameras (phase 0: host-network nmap discovery job, results in VictoriaLogs)
+          # Cameras: Frigate NVR for the Reolink, plus the host-network nmap discovery job
           - path: talos/cameras
           # Frigate NVR for the home cameras, LAN-only at frigate.local.asandov.com
           - path: talos/frigate

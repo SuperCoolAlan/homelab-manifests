@@ -1,0 +1,88 @@
+# Frigate config, seeded into /config on every start by the deployment's init
+# container: git is the source of truth, and edits made in the UI's config
+# editor are overwritten on the next restart. Change it here.
+#
+# {FRIGATE_*} placeholders are substituted by Frigate from the pod env, which
+# comes from the SOPS secret `frigate-reolink`.
+
+mqtt:
+  # No broker in the cluster yet. Enable this when Home Assistant arrives.
+  enabled: false
+
+# Traefik terminates TLS for frigate.local.asandov.com, so 8971 speaks plain
+# HTTP. Frigate's own login stays on (auth defaults to enabled on 8971).
+tls:
+  enabled: false
+
+database:
+  path: /config/frigate.db
+
+# CPU OpenVINO: ramhaus' Xeon has AVX2, and one camera at 5 fps is light work.
+# The GPU is deliberately not used: its two time-sliced slots belong to
+# Jellyfin and looped-transcribe, and they share 6 GB of VRAM with no isolation.
+detectors:
+  ov:
+    type: openvino
+    device: CPU
+
+model:
+  width: 300
+  height: 300
+  input_tensor: nhwc
+  input_pixel_format: bgr
+  path: /openvino-model/ssdlite_mobilenet_v2.xml
+  labelmap_path: /openvino-model/coco_91cl_bkgr.txt
+
+# Reolink: HTTP-FLV over port 80, as recommended by Frigate's camera docs.
+# Reolink's RTSP is known to be flaky and is off on this camera anyway (554
+# was closed in the discovery scan); port 80 is open. go2rtc pulls each stream
+# once and Frigate reads the local restream, so the camera sees one client.
+go2rtc:
+  streams:
+    reolink:
+      - "ffmpeg:http://10.0.1.18/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_REOLINK_USER}&password={FRIGATE_REOLINK_PASSWORD}#video=copy#audio=copy#audio=opus"
+    reolink_sub:
+      - "ffmpeg:http://10.0.1.18/flv?port=1935&app=bcs&stream=channel0_ext.bcs&user={FRIGATE_REOLINK_USER}&password={FRIGATE_REOLINK_PASSWORD}"
+
+cameras:
+  # Same name as the go2rtc stream, so the live view uses it without extra config.
+  reolink:
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/reolink
+          input_args: preset-rtsp-restream
+          roles: [record]
+        - path: rtsp://127.0.0.1:8554/reolink_sub
+          input_args: preset-rtsp-restream
+          roles: [detect]
+    # The sub stream's resolution is auto-detected; pin width/height here if
+    # Frigate picks the wrong one.
+    detect:
+      enabled: true
+      fps: 5
+
+objects:
+  track: [person, car, dog, cat]
+
+# Recordings live under frigate/ on the 6 TB media mirror, which they share with
+# the media library. Frigate's emergency cleanup reacts to that filesystem's
+# free space, so a full media pool would eat the oldest footage first.
+record:
+  enabled: true
+  continuous:
+    days: 0
+  motion:
+    days: 7
+  alerts:
+    retain:
+      days: 30
+      mode: motion
+  detections:
+    retain:
+      days: 30
+      mode: motion
+
+snapshots:
+  enabled: true
+  retain:
+    default: 30

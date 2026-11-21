@@ -1,0 +1,44 @@
+# Frigate's native Prometheus metrics (same frigate_* series as the Looped box).
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: frigate
+  namespace: cameras
+  labels:
+    app.kubernetes.io/name: frigate
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frigate
+  endpoints:
+    - port: internal
+      path: /api/metrics
+      interval: 30s
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: frigate
+  namespace: cameras
+spec:
+  groups:
+    - name: frigate.alerts
+      rules:
+        - alert: HomeCameraNoFrames
+          expr: max by (camera_name) (frigate_camera_fps{namespace="cameras"}) == 0
+          for: 10m
+          labels:
+            severity: critical
+            alertgroup: homelab
+          annotations:
+            summary: "Home camera {{ $labels.camera_name }} is delivering no frames"
+            description: "Frigate is up but the stream is dead, so nothing is being recorded. Check the camera at 10.0.1.18, its credentials in the frigate-reolink secret, and the go2rtc page in Frigate."
+        - alert: HomeFrigateDown
+          expr: absent(up{namespace="cameras",service="frigate"} == 1)
+          for: 15m
+          labels:
+            severity: warning
+            alertgroup: homelab
+          annotations:
+            summary: Frigate (cameras namespace) is not being scraped
+            description: "The Frigate pod is down or its /api/metrics on port 5000 is failing."
